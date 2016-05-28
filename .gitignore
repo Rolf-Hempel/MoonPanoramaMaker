@@ -1,0 +1,8 @@
+/InstallForge/build
+
+/InstallForge/dist
+
+/Windows_Installer
+/Documentation/Illustrations/Landmark_Pictures.psd
+/.idea
+*.pyc

@@ -1,0 +1,9 @@
+MoonPanoramaMaker
+
+Python application for the automatic exposure of moon panoramas
+
+MoonPanoramaMaker automates the process of taking high-resolution panoramas of the Moon. Since the USB cameras employed cover a very small field of view, multiple views must be combined to produce a complete panorama. MoonPanoramaMaker covers the current Moon phase with an optimal grid of single views and automatically steers the telescope mount and camera during their exposure.
+
+This repository contains the source code of MoonPanoramaMaker and its documentation.
+
+For a discussion of this software on the U.S. astronomy forum "Cloudy Nights" see: http://www.cloudynights.com/topic/534430-automatic-lunar-mosaicing/ (starting with the post on April 26, 2016).

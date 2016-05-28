@@ -1,0 +1,109 @@
+[General]
+Program name = MoonPanoramaMaker
+Program version = 0.9.2
+Windows 2000 = 0
+Windows XP = 0
+Windows Server 2003 = 0
+Windows Vista = 0
+Windows Server 2008 = 1
+Windows 7 = 1
+Windows 8 = 1
+Company name = 
+Website = 
+SFA = 1
+DFA = 1
+Comp = 1
+[Graphics]
+Wizard image = C:\Users\rolf\Documents\Python\MoonPanoramaMaker\InstallForge\2016-03-13_19-25MEZ_Mond.jpg
+Header image = C:\Program Files (x86)\solicus\InstallForge\Images\Header_4.bmp
+Install-icon image = C:\Users\rolf\Documents\Python\MoonPanoramaMaker\InstallForge\MoonPanoramaMaker.ico
+Show Label = 1
+Windows style = 1
+XpStyle = 1
+[Files]
+Include Zipfile = 0
+Zipfile = 
+Installation path = <programfiles>\<company>\<appname>\
+Autcip = 1
+[Uninstall]
+Vwau = 0
+Website = 
+Include uninstaller = 1
+Uninstaller filename = Uninstall
+[Licence]
+Licence dialog = 1
+[Finish]
+Sart program = 0
+Reboot computer = 0
+Execute DLL: = 0
+Program = <installpath>\
+Dll = 
+[Shortcuts]
+Allowtc = 1
+Shortcut path = <company>\<appname>\
+[Serialoptions]
+Allows = 0
+Number = 20
+[SplashScreen]
+Image = 
+Sound = 
+Time = 2
+PlaySound = 0
+Allow = 0
+[Build]
+File = C:\Users\rolf\Documents\Python\MoonPanoramaMaker\Windows-Installer\MoonPanoramaMaker_0.9.2.exe
+[Updater]
+Allow = 0
+1 = <appname>
+2 = <appversion>
+3 = http://
+4 = http://
+5 = http://
+6 = Update
+Language = 0
+RunProg = 
+RunProgs = 0
+Execdlls = 0
+[Languages]
+2
+[Files/Dirs]
+C:\Users\rolf\Documents\Python\MoonPanoramaMaker\InstallForge\build\
+n/a
+[Folder]
+C:\Users\rolf\Documents\Python\MoonPanoramaMaker\InstallForge\dist\
+n/a
+[Folder]
+C:\Users\rolf\Documents\Python\MoonPanoramaMaker\InstallForge\MoonPanoramaMaker_User-Guide_EN.pdf
+1.4 MB
+pdf
+C:\Users\rolf\Documents\Python\MoonPanoramaMaker\InstallForge\MoonPanoramaMaker.ico
+1.2 MB
+ico
+C:\Users\rolf\Documents\Python\MoonPanoramaMaker\InstallForge\MoonPanoramaMaker\
+n/a
+[Folder]
+[Licence_Begin]
+[Licence_End]
+[Registry]
+[Variables]
+[SCs]
+Desktop
+MoonPanoramaMaker
+<installpath>\dist\moon_panorama_maker.exe
+
+Startmenu
+MoonPanoramaMaker
+<installpath>\dist\moon_panorama_maker.exe
+
+Startmenu
+Uninstall
+<installpath>\Uninstall.exe
+
+Startmenu
+User Guide
+<installpath>\MoonPanoramaMaker_User-Guide_EN.pdf
+
+[IFP_End]
+[Serials]
+[Serials_End]
+[Commands]
