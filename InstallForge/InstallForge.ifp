@@ -1,6 +1,6 @@
 [General]
 Program name = MoonPanoramaMaker
-Program version = 0.9.2
+Program version = 0.9.3
 Windows 2000 = 0
 Windows XP = 0
 Windows Server 2003 = 0
@@ -51,7 +51,7 @@ Time = 2
 PlaySound = 0
 Allow = 0
 [Build]
-File = C:\Users\rolf\Documents\Python\MoonPanoramaMaker\Windows_Installer\MoonPanoramaMaker_V0.9.2_Windows-Installer.exe
+File = C:\Users\rolf\Documents\Python\MoonPanoramaMaker\Windows_Installer\MoonPanoramaMaker_V0.9.3_Windows-Installer.exe
 [Updater]
 Allow = 0
 1 = <appname>
