@@ -106,7 +106,9 @@ class TileVisualization:
         plt.connect('key_press_event', toggle_selector)
         self.selection_rectangle = None
         self.reset_selection_rectangle()
-        self.fig.canvas.set_window_title("MoonPanoramaMaker: Tile Arrangement")
+        self.fig.canvas.set_window_title("MoonPanoramaMaker: Tile Arrangement "
+                                         "in normalized orientation (see user "
+                                         "guide)")
         plt.tight_layout()
         self.fig.canvas.draw()
 

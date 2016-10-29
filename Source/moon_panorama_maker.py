@@ -281,8 +281,8 @@ class StartQT4(QtGui.QMainWindow):
     def prompt_camera_rotated_acknowledged(self):
         self.gui_context = "perform_camera_rotation"
         self.set_text_browser(
-            "Rotate camera until short side of sensor is parallel with limb. "
-            "Confirm with 'enter'.")
+            "Rotate camera until the moon limb at the center of the FOV is "
+            "oriented vertically. Confirm with 'enter'.")
 
     def finish_camera_rotation(self):
         self.ui.set_focus_area.setEnabled(True)

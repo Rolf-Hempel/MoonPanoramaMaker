@@ -29,7 +29,7 @@ from configuration_editor import ConfigurationEditor
 
 class Configuration:
     def __init__(self):
-        self.version = "MoonPanoramaMaker 0.9.2"
+        self.version = "MoonPanoramaMaker 0.9.3"
         self.minimum_drift_seconds = 600.
 
         self.conf = ConfigParser.ConfigParser()
