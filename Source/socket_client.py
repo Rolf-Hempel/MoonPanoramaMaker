@@ -62,6 +62,5 @@ if __name__ == "__main__":
             print "Client, ", str(e)
         print "Client: acknowledgement from Server = ", ack
 
-    time.sleep(1.)
     mysocket.close()
     time.sleep(2.)
