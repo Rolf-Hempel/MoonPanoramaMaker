@@ -72,7 +72,8 @@ class Camera(QtCore.QThread):
                 if self.configuration.protocol:
                     print "Camera: Wait for FireCapture to finish exposure"
                 try:
-                    ack = self.mysocket.myreceive()
+                    ack_length = 1
+                    ack = self.mysocket.myreceive(ack_length)
                 except Exception as e:
                     print "Camera, Error message in ack: ", str(e)
                 if self.configuration.protocol:
