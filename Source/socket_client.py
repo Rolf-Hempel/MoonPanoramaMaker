@@ -106,8 +106,8 @@ if __name__ == "__main__":
             mysocket.acquire_video("_tile_001")
         time.sleep(2.)
         # Acquire still picture:
-        print "Client: Acquire video file"
-        compression_factor = 4
+        print "Client: Acquire still picture"
+        compression_factor = 3
         (image_array, width, height, dynamic) = mysocket.acquire_still_image(
             compression_factor)
         print "Client: acknowledgement from Server = ", width, ", ", height,\
