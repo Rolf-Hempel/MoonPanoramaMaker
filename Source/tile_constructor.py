@@ -20,9 +20,10 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from math import ceil, sqrt, sin, cos, atan
+from math import ceil, sqrt, cos, atan
 
 import configuration
+from miscellaneous import Miscellaneous
 
 
 class TileConstructor:
@@ -51,6 +52,9 @@ class TileConstructor:
         self.ol_outer = float(ol_outer_pixel) * atan(pixel_size / focal_length)
         self.ol_inner_min = (float(ol_inner_min_pixel)
                              * atan(pixel_size / focal_length))
+        self.flip_x = 1.
+        self.flip_y = 1.
+        self.scale_factor = 1.
 
         self.limb_first = (configuration.conf.getboolean(
             "Workflow", "limb first"))
@@ -63,7 +67,7 @@ class TileConstructor:
         if self.n_rows_corrected > 1:
             self.ol_inner_v = ((self.n_rows_corrected * self.im_h - m_diameter
                                 - 2. * self.ol_outer) / (
-                               self.n_rows_corrected - 1.))
+                                   self.n_rows_corrected - 1.))
         else:
             self.ol_inner_v = self.ol_inner_min
         # print "ol_inner_v: ", self.ol_inner_v
@@ -94,12 +98,12 @@ class TileConstructor:
                     x_min = (min(x_limb_top * cos(phase_angle),
                                  x_limb_bottom * cos(phase_angle)))
 
-                # print "x_min: ", x_min, ", x_max:", x_max
+                    # print "x_min: ", x_min, ", x_max:", x_max
 
             row_of_tiles = []
             n_cols = (
-            (x_max - x_min + 2. * self.ol_outer - self.ol_inner_min) /
-            (self.im_w - self.ol_inner_min))
+                (x_max - x_min + 2. * self.ol_outer - self.ol_inner_min) /
+                (self.im_w - self.ol_inner_min))
             # print "n_cols: ", n_cols
             n_cols_corrected = int(ceil(n_cols))
             # print "n_cols rounded: ", n_cols_corrected
@@ -123,7 +127,10 @@ class TileConstructor:
                 tile['x_center'] = (tile['x_right'] + tile['x_left']) / 2.
                 tile['y_center'] = (tile['y_top'] + tile['y_bottom']) / 2.
                 [tile['delta_ra_center'], tile['delta_de_center']] = (
-                    self.__rotate__(tile['x_center'], tile['y_center']))
+                    Miscellaneous.rotate(self.pos_angle, self.de_center,
+                                         self.scale_factor, self.flip_x,
+                                         self.flip_y, tile['x_center'],
+                                         tile['y_center']))
                 row_of_tiles.append(tile)
 
             self.lists_of_tiles.append(row_of_tiles)
@@ -139,8 +146,8 @@ class TileConstructor:
                         (self.list_of_tiles_sorted.append(
                             self.lists_of_tiles[i][
                                 len(self.lists_of_tiles[i]) - j]))
-                    # print ("tile i: ", i, ", j: ",
-                    #        len(self.lists_of_tiles[i])-j, " appended")
+                        # print ("tile i: ", i, ", j: ",
+                        #        len(self.lists_of_tiles[i])-j, " appended")
         else:
             for j in range(max_cols):
                 for i in range(self.n_rows_corrected):
@@ -148,19 +155,15 @@ class TileConstructor:
                         (self.list_of_tiles_sorted.append(
                             self.lists_of_tiles[i]
                             [len(self.lists_of_tiles[i]) - j - 1]))
-                    # print ("tile i: ", i, ", j: ",
-                    #        len(self.lists_of_tiles[i])-j-1, " appended")
+                        # print ("tile i: ", i, ", j: ",
+                        #        len(self.lists_of_tiles[i])-j-1, " appended")
 
-                    # print ("length of sorted list: ",
-                    #        len(self.list_of_tiles_sorted))
+                        # print ("length of sorted list: ",
+                        #        len(self.list_of_tiles_sorted))
         [self.delta_ra_limb_center, self.delta_de_limb_center] = (
-            self.__rotate__(self.m_radius, 0.))
-
-    def __rotate__(self, x, y):
-        delta_ra_rot = ((y * sin(self.pos_angle) - x * cos(self.pos_angle)) /
-                        cos(self.de_center))
-        delta_de_rot = (x * sin(self.pos_angle) + y * cos(self.pos_angle))
-        return [delta_ra_rot, delta_de_rot]
+            Miscellaneous.rotate(self.pos_angle, self.de_center,
+                                 self.scale_factor, self.flip_x,
+                                 self.flip_y, self.m_radius, 0.))
 
 
 if __name__ == "__main__":
@@ -200,10 +203,10 @@ if __name__ == "__main__":
 
     tile_no = 0
     for tile in tc.list_of_tiles_sorted:
-        ra_center = 23.4861097+degrees(tile['delta_ra_center'])
-        de_center = 6.736112+degrees(tile['delta_de_center'])
+        ra_center = 23.4861097 + degrees(tile['delta_ra_center'])
+        de_center = 6.736112 + degrees(tile['delta_de_center'])
         print "Tile no: ", tile_no, \
-               ", (RA,DE Center): ", ra_center, de_center
+            ", (RA,DE Center): ", ra_center, de_center
         tile_no += 1
 
     print " "

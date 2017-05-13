@@ -20,6 +20,7 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+from math import sin, cos
 from show_input_error import ShowInputError
 
 
@@ -57,6 +58,15 @@ class Miscellaneous():
     def show_input_error(parameter_string, example_string):
         inputerror = ShowInputError(parameter_string, example_string)
         inputerror.exec_()
+
+    @staticmethod
+    def rotate(pos_angle, de_center, scale_factor, flip_x, flip_y, x, y):
+        dx = x*scale_factor*flip_x
+        dy = y*scale_factor*flip_y
+        delta_ra_rot = ((dy * sin(pos_angle) - dx * cos(pos_angle)) /
+                        cos(de_center))
+        delta_de_rot = (dx * sin(pos_angle) + dy * cos(pos_angle))
+        return [delta_ra_rot, delta_de_rot]
 
 
 if __name__ == "__main__":
