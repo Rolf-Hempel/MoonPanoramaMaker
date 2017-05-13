@@ -14,7 +14,7 @@ from socket_client import SocketClient
 
 
 class ImageShift:
-    def __init__(self, configuration, pos_angle, de_center, socket):
+    def __init__(self, configuration, socket):
         self.configuration = configuration
         self.socket = socket
         self.pixel_size = (self.configuration.conf.getfloat(
@@ -24,7 +24,7 @@ class ImageShift:
         self.ol_inner_min_pixel = (self.configuration.conf.getint(
             "Camera", "tile overlap pixel"))
         self.compression_factor = self.ol_inner_min_pixel / 40
-        self.scale_factor = self.compression_factor * atan(
+        self.scale = self.compression_factor * atan(
             self.pixel_size / self.focal_length)
 
         home = os.path.expanduser("~")
@@ -145,26 +145,26 @@ class ImageShift:
                 " failed, consistent shifts: " + str(in_cluster) +
                 ", outliers: " + str(outliers))
         else:
-            x_shift /= in_cluster
-            y_shift /= in_cluster
+            x_shift = x_shift * self.scale / in_cluster
+            y_shift = y_shift * self.scale / in_cluster
             return (x_shift, y_shift, in_cluster, outliers)
 
 
 if __name__ == "__main__":
+    # Time (UT):  2015/10/19 19:55:00
+    # pos_angle = radians(-6.417)
+    # de_center = radians(-18.474)
+
     configuration = Configuration()
     host = 'localhost'
     port = 9820
     mysocket = SocketClient(host, port)
     print "Client: socket connected"
-    # Time (UT):  2015/10/19 19:55:00
-    pos_angle = radians(-6.417)
-    de_center = radians(-18.474)
-    iso = ImageShift(configuration, pos_angle, de_center, mysocket)
+    iso = ImageShift(configuration, mysocket)
     try:
         shift_x, shift_y, in_cluster, outliers = iso.shift_vs_reference()
+        print "shift in x: ", shift_x, ", shift in y: ", shift_y
+        print "Number of consistent measurements: ", in_cluster
+        print "Number of outliers: ", outliers
     except RuntimeError as e:
         print e
-        exit()
-    print "shift in x: ", shift_x, ", shift in y: ", shift_y
-    print "Number of consistent measurements: ", in_cluster
-    print "Number of outliers: ", outliers
