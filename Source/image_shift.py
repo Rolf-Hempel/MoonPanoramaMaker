@@ -1,22 +1,22 @@
 import datetime
 import os
 import shutil
-from math import radians, atan
+from math import atan
 
 import cv2
+import matplotlib.pyplot as plt
 from Image import fromarray
-from matplotlib import pyplot as plt
 from numpy import ndarray, zeros_like, count_nonzero
 from sklearn.cluster import DBSCAN
 
 from configuration import Configuration
-from socket_client import SocketClient
+from socket_client import SocketClientDebug
 
 
 class ImageShift:
-    def __init__(self, configuration, socket):
+    def __init__(self, configuration, camera_socket, debug=False):
         self.configuration = configuration
-        self.socket = socket
+        self.camera_socket = camera_socket
         self.pixel_size = (self.configuration.conf.getfloat(
             "Camera", "pixel size"))
         self.focal_length = (self.configuration.conf.getfloat(
@@ -24,14 +24,16 @@ class ImageShift:
         self.ol_inner_min_pixel = (self.configuration.conf.getint(
             "Camera", "tile overlap pixel"))
         self.compression_factor = self.ol_inner_min_pixel / 40
-        self.scale = self.compression_factor * atan(
-            self.pixel_size / self.focal_length)
+        pixel_angle = atan(self.pixel_size / self.focal_length)
+        self.ol_angle = self.ol_inner_min_pixel * pixel_angle
+        self.scale = self.compression_factor * pixel_angle
+        self.debug = debug
 
         home = os.path.expanduser("~")
         self.image_dir = home + "\\MoonPanoramaMaker_alignment_images"
         try:
             shutil.rmtree(self.image_dir)
-        except OSError:
+        except:
             pass
         os.mkdir(self.image_dir)
 
@@ -46,13 +48,8 @@ class ImageShift:
         # create BFMatcher object
         self.bf = cv2.BFMatcher(cv2.NORM_HAMMING2, crossCheck=True)
 
-        # reference_image_file = "../Image_Registration_Pymreg/Picture_Examples/Test-3-A.jpg"
-        # reference_image = open(reference_image_file).convert('L')
-        # reference_image_array = asarray(reference_image)
-
-        (reference_image_array, width, height,
-         dynamic) = self.socket.acquire_still_image(
-            self.compression_factor)
+        (reference_image_array, width, height, dynamic) = \
+            self.camera_socket.acquire_still_image(self.compression_factor)
 
         (self.reference_image_array, self.reference_image,
          self.reference_image_kp, self.reference_image_des) = \
@@ -60,10 +57,12 @@ class ImageShift:
                                              "alignment_reference_image.pgm")
 
         # draw only keypoints location,not size and orientation
-        img = cv2.drawKeypoints(self.reference_image_array,
-                                self.reference_image_kp,
-                                self.reference_image_array)
-        plt.imshow(img), plt.show()
+        if self.debug:
+            img = cv2.drawKeypoints(self.reference_image_array,
+                                    self.reference_image_kp,
+                                    self.reference_image_array)
+            plt.imshow(img)
+            plt.show()
 
     def normalize_and_analyze_image(self, image_array, filename_appendix):
         height, width = image_array.shape[:2]
@@ -89,13 +88,8 @@ class ImageShift:
         filename_appendix = "alignment_image-" + "{0:0>3}".format(
             self.alignment_image_counter) + ".pgm"
 
-        # shifted_image_file = "../Image_Registration_Pymreg/Picture_Examples/Test-3-B.jpg"
-        # shifted_image = open(shifted_image_file).convert('L')
-        # shifted_image_array = asarray(shifted_image)
-
-        (shifted_image_array, width, height,
-         dynamic) = self.socket.acquire_still_image(
-            self.compression_factor)
+        (shifted_image_array, width, height, dynamic) = \
+            self.camera_socket.acquire_still_image(self.compression_factor)
         (self.shifted_image_array, self.shifted_image, self.shifted_image_kp,
          self.shifted_image_des) = \
             self.normalize_and_analyze_image(shifted_image_array,
@@ -109,11 +103,13 @@ class ImageShift:
         matches = sorted(matches, key=lambda x: x.distance)
 
         # Draw first 10 matches.
-        img3 = cv2.drawMatches(self.reference_image_array,
-                               self.reference_image_kp,
-                               self.shifted_image_array, self.shifted_image_kp,
-                               matches[:10], None, flags=2)
-        plt.imshow(img3), plt.show()
+        if self.debug:
+            img3 = cv2.drawMatches(self.reference_image_array,
+                                   self.reference_image_kp,
+                                   self.shifted_image_array,
+                                   self.shifted_image_kp,
+                                   matches[:10], None, flags=2)
+            plt.imshow(img3), plt.show()
 
         X_matrix = ndarray(shape=(len(matches), 2), dtype=float)
         for m in range(len(matches)):
@@ -141,26 +137,26 @@ class ImageShift:
         if in_cluster < 10:
             raise RuntimeError(
                 "Image shift computation # " +
-                str(self.alignment_image_counter-1) +
+                str(self.alignment_image_counter - 1) +
                 " failed, consistent shifts: " + str(in_cluster) +
                 ", outliers: " + str(outliers))
         else:
-            x_shift = x_shift * self.scale / in_cluster
-            y_shift = y_shift * self.scale / in_cluster
-            return (x_shift, y_shift, in_cluster, outliers)
+            x_shift = (x_shift / in_cluster) * self.scale
+            y_shift = (y_shift / in_cluster) * self.scale
+            return x_shift, y_shift, in_cluster, outliers
 
 
 if __name__ == "__main__":
-    # Time (UT):  2015/10/19 19:55:00
-    # pos_angle = radians(-6.417)
-    # de_center = radians(-18.474)
+    # Time (UT):  2015/10/26 20:55:00
+    # pos_angle = radians(-39.074)
+    # de_center = radians(6.736)
 
     configuration = Configuration()
     host = 'localhost'
     port = 9820
-    mysocket = SocketClient(host, port)
+    mysocket = SocketClientDebug(host, port)
     print "Client: socket connected"
-    iso = ImageShift(configuration, mysocket)
+    iso = ImageShift(configuration, mysocket, debug=False)
     try:
         shift_x, shift_y, in_cluster, outliers = iso.shift_vs_reference()
         print "shift in x: ", shift_x, ", shift in y: ", shift_y

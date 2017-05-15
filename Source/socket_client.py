@@ -22,6 +22,7 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 import socket
 import time
+from os import listdir
 
 import Image
 import numpy as np
@@ -93,10 +94,51 @@ class SocketClient:
         self.sock.close()
 
 
+class SocketClientDebug:
+    """
+    This class mirrors the behaviour of class SocketClient if there is no
+    access to a real camera via a socket connection to FireCapture. Instead,
+    still images are read from a directory in consecutive order. They are
+    returned to the calling program in the same format as the still images
+    from the camera.
+    """
+
+    def __init__(self, host, port):
+        self.image_directory = "test_images"
+        self.image_counter = 0
+        self.image_file_list = listdir(self.image_directory)
+
+    def mysend(self, text):
+        pass
+
+    def acquire_video(self, text):
+        return "a"
+
+    def acquire_still_image(self, compression_factor):
+        if self.image_counter >= len(self.image_file_list):
+            raise RuntimeError("still image counter out of range")
+        still_image_file = self.image_file_list[self.image_counter]
+        still_image = Image.open(
+            self.image_directory + "/" + still_image_file).convert('L')
+        (width, height) = still_image.size
+        new_width = width / compression_factor
+        new_height = height / compression_factor
+        still_image = still_image.resize((new_width, new_height),
+                                         Image.ANTIALIAS)
+        still_image_array = np.asarray(still_image)
+        dynamic = 1
+        self.image_counter += 1
+        return (still_image_array, new_width, new_height, dynamic)
+
+    def close(self):
+        pass
+
+
 if __name__ == "__main__":
     host = 'localhost'
     port = 9820
-    mysocket = SocketClient(host, port)
+    mysocket = SocketClientDebug(host, port)
+    # mysocket = SocketClientDebug(host, port)
     print "Client: socket connected"
     time.sleep(1.)
     try:
@@ -107,10 +149,10 @@ if __name__ == "__main__":
         time.sleep(2.)
         # Acquire still picture:
         print "Client: Acquire still picture"
-        compression_factor = 3
+        compression_factor = 1
         (image_array, width, height, dynamic) = mysocket.acquire_still_image(
             compression_factor)
-        print "Client: acknowledgement from Server = ", width, ", ", height,\
+        print "Client: acknowledgement from Server = ", width, ", ", height, \
             ", dynamic: ", dynamic
         time.sleep(2.)
         img = Image.fromarray(image_array, 'L')

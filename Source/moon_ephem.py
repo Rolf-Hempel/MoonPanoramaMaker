@@ -62,9 +62,14 @@ class MoonEphem:
         return loc_dt.astimezone(self.utc)
 
     def update(self, date_time):
-        self.location_time.date = self.local_time_to_utc(date_time)
-        # dt = datetime.datetime(2015, 10, 26, 21, 55, 0)
-        # self.location_time.date = self.local_time_to_utc(dt)
+        #
+        # If you want to set the time to a fixed value, comment out next line
+        # and uncomment the following two lines.
+        #
+        # self.location_time.date = self.local_time_to_utc(date_time)
+        dt = datetime.datetime(2015, 10, 26, 21, 55, 0)
+        self.location_time.date = self.local_time_to_utc(dt)
+
         self.moon = ephem.Moon(self.location_time)
         s = ephem.Sun(self.location_time)
         self.ra = self.moon.ra

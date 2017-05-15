@@ -150,7 +150,8 @@ class Workflow(QtCore.QThread):
                 if self.gui.configuration.protocol:
                     print str(datetime.now())[11:21], \
                         "Center landmark in camera live view"
-                self.al.align()
+                self.al.align(self.camera.mysocket, alignment_manual=True,
+                              camera_rotated=self.gui.camera_rotated)
                 self.alignment_performed_signal.emit()
 
             elif self.slew_to_moon_limb_flag:
