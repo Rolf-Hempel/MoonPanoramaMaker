@@ -35,7 +35,12 @@ class ImageShift:
             shutil.rmtree(self.image_dir)
         except:
             pass
-        os.mkdir(self.image_dir)
+        for retry in range(100):
+            try:
+                os.mkdir(self.image_dir)
+                break
+            except:
+                print "mkdir failed, retrying..."
 
         self.alignment_image_counter = 0
 

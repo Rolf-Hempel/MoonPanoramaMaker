@@ -37,7 +37,8 @@ from miscellaneous import Miscellaneous
 
 
 class Alignment:
-    def __init__(self, configuration, telescope, moon_ephem):
+    def __init__(self, configuration, telescope, moon_ephem, debug=False):
+        self.debug = debug
         self.configuration = configuration
         self.wait_interval = (self.configuration.conf.getfloat(
             "ASCOM", "wait interval"))
@@ -86,7 +87,8 @@ class Alignment:
         if alignment_manual and camera_rotated:
             # print str(datetime.now())[11:21], \
             #     "Capture alignment reference frame"
-            self.im_shift = ImageShift(self.configuration, camera_socket)
+            self.im_shift = ImageShift(self.configuration, camera_socket,
+                                       debug=self.debug)
             if self.configuration.protocol:
                 print str(datetime.now())[11:21], \
                     "Alignment reference frame captured"
@@ -185,14 +187,14 @@ class Alignment:
             raise RuntimeError
 
         shift_angle = self.im_shift.ol_angle
-        shift_vectors = [[shift_angle, 0.][0., 0.][0., shift_angle]]
+        shift_vectors = [[shift_angle, 0.], [0., 0.], [0., shift_angle]]
         xy_shifts = []
         for shift in shift_vectors:
             (ra_landmark, de_landmark) = (
                 self.compute_telescope_coordinates_of_landmark())
             (shift_angle_ra, shift_angle_de) = Miscellaneous.rotate(
-                (self.me.pos_angle_pole, self.me.de, 1., 1., 1.,
-                 shift[0], shift[1]))
+                self.me.pos_angle_pole, self.me.de, 1., 1., 1.,
+                shift[0], shift[1])
             self.tel.slew_to(ra_landmark + shift_angle_ra,
                              de_landmark + shift_angle_de)
             time.sleep(self.wait_interval)
@@ -322,7 +324,7 @@ class Alignment:
 
 
 if __name__ == "__main__":
-    from socket_client import SocketClientDebug
+    from socket_client import SocketClient, SocketClientDebug
 
     app = QtGui.QApplication(sys.argv)
     c = configuration.Configuration()
@@ -331,11 +333,17 @@ if __name__ == "__main__":
 
     host = 'localhost'
     port = 9820
-    try:
+
+    debug = True
+
+    if debug:
         mysocket = SocketClientDebug(host, port)
-    except:
-        print "Camera: Connection to FireCapture failed, expect exception"
-        exit()
+    else:
+        try:
+            mysocket = SocketClient(host, port)
+        except:
+            print "Camera: Connection to FireCapture failed, expect exception"
+            exit()
 
     # date_time = '2015/05/18 15:20:30'
     date_time = datetime(2015, 10, 26, 21, 55, 00)
@@ -344,7 +352,7 @@ if __name__ == "__main__":
 
     me = moon_ephem.MoonEphem(c, date_time)
 
-    al = Alignment(c, tel, me)
+    al = Alignment(c, tel, me, debug=debug)
     al.set_landmark()
 
     print "ra_offset_landmark (s): ", 240 * degrees(al.ra_offset_landmark)
@@ -362,10 +370,8 @@ if __name__ == "__main__":
     print "ra correction (s): ", 240 * degrees(al.ra_correction)
     print "de correction ('): ", 60 * degrees(al.de_correction)
 
-    answer = input("Center Landmark in telescope, enter '1' when ready\n")
-    if answer != 1:
-        exit
-    al.align(mysocket)
+    al.initialize_auto_align()
+    al.align(mysocket, alignment_manual=False)
 
     print datetime.now()
     print "ra correction (s): ", 240 * degrees(al.ra_correction)
