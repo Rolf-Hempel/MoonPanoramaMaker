@@ -78,21 +78,22 @@ class Alignment:
             self.is_landmark_offset_set = False
 
     def align(self, camera_socket, alignment_manual=True, camera_rotated=True):
-        if self.is_landmark_offset_set:
-            # The telescope position is delivered by ASCOM driver of mounting
-            (ra_landmark, de_landmark) = self.tel.lookup_tel_position()
-        else:
+        if not self.is_landmark_offset_set:
             print "Error: Landmark offset not set"
             raise RuntimeError("Error: Landmark offset not set")
-        if alignment_manual and camera_rotated:
-            # print str(datetime.now())[11:21], \
-            #     "Capture alignment reference frame"
-            self.im_shift = ImageShift(self.configuration, camera_socket,
-                                       debug=self.debug)
-            if self.configuration.protocol:
-                print str(datetime.now())[11:21], \
-                    "Alignment reference frame captured"
-            self.aligment_reference_captured = True
+
+        if alignment_manual:
+            # The telescope position is delivered by ASCOM driver of mounting
+            (ra_landmark, de_landmark) = self.tel.lookup_tel_position()
+
+            if camera_rotated:
+                # Capture an alignment reference frame
+                self.im_shift = ImageShift(self.configuration, camera_socket,
+                                           debug=self.debug)
+                if self.configuration.protocol:
+                    print str(datetime.now())[11:21], \
+                        "Alignment reference frame captured"
+                self.aligment_reference_captured = True
         else:
             # Automatic alignment
             if not self.autoalign_initialized:
@@ -204,6 +205,11 @@ class Alignment:
             except RuntimeError as e:
                 print str(datetime.now())[11:21], str(e)
                 raise RuntimeError
+            if self.configuration.protocol:
+                print str(datetime.now())[11:21], \
+                    "Frame captured for autoalignment, x_shift: ", x_shift, \
+                    ", y_shift: ", y_shift, ", consistent shifts: ", \
+                    in_cluster, ", outliers: ", outliers
             xy_shifts.append([x_shift, y_shift])
         shift_vector_0_measured = [xy_shifts[0][0] - xy_shifts[1][0],
                                    xy_shifts[0][1] - xy_shifts[1][1]]
@@ -222,6 +228,10 @@ class Alignment:
                 print "Autoalign initialization failed, error in x: ", \
                     error_x * 100., ", in y: ", error_y * 100., " (percent)"
             raise RuntimeError
+        else:
+            if self.configuration.protocol:
+                print "Autoalign successful, error in x: ", \
+                    error_x * 100., ", in y: ", error_y * 100., " (percent)"
         self.autoalign_initialized = True
         return error
 
@@ -350,7 +360,7 @@ if __name__ == "__main__":
 
     # date_time = datetime.now()
 
-    me = moon_ephem.MoonEphem(c, date_time)
+    me = moon_ephem.MoonEphem(c, date_time, debug=True)
 
     al = Alignment(c, tel, me, debug=debug)
     al.set_landmark()
@@ -364,28 +374,30 @@ if __name__ == "__main__":
     answer = input("Center Landmark in telescope, enter '1' when ready\n")
     if answer != 1:
         exit
-    al.align(mysocket)
+    al.align(mysocket, alignment_manual= True)
 
     print datetime.now()
     print "ra correction (s): ", 240 * degrees(al.ra_correction)
     print "de correction ('): ", 60 * degrees(al.de_correction)
 
     al.initialize_auto_align()
-    al.align(mysocket, alignment_manual=False)
 
-    print datetime.now()
-    print "ra correction (s): ", 240 * degrees(al.ra_correction)
-    print "de correction ('): ", 60 * degrees(al.de_correction)
+    for alignment_count in range(2):
+        al.align(mysocket, alignment_manual=False)
 
-    if al.is_drift_set:
-        print "ra drift (s/sec): ", 240 * degrees(al.drift_ra)
-        print "de drift ('/sec): ", 60 * degrees(al.drift_de)
+        print datetime.now()
+        print "ra correction (s): ", 240 * degrees(al.ra_correction)
+        print "de correction ('): ", 60 * degrees(al.de_correction)
 
-        for i in range(3):
-            time.sleep(60)
-            (ra_d, de_d) = al.compute_coordinate_correction()
-            print "Ra coord. correction (s): ", 240 * degrees(ra_d)
-            print "De coord. correction ('): ", 60 * degrees(de_d)
+        if al.is_drift_set:
+            print "ra drift (s/sec): ", 240 * degrees(al.drift_ra)
+            print "de drift ('/sec): ", 60 * degrees(al.drift_de)
+
+            for i in range(3):
+                time.sleep(60)
+                (ra_d, de_d) = al.compute_coordinate_correction()
+                print "Ra coord. correction (s): ", 240 * degrees(ra_d)
+                print "De coord. correction ('): ", 60 * degrees(de_d)
     mysocket.close()
     tel.terminate()
     app.closeAllWindows()

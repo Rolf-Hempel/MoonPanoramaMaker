@@ -31,7 +31,7 @@ import configuration
 
 
 class MoonEphem:
-    def __init__(self, configuration, date_time):
+    def __init__(self, configuration, date_time, debug=False):
         self.configuration = configuration
         self.location_time = ephem.Observer()
         self.location_time.lon = (radians(self.configuration.conf.getfloat(
@@ -42,6 +42,7 @@ class MoonEphem:
             "Geographical Position", "elevation"))
         self.tz = (pytz.timezone(self.configuration.conf.get(
             "Geographical Position", "timezone")))
+        self.debug = debug
         self.utc = pytz.utc
         self.position_stored = False
         self.rate_ra = radians(38. / 60.) / 3600.
@@ -62,13 +63,12 @@ class MoonEphem:
         return loc_dt.astimezone(self.utc)
 
     def update(self, date_time):
-        #
-        # If you want to set the time to a fixed value, comment out next line
-        # and uncomment the following two lines.
-        #
-        # self.location_time.date = self.local_time_to_utc(date_time)
-        dt = datetime.datetime(2015, 10, 26, 21, 55, 0)
-        self.location_time.date = self.local_time_to_utc(dt)
+        # In debug mode compute the moon position for a fixed time
+        if self.debug:
+            dt = datetime.datetime(2015, 10, 26, 21, 55, 0)
+            self.location_time.date = self.local_time_to_utc(dt)
+        else:
+            self.location_time.date = self.local_time_to_utc(date_time)
 
         self.moon = ephem.Moon(self.location_time)
         s = ephem.Sun(self.location_time)
