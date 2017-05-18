@@ -110,8 +110,10 @@ class Alignment:
                     self.im_shift.shift_vs_reference()
                 if self.configuration.protocol:
                     print str(datetime.now())[11:21], \
-                        "New alignment frame captured, x_shift ('): ", degrees(x_shift) * 60., \
-                        ", y_shift ('): ", degrees(y_shift) * 60., ", consistent shifts: ", \
+                        "New alignment frame captured, x_shift ('): ", degrees(
+                        x_shift) * 60., \
+                        ", y_shift ('): ", degrees(
+                        y_shift) * 60., ", consistent shifts: ", \
                         in_cluster, ", outliers: ", outliers
             except RuntimeError as e:
                 if self.configuration.protocol:
@@ -120,17 +122,21 @@ class Alignment:
             # Translate shifts measured in camera image into equatorial
             # coordinates
             scale_factor = 1.
+            # In tile consstruction (where the rotate function had been
+            # designed for) x is pointing right and y upwards. Here, x is
+            # pointing right and y downwards. Therefore, the y flip has to
+            # be reversed.
             (ra_shift, de_shift) = Miscellaneous.rotate(self.me.pos_angle_pole,
                                                         self.me.de,
                                                         scale_factor,
                                                         self.flip_x,
-                                                        self.flip_y,
+                                                        -1. * self.flip_y,
                                                         x_shift, y_shift)
-            # The shift is computed as "current frame - reference". Subtract
-            # coordinate shifts from current mount position to get landmark
-            # coordinates.
-            ra_landmark -= ra_shift
-            de_landmark -= de_shift
+            # The shift is computed as "current frame - reference". Add
+            # coordinate shifts to current mount position to get mount
+            # setting where landmark is located as on reference frame.
+            ra_landmark += ra_shift
+            de_landmark += de_shift
 
         current_time = datetime.now()
         try:
@@ -386,6 +392,8 @@ if __name__ == "__main__":
     al.initialize_auto_align()
 
     for alignment_count in range(2):
+        print " "
+        print "Perform an autoalignment"
         al.align(mysocket, alignment_manual=False)
 
         print datetime.now()
