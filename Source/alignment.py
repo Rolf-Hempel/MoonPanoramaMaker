@@ -110,8 +110,8 @@ class Alignment:
                     self.im_shift.shift_vs_reference()
                 if self.configuration.protocol:
                     print str(datetime.now())[11:21], \
-                        "New alignment frame captured, x_shift: ", x_shift, \
-                        ", y_shift: ", y_shift, ", consistent shifts: ", \
+                        "New alignment frame captured, x_shift ('): ", degrees(x_shift) * 60., \
+                        ", y_shift ('): ", degrees(y_shift) * 60., ", consistent shifts: ", \
                         in_cluster, ", outliers: ", outliers
             except RuntimeError as e:
                 if self.configuration.protocol:
@@ -153,8 +153,8 @@ class Alignment:
                                             self.de_offset_landmark)
         if self.configuration.protocol:
             print "RA(landmark): ", degrees(ra_landmark), ", DE(landmark): ", \
-                degrees(de_landmark), ", RA correction: ", \
-                degrees(self.ra_correction) * 60., ", DE correction: ", \
+                degrees(de_landmark), ", RA correction ('): ", \
+                degrees(self.ra_correction) * 60., ", DE correction ('): ", \
                 degrees(self.de_correction) * 60.
 
         alignment_point = {}
@@ -218,6 +218,9 @@ class Alignment:
 
         self.flip_x = np.sign(shift_vector_0_measured[0])
         self.flip_y = np.sign(shift_vector_2_measured[1])
+        if self.configuration.protocol:
+            print str(datetime.now())[11:21], \
+                "Autoalign, mirroring in x: ", self.flip_x, ", in y: ", self.flip_y
         error_x = abs(
             abs(shift_vector_0_measured[0]) - shift_angle) / shift_angle
         error_y = abs(
@@ -374,7 +377,7 @@ if __name__ == "__main__":
     answer = input("Center Landmark in telescope, enter '1' when ready\n")
     if answer != 1:
         exit
-    al.align(mysocket, alignment_manual= True)
+    al.align(mysocket, alignment_manual=True)
 
     print datetime.now()
     print "ra correction (s): ", 240 * degrees(al.ra_correction)
