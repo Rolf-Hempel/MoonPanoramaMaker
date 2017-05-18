@@ -104,7 +104,7 @@ class SocketClientDebug:
     """
 
     def __init__(self, host, port):
-        self.image_directory = "test_images"
+        self.image_directory = "alignment_test_images"
         self.image_counter = 0
         self.image_file_list = listdir(self.image_directory)
 
