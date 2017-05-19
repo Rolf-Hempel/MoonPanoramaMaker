@@ -96,6 +96,9 @@ class StartQT4(QtGui.QMainWindow):
         self.ui.show_landmark.clicked.connect(
             self.show_landmark)
         self.button_list.append(self.ui.show_landmark)
+        self.ui.autoalignment.clicked.connect(
+            self.prompt_autoalignment)
+        self.button_list.append(self.ui.autoalignment)
 
         self.gui_context = ""
         self.key_status_saved = False
@@ -165,7 +168,7 @@ class StartQT4(QtGui.QMainWindow):
             "Confirm with 'enter', otherwise press 'esc'.")
 
     def start_workflow(self):
-        self.disable_keys([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+        self.disable_keys([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
 
         self.camera_automation = (self.configuration.conf.getboolean(
             "Workflow", "camera automation"))
@@ -185,6 +188,7 @@ class StartQT4(QtGui.QMainWindow):
 
         self.camera_rotated = False
         self.focus_area_set = False
+        self.autoalign_enabled = False
 
         self.tc = TileConstructor(self.configuration, de_center, m_diameter,
                                   phase_angle, pos_angle)
@@ -202,7 +206,7 @@ class StartQT4(QtGui.QMainWindow):
             "Confirm with 'enter', otherwise press 'esc'.")
 
     def select_new_landmark(self):
-        self.disable_keys([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+        self.disable_keys([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
         self.camera_rotated = False
         self.set_text_browser(
             "Select a landmark from the list. ")
@@ -244,7 +248,7 @@ class StartQT4(QtGui.QMainWindow):
                 "Move telescope to the Moon (with arrow keys or telescope hand"
                 " controller), then center landmark in camera live view. "
                 "Confirm with 'enter'.")
-        self.gui_context = "wait_for_alignment"
+        self.gui_context = "alignment_point_reached"
 
     def perform_alignment(self):
         self.workflow.perform_alignment_flag = True
@@ -259,6 +263,54 @@ class StartQT4(QtGui.QMainWindow):
                 "Continue video recording using the record group buttons.")
         else:
             self.perform_camera_rotation()
+
+    def prompt_autoalignment(self):
+        self.gui_context = "autoalignment"
+        self.set_text_browser(
+            "Do you really want to switch on auto-alignment? "
+            "Confirm with 'enter', otherwise press 'esc'.")
+
+    def wait_for_autoalignment(self):
+        self.ui.alignment.setEnabled(False)
+        self.save_key_status()
+        self.autoalign_enabled = True
+        self.ui.autoalignment.clicked.connect(
+            self.prompt_autoalignment_off)
+        self.ui.autoalignment.setShortcut("B")
+        self.ui.autoalignment.setStyleSheet("background-color: red")
+        self.ui.autoalignment.setText('Auto-Align off - B')
+        self.set_text_browser(
+            "Slewing telescope to alignment point, please wait.")
+        self.reset_active_tile()
+        self.set_statusbar()
+        self.workflow.slew_to_alignment_point_flag = True
+
+    def autoalignment_point_reached(self):
+        self.reset_key_status()
+        self.set_text_browser(
+            "Center landmark in camera live view (with arrow keys or "
+            "telescope hand controller). Confirm with 'enter'.")
+        self.gui_context = "autoalignment_point_reached"
+
+    def perform_autoalignment(self):
+        self.workflow.perform_autoalignment_flag = True
+
+    def prompt_autoalignment_off(self):
+        self.gui_context = "autoalignment_off"
+        self.set_text_browser(
+            "Do you really want to switch off auto-alignment? "
+            "Confirm with 'enter', otherwise press 'esc'.")
+
+    def wait_for_autoalignment_off(self):
+        self.ui.alignment.setEnabled(True)
+        self.autoalign_enabled = False
+        self.ui.autoalignment.clicked.connect(
+            self.prompt_autoalignment)
+        self.ui.autoalignment.setShortcut("B")
+        self.ui.autoalignment.setStyleSheet("background-color: light gray")
+        self.ui.autoalignment.setText('Auto-Align on - B')
+        self.set_text_browser("")
+        self.set_statusbar()
 
     def configure_drift_correction(self):
         drift_configuration_window = ComputeDriftRate(self.configuration,
@@ -285,6 +337,7 @@ class StartQT4(QtGui.QMainWindow):
             "oriented vertically. Confirm with 'enter'.")
 
     def finish_camera_rotation(self):
+        self.ui.autoalignment.setEnabled(True)
         self.ui.set_focus_area.setEnabled(True)
         self.ui.start_continue_recording.setEnabled(True)
         self.ui.select_tile.setEnabled(True)
@@ -511,9 +564,18 @@ class StartQT4(QtGui.QMainWindow):
                 elif self.gui_context == "alignment":
                     self.gui_context = ""
                     self.wait_for_alignment()
-                elif self.gui_context == "wait_for_alignment":
+                elif self.gui_context == "alignment_point_reached":
                     self.gui_context = ""
                     self.perform_alignment()
+                elif self.gui_context == "autoalignment":
+                    self.gui_context = ""
+                    self.wait_for_autoalignment()
+                elif self.gui_context == "autoalignment_point_reached":
+                    self.gui_context = ""
+                    self.perform_autoalignment()
+                elif self.gui_context == "autoalignment_off":
+                    self.gui_context = ""
+                    self.wait_for_autoalignment_off()
                 elif self.gui_context == "rotate_camera":
                     self.gui_context = ""
                     self.perform_camera_rotation()
@@ -584,6 +646,8 @@ class StartQT4(QtGui.QMainWindow):
             align_de = degrees(self.workflow.al.de_correction) * 60.
             status_text += (", mount alignment: (" + '%3.1f' % align_ra +
                             "'," + '%3.1f' % align_de + "')")
+        if self.autoalign_enabled:
+            status_text += ", auto-align on"
         if self.workflow.al.is_drift_set:
             drift_ra = degrees(self.workflow.al.drift_ra) * 216000.
             drift_de = degrees(self.workflow.al.drift_de) * 216000.

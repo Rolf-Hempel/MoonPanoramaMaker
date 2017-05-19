@@ -114,19 +114,6 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="1">
-     <widget class="QPushButton" name="configure_drift_correction">
-      <property name="toolTip">
-       <string>Select alignment points for drift computation and compensation</string>
-      </property>
-      <property name="text">
-       <string>Correct for Drift - D</string>
-      </property>
-      <property name="shortcut">
-       <string>D</string>
-      </property>
-     </widget>
-    </item>
     <item row="2" column="0">
      <widget class="QPushButton" name="new_landmark_selection">
       <property name="toolTip">
@@ -241,11 +228,53 @@
       </property>
      </widget>
     </item>
+    <item row="3" column="2">
+     <widget class="QPushButton" name="configure_drift_correction">
+      <property name="toolTip">
+       <string>Select alignment points for drift computation and compensation</string>
+      </property>
+      <property name="text">
+       <string>Correct for Drift - D</string>
+      </property>
+      <property name="shortcut">
+       <string>D</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QPushButton" name="autoalignment">
+      <property name="toolTip">
+       <string>Switch on / off auto-alignment</string>
+      </property>
+      <property name="text">
+       <string>Auto-Align on - B</string>
+      </property>
+      <property name="shortcut">
+       <string>B</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <tabstops>
+  <tabstop>edit_configuration</tabstop>
+  <tabstop>restart</tabstop>
+  <tabstop>new_landmark_selection</tabstop>
+  <tabstop>alignment</tabstop>
+  <tabstop>rotate_camera</tabstop>
+  <tabstop>set_focus_area</tabstop>
+  <tabstop>show_landmark</tabstop>
+  <tabstop>autoalignment</tabstop>
+  <tabstop>goto_focus_area</tabstop>
+  <tabstop>configure_drift_correction</tabstop>
+  <tabstop>start_continue_recording</tabstop>
+  <tabstop>select_tile</tabstop>
+  <tabstop>set_tile_unprocessed</tabstop>
+  <tabstop>set_all_tiles_unprocessed</tabstop>
+  <tabstop>move_to_selected_tile</tabstop>
+  <tabstop>set_all_tiles_processed</tabstop>
   <tabstop>prompt_text_browser</tabstop>
  </tabstops>
  <resources/>

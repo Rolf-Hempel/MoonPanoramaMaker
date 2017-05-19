@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qtgui.ui'
 #
-# Created: Fri Apr 29 17:53:26 2016
+# Created: Fri May 19 20:54:22 2017
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -58,9 +58,6 @@ class Ui_MainWindow(object):
         self.alignment.setEnabled(True)
         self.alignment.setObjectName(_fromUtf8("alignment"))
         self.gridLayout.addWidget(self.alignment, 3, 0, 1, 1)
-        self.configure_drift_correction = QtGui.QPushButton(self.centralwidget)
-        self.configure_drift_correction.setObjectName(_fromUtf8("configure_drift_correction"))
-        self.gridLayout.addWidget(self.configure_drift_correction, 3, 1, 1, 1)
         self.new_landmark_selection = QtGui.QPushButton(self.centralwidget)
         self.new_landmark_selection.setObjectName(_fromUtf8("new_landmark_selection"))
         self.gridLayout.addWidget(self.new_landmark_selection, 2, 0, 1, 1)
@@ -91,6 +88,12 @@ class Ui_MainWindow(object):
         self.show_landmark.setFont(font)
         self.show_landmark.setObjectName(_fromUtf8("show_landmark"))
         self.gridLayout.addWidget(self.show_landmark, 2, 1, 1, 1)
+        self.configure_drift_correction = QtGui.QPushButton(self.centralwidget)
+        self.configure_drift_correction.setObjectName(_fromUtf8("configure_drift_correction"))
+        self.gridLayout.addWidget(self.configure_drift_correction, 3, 2, 1, 1)
+        self.autoalignment = QtGui.QPushButton(self.centralwidget)
+        self.autoalignment.setObjectName(_fromUtf8("autoalignment"))
+        self.gridLayout.addWidget(self.autoalignment, 3, 1, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
@@ -98,6 +101,22 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        MainWindow.setTabOrder(self.edit_configuration, self.restart)
+        MainWindow.setTabOrder(self.restart, self.new_landmark_selection)
+        MainWindow.setTabOrder(self.new_landmark_selection, self.alignment)
+        MainWindow.setTabOrder(self.alignment, self.rotate_camera)
+        MainWindow.setTabOrder(self.rotate_camera, self.set_focus_area)
+        MainWindow.setTabOrder(self.set_focus_area, self.show_landmark)
+        MainWindow.setTabOrder(self.show_landmark, self.autoalignment)
+        MainWindow.setTabOrder(self.autoalignment, self.goto_focus_area)
+        MainWindow.setTabOrder(self.goto_focus_area, self.configure_drift_correction)
+        MainWindow.setTabOrder(self.configure_drift_correction, self.start_continue_recording)
+        MainWindow.setTabOrder(self.start_continue_recording, self.select_tile)
+        MainWindow.setTabOrder(self.select_tile, self.set_tile_unprocessed)
+        MainWindow.setTabOrder(self.set_tile_unprocessed, self.set_all_tiles_unprocessed)
+        MainWindow.setTabOrder(self.set_all_tiles_unprocessed, self.move_to_selected_tile)
+        MainWindow.setTabOrder(self.move_to_selected_tile, self.set_all_tiles_processed)
+        MainWindow.setTabOrder(self.set_all_tiles_processed, self.prompt_text_browser)
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "MoonPanoramaMaker", None))
@@ -120,9 +139,6 @@ class Ui_MainWindow(object):
         self.alignment.setToolTip(_translate("MainWindow", "Align (or re-align) telescope with landmark", None))
         self.alignment.setText(_translate("MainWindow", "Alignment - A", None))
         self.alignment.setShortcut(_translate("MainWindow", "A", None))
-        self.configure_drift_correction.setToolTip(_translate("MainWindow", "Select alignment points for drift computation and compensation", None))
-        self.configure_drift_correction.setText(_translate("MainWindow", "Correct for Drift - D", None))
-        self.configure_drift_correction.setShortcut(_translate("MainWindow", "D", None))
         self.new_landmark_selection.setToolTip(_translate("MainWindow", "Select new landmark for alignment in planetarium program", None))
         self.new_landmark_selection.setText(_translate("MainWindow", "New Landmark Selection - L", None))
         self.new_landmark_selection.setShortcut(_translate("MainWindow", "L", None))
@@ -147,4 +163,10 @@ class Ui_MainWindow(object):
         self.show_landmark.setToolTip(_translate("MainWindow", "Show a picture of the landmark currently selected ", None))
         self.show_landmark.setText(_translate("MainWindow", "Show Landmark - K", None))
         self.show_landmark.setShortcut(_translate("MainWindow", "K", None))
+        self.configure_drift_correction.setToolTip(_translate("MainWindow", "Select alignment points for drift computation and compensation", None))
+        self.configure_drift_correction.setText(_translate("MainWindow", "Correct for Drift - D", None))
+        self.configure_drift_correction.setShortcut(_translate("MainWindow", "D", None))
+        self.autoalignment.setToolTip(_translate("MainWindow", "Switch on / off auto-alignment", None))
+        self.autoalignment.setText(_translate("MainWindow", "Auto-Align on - B", None))
+        self.autoalignment.setShortcut(_translate("MainWindow", "B", None))
 
