@@ -77,7 +77,7 @@ class Alignment:
         else:
             self.is_landmark_offset_set = False
 
-    def align(self, camera_socket, alignment_manual=True, camera_rotated=True):
+    def align(self, alignment_manual=True):
         if not self.is_landmark_offset_set:
             print "Error: Landmark offset not set"
             raise RuntimeError("Error: Landmark offset not set")
@@ -86,16 +86,8 @@ class Alignment:
             # The telescope position is delivered by ASCOM driver of mounting
             (ra_landmark, de_landmark) = self.tel.lookup_tel_position()
 
-            if camera_rotated:
-                # Capture an alignment reference frame
-                self.im_shift = ImageShift(self.configuration, camera_socket,
-                                           debug=self.debug)
-                if self.configuration.protocol:
-                    print str(datetime.now())[11:21], \
-                        "Alignment reference frame captured"
-                self.aligment_reference_captured = True
         else:
-            # Automatic alignment
+            # Automatic alignment, derive coordinates of landmark from
             if not self.autoalign_initialized:
                 raise RuntimeError(
                     "Error: Attempt to do autoalign before initialization")
@@ -110,10 +102,10 @@ class Alignment:
                     self.im_shift.shift_vs_reference()
                 if self.configuration.protocol:
                     print str(datetime.now())[11:21], \
-                        "New alignment frame captured, x_shift ('): ", degrees(
-                        x_shift) * 60., \
-                        ", y_shift ('): ", degrees(
-                        y_shift) * 60., ", consistent shifts: ", \
+                        "New alignment frame captured, x_shift: ", \
+                        x_shift / self.im_shift.pixel_angle, \
+                        ", y_shift: ", y_shift / self.im_shift.pixel_angle,\
+                        " (pixels), consistent shifts: ", \
                         in_cluster, ", outliers: ", outliers
             except RuntimeError as e:
                 if self.configuration.protocol:
@@ -122,7 +114,7 @@ class Alignment:
             # Translate shifts measured in camera image into equatorial
             # coordinates
             scale_factor = 1.
-            # In tile consstruction (where the rotate function had been
+            # In tile construction (where the rotate function had been
             # designed for) x is pointing right and y upwards. Here, x is
             # pointing right and y downwards. Therefore, the y flip has to
             # be reversed.
@@ -179,7 +171,7 @@ class Alignment:
                 self.compute_drift_rate()
         return
 
-    def initialize_auto_align(self):
+    def initialize_auto_align(self, camera_socket):
         # Establish the relation between the directions of (x,y) coordinates
         # in an idealized pixel image of the Moon (x positive to the east, y
         # positive southwards) and the (x,y) coordinates of the normalized
@@ -188,10 +180,13 @@ class Alignment:
         # the optical system.
         #
         self.autoalign_initialized = False
-        if not self.aligment_reference_captured:
-            print "Error: Attempt to initialize autoalign before" + \
-                  "reference frame is captured"
-            raise RuntimeError
+
+        # Capture an alignment reference frame
+        self.im_shift = ImageShift(self.configuration, camera_socket,
+                                   debug=self.debug)
+        if self.configuration.protocol:
+            print str(datetime.now())[11:21], \
+                "Alignment reference frame captured"
 
         shift_angle = self.im_shift.ol_angle
         shift_vectors = [[shift_angle, 0.], [0., 0.], [0., shift_angle]]
@@ -199,8 +194,11 @@ class Alignment:
         for shift in shift_vectors:
             (ra_landmark, de_landmark) = (
                 self.compute_telescope_coordinates_of_landmark())
+            # The y-flip has to be set to -1. because the rotate function
+            # assumes the y coordinate to point up, whereas the y pixel
+            # coordinate is pointing down (see comment in method align.
             (shift_angle_ra, shift_angle_de) = Miscellaneous.rotate(
-                self.me.pos_angle_pole, self.me.de, 1., 1., 1.,
+                self.me.pos_angle_pole, self.me.de, 1., 1., -1.,
                 shift[0], shift[1])
             self.tel.slew_to(ra_landmark + shift_angle_ra,
                              de_landmark + shift_angle_de)
@@ -213,8 +211,8 @@ class Alignment:
                 raise RuntimeError
             if self.configuration.protocol:
                 print str(datetime.now())[11:21], \
-                    "Frame captured for autoalignment, x_shift: ", x_shift, \
-                    ", y_shift: ", y_shift, ", consistent shifts: ", \
+                    "Frame captured for autoalignment, x_shift: ", x_shift / self.im_shift.pixel_angle, \
+                    ", y_shift: ", y_shift / self.im_shift.pixel_angle, " (pixels), consistent shifts: ", \
                     in_cluster, ", outliers: ", outliers
             xy_shifts.append([x_shift, y_shift])
         shift_vector_0_measured = [xy_shifts[0][0] - xy_shifts[1][0],
@@ -383,18 +381,18 @@ if __name__ == "__main__":
     answer = input("Center Landmark in telescope, enter '1' when ready\n")
     if answer != 1:
         exit
-    al.align(mysocket, alignment_manual=True)
+    al.align(alignment_manual=True)
 
     print datetime.now()
     print "ra correction (s): ", 240 * degrees(al.ra_correction)
     print "de correction ('): ", 60 * degrees(al.de_correction)
 
-    al.initialize_auto_align()
+    al.initialize_auto_align(mysocket)
 
     for alignment_count in range(2):
         print " "
         print "Perform an autoalignment"
-        al.align(mysocket, alignment_manual=False)
+        al.align(alignment_manual=False)
 
         print datetime.now()
         print "ra correction (s): ", 240 * degrees(al.ra_correction)

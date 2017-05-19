@@ -24,9 +24,9 @@ class ImageShift:
         self.ol_inner_min_pixel = (self.configuration.conf.getint(
             "Camera", "tile overlap pixel"))
         self.compression_factor = self.ol_inner_min_pixel / 40
-        pixel_angle = atan(self.pixel_size / self.focal_length)
-        self.ol_angle = self.ol_inner_min_pixel * pixel_angle
-        self.scale = self.compression_factor * pixel_angle
+        self.pixel_angle = atan(self.pixel_size / self.focal_length)
+        self.ol_angle = self.ol_inner_min_pixel * self.pixel_angle
+        self.scale = self.compression_factor * self.pixel_angle
         self.debug = debug
 
         home = os.path.expanduser("~")
