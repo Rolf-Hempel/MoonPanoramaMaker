@@ -124,6 +124,12 @@ class Alignment:
                                                         self.flip_x,
                                                         -1. * self.flip_y,
                                                         x_shift, y_shift)
+            if self.configuration.protocol:
+                print str(datetime.now())[11:21], \
+                    "Rotated to RA/DE: RA_shift: ", \
+                    ra_shift / self.im_shift.pixel_angle, \
+                    ", DE_shift: ", de_shift / self.im_shift.pixel_angle,\
+                    " (pixels)"
             # The shift is computed as "current frame - reference". Add
             # coordinate shifts to current mount position to get mount
             # setting where landmark is located as on reference frame.
