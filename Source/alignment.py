@@ -23,7 +23,7 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import time
 from datetime import datetime
-from math import degrees
+from math import degrees, sqrt
 
 import numpy as np
 from PyQt4 import QtGui
@@ -85,7 +85,7 @@ class Alignment:
         if alignment_manual:
             # The telescope position is delivered by ASCOM driver of mounting
             (ra_landmark, de_landmark) = self.tel.lookup_tel_position()
-
+            relative_alignment_error = None
         else:
             # Automatic alignment, derive coordinates of landmark from
             if not self.autoalign_initialized:
@@ -111,6 +111,8 @@ class Alignment:
                 if self.configuration.protocol:
                     print str(datetime.now())[11:21], str(e)
                 raise RuntimeError(str(e))
+            global_shift = sqrt(x_shift**2+y_shift**2)
+            relative_alignment_error = global_shift/self.shift_angle
             # Translate shifts measured in camera image into equatorial
             # coordinates
             scale_factor = 1.
@@ -137,11 +139,7 @@ class Alignment:
             de_landmark += de_shift
 
         current_time = datetime.now()
-        try:
-            fract = float(str(current_time)[19:24])
-        except:
-            fract = 0.
-        self.alignment_time = time.mktime(current_time.timetuple()) + fract
+        self.alignment_time = self.current_time_seconds(current_time)
 
         self.me.update(current_time)
         if self.configuration.protocol:
@@ -175,7 +173,7 @@ class Alignment:
             if self.default_last_drift:
                 self.last_index = len(self.alignment_points) - 1
                 self.compute_drift_rate()
-        return
+        return relative_alignment_error
 
     def initialize_auto_align(self, camera_socket):
         # Establish the relation between the directions of (x,y) coordinates
@@ -194,8 +192,8 @@ class Alignment:
             print str(datetime.now())[11:21], \
                 "Alignment reference frame captured"
 
-        shift_angle = self.im_shift.ol_angle
-        shift_vectors = [[shift_angle, 0.], [0., 0.], [0., shift_angle]]
+        self.shift_angle = self.im_shift.ol_angle
+        shift_vectors = [[self.shift_angle, 0.], [0., 0.], [0., self.shift_angle]]
         xy_shifts = []
         for shift in shift_vectors:
             (ra_landmark, de_landmark) = (
@@ -232,9 +230,9 @@ class Alignment:
             print str(datetime.now())[11:21], \
                 "Autoalign, mirroring in x: ", self.flip_x, ", in y: ", self.flip_y
         error_x = abs(
-            abs(shift_vector_0_measured[0]) - shift_angle) / shift_angle
+            abs(shift_vector_0_measured[0]) - self.shift_angle) / self.shift_angle
         error_y = abs(
-            abs(shift_vector_2_measured[1]) - shift_angle) / shift_angle
+            abs(shift_vector_2_measured[1]) - self.shift_angle) / self.shift_angle
         error = max(error_x, error_y)
         if error > self.max_autoalign_error:
             if self.configuration.protocol:
@@ -344,6 +342,17 @@ class Alignment:
     def tile_to_telescope_coordinates(self, tile):
         return self.center_offset_to_telescope_coordinates(
             tile['delta_ra_center'], tile['delta_de_center'])
+
+    def current_time_seconds(self, current_time):
+        try:
+            fract = float(str(current_time)[19:24])
+        except:
+            fract = 0.
+        return time.mktime(current_time.timetuple()) + fract
+
+    def seconds_since_last_alignment(self):
+        current_time = datetime.now()
+        return self.current_time_seconds(current_time) - self.alignment_time
 
 
 if __name__ == "__main__":

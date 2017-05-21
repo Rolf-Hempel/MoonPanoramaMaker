@@ -29,7 +29,7 @@ from configuration_editor import ConfigurationEditor
 
 class Configuration:
     def __init__(self):
-        self.version = "MoonPanoramaMaker 0.9.3"
+        self.version = "MoonPanoramaMaker 0.9.5"
         self.minimum_drift_seconds = 600.
 
         self.conf = ConfigParser.ConfigParser()
@@ -76,6 +76,10 @@ class Configuration:
             self.conf.set('Workflow', 'camera automation', 'False')
             self.conf.set('Workflow', 'limb first', 'False')
             self.conf.set('Workflow', 'camera trigger delay', '3.')
+            self.conf.set('Workflow', 'min autoalign interval', '240.')
+            self.conf.set('Workflow', 'max autoalign interval', '900.')
+            self.conf.set('Workflow', 'min alignment error', '0.2')
+            self.conf.set('Workflow', 'max alignment error', '0.4')
 
             self.conf.add_section('ASCOM')
             self.conf.set('ASCOM', 'chooser', 'ASCOM.Utilities.Chooser')
@@ -85,11 +89,17 @@ class Configuration:
             self.conf.set('ASCOM', 'polling interval', '0.1')
             self.conf.set('ASCOM', 'telescope lookup precision', '0.5')
 
+            self.conf.add_section('Alignment')
+            self.conf.set('Alignment', 'min autoalign interval', '200.')
+            self.conf.set('Alignment', 'max autoalign interval', '900.')
+            self.conf.set('Alignment', 'max alignment error', '40.')
+
             self.conf.add_section('Camera ZWO ASI120MM-S')
             self.conf.set('Camera ZWO ASI120MM-S', 'name', 'ZWO ASI120MM-S')
             self.conf.set('Camera ZWO ASI120MM-S', 'pixel size', '0.00375')
             self.conf.set('Camera ZWO ASI120MM-S', 'pixel horizontal', '1280')
             self.conf.set('Camera ZWO ASI120MM-S', 'pixel vertical', '960')
+            self.conf.set('Camera ZWO ASI120MM-S', 'repetition count', '1')
             self.conf.set('Camera ZWO ASI120MM-S', 'external margin pixel', '300')
             self.conf.set('Camera ZWO ASI120MM-S', 'tile overlap pixel', '200')
 
@@ -98,6 +108,7 @@ class Configuration:
             self.conf.set('Camera ZWO ASI174MC', 'pixel size', '0.00586')
             self.conf.set('Camera ZWO ASI174MC', 'pixel horizontal', '1936')
             self.conf.set('Camera ZWO ASI174MC', 'pixel vertical', '1216')
+            self.conf.set('Camera ZWO ASI174MC', 'repetition count', '1')
             self.conf.set('Camera ZWO ASI174MC', 'external margin pixel', '200')
             self.conf.set('Camera ZWO ASI174MC', 'tile overlap pixel', '100')
 
@@ -106,6 +117,7 @@ class Configuration:
             self.conf.set('Camera ZWO ASI178MC', 'pixel size', '0.0024')
             self.conf.set('Camera ZWO ASI178MC', 'pixel horizontal', '3096')
             self.conf.set('Camera ZWO ASI178MC', 'pixel vertical', '2080')
+            self.conf.set('Camera ZWO ASI178MC', 'repetition count', '1')
             self.conf.set('Camera ZWO ASI178MC', 'external margin pixel', '550')
             self.conf.set('Camera ZWO ASI178MC', 'tile overlap pixel', '250')
 
@@ -114,6 +126,7 @@ class Configuration:
             self.conf.set('Camera ZWO ASI185MC', 'pixel size', '0.00375')
             self.conf.set('Camera ZWO ASI185MC', 'pixel horizontal', '1944')
             self.conf.set('Camera ZWO ASI185MC', 'pixel vertical', '1224')
+            self.conf.set('Camera ZWO ASI185MC', 'repetition count', '1')
             self.conf.set('Camera ZWO ASI185MC', 'external margin pixel', '300')
             self.conf.set('Camera ZWO ASI185MC', 'tile overlap pixel', '150')
 
@@ -122,6 +135,7 @@ class Configuration:
             self.conf.set('Camera ZWO ASI224MC', 'pixel size', '0.00375')
             self.conf.set('Camera ZWO ASI224MC', 'pixel horizontal', '1304')
             self.conf.set('Camera ZWO ASI224MC', 'pixel vertical', '976')
+            self.conf.set('Camera ZWO ASI224MC', 'repetition count', '1')
             self.conf.set('Camera ZWO ASI224MC', 'external margin pixel', '300')
             self.conf.set('Camera ZWO ASI224MC', 'tile overlap pixel', '150')
 
@@ -130,6 +144,7 @@ class Configuration:
             self.conf.set('Camera Celestron Skyris 274C', 'pixel size', '0.0044')
             self.conf.set('Camera Celestron Skyris 274C', 'pixel horizontal', '1600')
             self.conf.set('Camera Celestron Skyris 274C', 'pixel vertical', '1200')
+            self.conf.set('Camera Celestron Skyris 274C', 'repetition count', '1')
             self.conf.set('Camera Celestron Skyris 274C', 'external margin pixel', '250')
             self.conf.set('Camera Celestron Skyris 274C', 'tile overlap pixel', '150')
 
@@ -138,6 +153,7 @@ class Configuration:
             self.conf.set('Camera Celestron Skyris 445M', 'pixel size', '0.00375')
             self.conf.set('Camera Celestron Skyris 445M', 'pixel horizontal', '1280')
             self.conf.set('Camera Celestron Skyris 445M', 'pixel vertical', '960')
+            self.conf.set('Camera Celestron Skyris 445M', 'repetition count', '1')
             self.conf.set('Camera Celestron Skyris 445M', 'external margin pixel', '300')
             self.conf.set('Camera Celestron Skyris 445M', 'tile overlap pixel', '150')
 
@@ -146,6 +162,7 @@ class Configuration:
             self.conf.set('Camera Celestron Skyris 618M', 'pixel size', '0.0056')
             self.conf.set('Camera Celestron Skyris 618M', 'pixel horizontal', '640')
             self.conf.set('Camera Celestron Skyris 618M', 'pixel vertical', '480')
+            self.conf.set('Camera Celestron Skyris 618M', 'repetition count', '1')
             self.conf.set('Camera Celestron Skyris 618M', 'external margin pixel', '200')
             self.conf.set('Camera Celestron Skyris 618M', 'tile overlap pixel', '100')
 
@@ -171,9 +188,10 @@ class Configuration:
                       self.conf.get(self.section_name, 'pixel horizontal'))
         self.conf.set('Camera', 'pixel vertical',
                       self.conf.get(self.section_name, 'pixel vertical'))
+        self.conf.set('Camera', 'repetition count',
+                      self.conf.get(self.section_name, 'repetition count'))
         self.conf.set('Camera', 'external margin pixel',
-                      self.conf.get(self.section_name,
-                                    'external margin pixel'))
+                      self.conf.get(self.section_name, 'external margin pixel'))
         self.conf.set('Camera', 'tile overlap pixel',
                       self.conf.get(self.section_name, 'tile overlap pixel'))
 
@@ -194,4 +212,6 @@ if __name__ == "__main__":
     longitude = c.conf.getfloat("Geographical Position", "longitude")
     print "longitude: ", longitude
 
-    print "configuration changed: ", editor.configuration_changed
+    if not c.configuration_read or editor.configuration_changed:
+        print "configuration has changed, write back config file: "
+        c.write_config()

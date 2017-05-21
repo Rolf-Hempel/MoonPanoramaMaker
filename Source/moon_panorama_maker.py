@@ -58,18 +58,18 @@ class StartQT4(QtGui.QMainWindow):
         self.ui.setupUi(self)
         self.setChildrenFocusPolicy(QtCore.Qt.NoFocus)
 
+        self.debug = False
+
         self.button_list = []
         self.ui.edit_configuration.clicked.connect(self.edit_configuration)
         self.button_list.append(self.ui.edit_configuration)
         self.ui.restart.clicked.connect(self.restart)
         self.button_list.append(self.ui.restart)
-        self.ui.new_landmark_selection.clicked.connect(
-            self.prompt_new_landmark_selection)
+        self.ui.new_landmark_selection.clicked.connect(self.prompt_new_landmark_selection)
         self.button_list.append(self.ui.new_landmark_selection)
         self.ui.alignment.clicked.connect(self.prompt_alignment)
         self.button_list.append(self.ui.alignment)
-        self.ui.configure_drift_correction.clicked.connect(
-            self.configure_drift_correction)
+        self.ui.configure_drift_correction.clicked.connect(self.configure_drift_correction)
         self.button_list.append(self.ui.configure_drift_correction)
         self.ui.rotate_camera.clicked.connect(self.prompt_rotate_camera)
         self.button_list.append(self.ui.rotate_camera)
@@ -77,27 +77,21 @@ class StartQT4(QtGui.QMainWindow):
         self.button_list.append(self.ui.set_focus_area)
         self.ui.goto_focus_area.clicked.connect(self.goto_focus_area)
         self.button_list.append(self.ui.goto_focus_area)
-        self.ui.start_continue_recording.clicked.connect(
-            self.start_continue_recording)
+        self.ui.start_continue_recording.clicked.connect(self.start_continue_recording)
         self.button_list.append(self.ui.start_continue_recording)
         self.ui.select_tile.clicked.connect(self.select_tile)
         self.button_list.append(self.ui.select_tile)
-        self.ui.move_to_selected_tile.clicked.connect(
-            self.move_to_selected_tile)
+        self.ui.move_to_selected_tile.clicked.connect(self.move_to_selected_tile)
         self.button_list.append(self.ui.move_to_selected_tile)
         self.ui.set_tile_unprocessed.clicked.connect(self.set_tile_unprocessed)
         self.button_list.append(self.ui.set_tile_unprocessed)
-        self.ui.set_all_tiles_unprocessed.clicked.connect(
-            self.set_all_tiles_unprocessed)
+        self.ui.set_all_tiles_unprocessed.clicked.connect(self.set_all_tiles_unprocessed)
         self.button_list.append(self.ui.set_all_tiles_unprocessed)
-        self.ui.set_all_tiles_processed.clicked.connect(
-            self.set_all_tiles_processed)
+        self.ui.set_all_tiles_processed.clicked.connect(self.set_all_tiles_processed)
         self.button_list.append(self.ui.set_all_tiles_processed)
-        self.ui.show_landmark.clicked.connect(
-            self.show_landmark)
+        self.ui.show_landmark.clicked.connect(self.show_landmark)
         self.button_list.append(self.ui.show_landmark)
-        self.ui.autoalignment.clicked.connect(
-            self.prompt_autoalignment)
+        self.ui.autoalignment.clicked.connect(self.prompt_autoalignment)
         self.button_list.append(self.ui.autoalignment)
 
         self.gui_context = ""
@@ -105,29 +99,24 @@ class StartQT4(QtGui.QMainWindow):
 
         self.configuration = Configuration()
 
-        self.workflow = Workflow(self)
+        self.workflow = Workflow(self, debug=self.debug)
 
         self.workflow.camera_ready_signal.connect(self.camera_ready)
         self.workflow.alignment_ready_signal.connect(self.start_workflow)
-        self.workflow.alignment_point_reached_signal.connect(
-            self.alignment_point_reached)
-        self.workflow.alignment_performed_signal.connect(
-            self.alignment_performed)
-        self.workflow.moon_limb_centered_signal.connect(
-            self.prompt_camera_rotated_acknowledged)
-        self.workflow.focus_area_set_signal.connect(
-            self.set_focus_area_finished)
-        self.workflow.set_statusbar_signal.connect(
-            self.set_statusbar)
-        self.workflow.reset_key_status_signal.connect(
-            self.reset_key_status)
+        self.workflow.alignment_point_reached_signal.connect(self.alignment_point_reached)
+        self.workflow.alignment_performed_signal.connect(self.alignment_performed)
+        self.workflow.autoalignment_point_reached_signal.connect(self.autoalignment_point_reached)
+        self.workflow.autoalignment_performed_signal.connect(self.autoalignment_performed)
+        self.workflow.autoalignment_reset_signal.connect(self.wait_for_autoalignment_off)
+        self.workflow.moon_limb_centered_signal.connect(self.prompt_camera_rotated_acknowledged)
+        self.workflow.focus_area_set_signal.connect(self.set_focus_area_finished)
+        self.workflow.set_statusbar_signal.connect(self.set_statusbar)
+        self.workflow.reset_key_status_signal.connect(self.reset_key_status)
         self.workflow.set_text_browser_signal.connect(self.set_text_browser)
 
         (x0, y0, width, height) = self.geometry().getRect()
-        x0 = int(
-            self.configuration.conf.get('Hidden Parameters', 'main window x0'))
-        y0 = int(
-            self.configuration.conf.get('Hidden Parameters', 'main window y0'))
+        x0 = int(self.configuration.conf.get('Hidden Parameters', 'main window x0'))
+        y0 = int(self.configuration.conf.get('Hidden Parameters', 'main window y0'))
         self.setGeometry(x0, y0, width, height)
         self.configuration.set_protocol_flag()
         self.workflow.set_session_output_flag = True
@@ -151,7 +140,8 @@ class StartQT4(QtGui.QMainWindow):
     def edit_configuration(self):
         editor = ConfigurationEditor(self.configuration)
         editor.exec_()
-        # print >> sys.stderr, "config changed:", editor.configuration_changed, \
+        # print >> sys.stderr, "config changed:",
+        # editor.configuration_changed, \
         #     ", config initialized: ", self.configuration_initialized
         if editor.configuration_changed:
             self.workflow.set_session_output_flag = True
@@ -163,23 +153,21 @@ class StartQT4(QtGui.QMainWindow):
 
     def restart(self):
         self.gui_context = "restart"
-        self.set_text_browser(
-            "Do you really want to restart? "
-            "Confirm with 'enter', otherwise press 'esc'.")
+        self.set_text_browser("Do you really want to restart? "
+                              "Confirm with 'enter', otherwise press 'esc'.")
 
     def start_workflow(self):
         self.disable_keys([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
 
-        self.camera_automation = (self.configuration.conf.getboolean(
-            "Workflow", "camera automation"))
+        self.camera_automation = (
+            self.configuration.conf.getboolean("Workflow", "camera automation"))
         if not self.camera_automation:
             self.camera_connect_request_answered()
         else:
             self.gui_context = "camera connect request"
-            self.set_text_browser(
-                "Make sure that FireCapture is started, and that "
-                "'MoonPanoramaMaker' is selected in the PreProcessing section. "
-                "Confirm with 'enter', otherwise press 'esc'.")
+            self.set_text_browser("Make sure that FireCapture is started, and that "
+                                  "'MoonPanoramaMaker' is selected in the PreProcessing section. "
+                                  "Confirm with 'enter', otherwise press 'esc'.")
 
     def camera_connect_request_answered(self):
         self.workflow.camera_initialization_flag = True
@@ -190,8 +178,7 @@ class StartQT4(QtGui.QMainWindow):
         self.focus_area_set = False
         self.autoalign_enabled = False
 
-        self.tc = TileConstructor(self.configuration, de_center, m_diameter,
-                                  phase_angle, pos_angle)
+        self.tc = TileConstructor(self.configuration, de_center, m_diameter, phase_angle, pos_angle)
 
         self.tv = TileVisualization(self.configuration, self.tc)
 
@@ -201,18 +188,15 @@ class StartQT4(QtGui.QMainWindow):
 
     def prompt_new_landmark_selection(self):
         self.gui_context = "new_landmark_selection"
-        self.set_text_browser(
-            "Do you really want to set a new landmark and re-align mount? "
-            "Confirm with 'enter', otherwise press 'esc'.")
+        self.set_text_browser("Do you really want to set a new landmark and re-align mount? "
+                              "Confirm with 'enter', otherwise press 'esc'.")
 
     def select_new_landmark(self):
         self.disable_keys([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
         self.camera_rotated = False
-        self.set_text_browser(
-            "Select a landmark from the list. ")
+        self.set_text_browser("Select a landmark from the list. ")
         if self.configuration.protocol:
-            print str(datetime.now())[11:21], \
-                "Select a new landmark from the list."
+            print str(datetime.now())[11:21], "Select a new landmark from the list."
         self.workflow.al.set_landmark()
         if self.workflow.al.is_landmark_offset_set:
             self.ui.show_landmark.setEnabled(True)
@@ -225,14 +209,12 @@ class StartQT4(QtGui.QMainWindow):
 
     def prompt_alignment(self):
         self.gui_context = "alignment"
-        self.set_text_browser(
-            "Do you really want to perform a new alignment? "
-            "Confirm with 'enter', otherwise press 'esc'.")
+        self.set_text_browser("Do you really want to perform a new alignment? "
+                              "Confirm with 'enter', otherwise press 'esc'.")
 
     def wait_for_alignment(self):
         self.save_key_status()
-        self.set_text_browser(
-            "Slewing telescope to alignment point, please wait.")
+        self.set_text_browser("Slewing telescope to alignment point, please wait.")
         self.reset_active_tile()
         self.set_statusbar()
         self.workflow.slew_to_alignment_point_flag = True
@@ -240,14 +222,12 @@ class StartQT4(QtGui.QMainWindow):
     def alignment_point_reached(self):
         self.reset_key_status()
         if self.workflow.al.is_aligned:
-            self.set_text_browser(
-                "Center landmark in camera live view (with arrow keys or "
-                "telescope hand controller). Confirm with 'enter'.")
+            self.set_text_browser("Center landmark in camera live view (with arrow keys or "
+                                  "telescope hand controller). Confirm with 'enter'.")
         else:
-            self.set_text_browser(
-                "Move telescope to the Moon (with arrow keys or telescope hand"
-                " controller), then center landmark in camera live view. "
-                "Confirm with 'enter'.")
+            self.set_text_browser("Move telescope to the Moon (with arrow keys or telescope hand"
+                                  " controller), then center landmark in camera live view. "
+                                  "Confirm with 'enter'.")
         self.gui_context = "alignment_point_reached"
 
     def perform_alignment(self):
@@ -259,82 +239,103 @@ class StartQT4(QtGui.QMainWindow):
         self.ui.rotate_camera.setEnabled(True)
         self.set_statusbar()
         if self.camera_rotated:
-            self.set_text_browser(
-                "Continue video recording using the record group buttons.")
+            self.set_text_browser("Continue video recording using the record group buttons.")
         else:
             self.perform_camera_rotation()
 
+    def reset_autoalignment_button(self):
+        self.ui.autoalignment.setStyleSheet("background-color: light gray")
+        self.ui.autoalignment.setText('Auto-Align on - B')
+        self.ui.autoalignment.setShortcut("b")
+
     def prompt_autoalignment(self):
         self.gui_context = "autoalignment"
-        self.set_text_browser(
-            "Do you really want to switch on auto-alignment? "
-            "Confirm with 'enter', otherwise press 'esc'.")
+        self.set_text_browser("Do you really want to switch on auto-alignment? "
+                              "Confirm with 'enter', otherwise press 'esc'.")
 
     def wait_for_autoalignment(self):
         self.ui.alignment.setEnabled(False)
         self.save_key_status()
         self.autoalign_enabled = True
-        self.ui.autoalignment.clicked.connect(
-            self.prompt_autoalignment_off)
-        self.ui.autoalignment.setShortcut("B")
+        self.ui.autoalignment.clicked.connect(self.prompt_autoalignment_off)
         self.ui.autoalignment.setStyleSheet("background-color: red")
         self.ui.autoalignment.setText('Auto-Align off - B')
-        self.set_text_browser(
-            "Slewing telescope to alignment point, please wait.")
+        self.ui.autoalignment.setShortcut("b")
+        self.set_text_browser("Slewing telescope to alignment point, please wait.")
         self.reset_active_tile()
         self.set_statusbar()
         self.workflow.slew_to_alignment_point_flag = True
 
     def autoalignment_point_reached(self):
         self.reset_key_status()
-        self.set_text_browser(
-            "Center landmark in camera live view (with arrow keys or "
-            "telescope hand controller). Confirm with 'enter'.")
+        self.set_text_browser("Center landmark in camera live view (with arrow keys or "
+                              "telescope hand controller). Confirm with 'enter'.")
         self.gui_context = "autoalignment_point_reached"
 
     def perform_autoalignment(self):
         self.workflow.perform_autoalignment_flag = True
 
+    def autoalignment_performed(self, success):
+        # If auto-alignment has been initialized successfully, read configuration parameters and
+        # prepare for video acquisition loop.
+        if success:
+            self.min_autoalign_interval = (
+                self.configuration.conf.getfloat("Alignment", "min autoalign interval"))
+            self.max_autoalign_interval = (
+                self.configuration.conf.getfloat("Alignment", "max autoalign interval"))
+            # The configuration parameter is in percent. In "workflow" it is compared to a value
+            # between 0. and 1.
+            self.max_alignment_error = (
+                self.configuration.conf.getfloat("Alignment", "max alignment error")) / 100.
+            # Initialize the maximum time between auto-aligns to the minimum acceptable value.
+            # The interval will be increased at next auto-align if the correction is very small.
+            self.max_seconds_between_autoaligns = self.min_autoalign_interval
+            if self.workflow.al.drift_dialog_enabled:
+                self.ui.configure_drift_correction.setEnabled(True)
+            self.set_statusbar()
+            self.set_text_browser("Continue video recording using the record group buttons.")
+        # Auto-alignment initialization failed. Reset buttons to manual alignment and mark
+        # auto-alignment as not enabled (same activity as if triggered by the user via gui).
+        else:
+            self.wait_for_autoalignment_off()
+
     def prompt_autoalignment_off(self):
         self.gui_context = "autoalignment_off"
-        self.set_text_browser(
-            "Do you really want to switch off auto-alignment? "
-            "Confirm with 'enter', otherwise press 'esc'.")
+        self.set_text_browser("Do you really want to switch off auto-alignment? "
+                              "Confirm with 'enter', otherwise press 'esc'.")
 
     def wait_for_autoalignment_off(self):
         self.ui.alignment.setEnabled(True)
         self.autoalign_enabled = False
-        self.ui.autoalignment.clicked.connect(
-            self.prompt_autoalignment)
-        self.ui.autoalignment.setShortcut("B")
-        self.ui.autoalignment.setStyleSheet("background-color: light gray")
-        self.ui.autoalignment.setText('Auto-Align on - B')
-        self.set_text_browser("")
+        self.al.autoalign_initialized = False
+        self.ui.autoalignment.clicked.connect(self.prompt_autoalignment)
+        self.reset_autoalignment_button()
+        self.set_text_browser("Continue video recording using the record group buttons.")
         self.set_statusbar()
 
     def configure_drift_correction(self):
-        drift_configuration_window = ComputeDriftRate(self.configuration,
-                                                      self.workflow.al)
+        drift_configuration_window = ComputeDriftRate(self.configuration, self.workflow.al)
         drift_configuration_window.exec_()
         self.set_statusbar()
 
     def prompt_rotate_camera(self):
         self.gui_context = "rotate_camera"
-        self.set_text_browser(
-            "Do you really want to rotate camera? "
-            "All tiles will be marked as un-processed. "
-            "Confirm with 'enter', otherwise press 'esc'.")
+        self.set_text_browser("Do you really want to rotate camera? "
+                              "All tiles will be marked as un-processed. "
+                              "Confirm with 'enter', otherwise press 'esc'.")
 
     def perform_camera_rotation(self):
-        self.disable_keys([6, 7, 8, 9, 10, 11, 12, 13])
+        self.ui.alignment.setEnabled(True)
+        self.autoalign_enabled = False
+        self.reset_autoalignment_button()
+        self.disable_keys([6, 7, 8, 9, 10, 11, 12, 13, 15])
         self.set_text_browser("Slewing telescope to Moon limb, please wait.")
         self.workflow.slew_to_moon_limb_flag = True
 
     def prompt_camera_rotated_acknowledged(self):
         self.gui_context = "perform_camera_rotation"
-        self.set_text_browser(
-            "Rotate camera until the moon limb at the center of the FOV is "
-            "oriented vertically. Confirm with 'enter'.")
+        self.set_text_browser("Rotate camera until the moon limb at the center of the FOV is "
+                              "oriented vertically. Confirm with 'enter'.")
 
     def finish_camera_rotation(self):
         self.ui.autoalignment.setEnabled(True)
@@ -348,15 +349,14 @@ class StartQT4(QtGui.QMainWindow):
         self.workflow.active_tile_number = -1
         self.camera_rotated = True
         self.set_statusbar()
-        self.set_text_browser(
-            "Start video recording using the record group buttons, "
-            "or select the focus area.")
+        self.set_text_browser("Start video recording using the record group buttons, "
+                              "or select the focus area.")
 
     def set_focus_area(self):
         if self.configuration.protocol:
             print str(datetime.now())[11:21], "Select focus area"
-        self.set_text_browser(
-            "Move telescope to focus area. Confirm with 'enter', otherwise press 'esc'.")
+        self.set_text_browser("Move telescope to focus area. Confirm with 'enter', otherwise "
+                              "press 'esc'.")
         self.reset_active_tile()
         self.set_statusbar()
         self.gui_context = "set_focus_area"
@@ -367,8 +367,7 @@ class StartQT4(QtGui.QMainWindow):
     def set_focus_area_finished(self):
         self.focus_area_set = True
         self.set_statusbar()
-        self.set_text_browser(
-            "Start / continue video recording using the record group buttons.")
+        self.set_text_browser("Start / continue video recording using the record group buttons.")
         self.ui.goto_focus_area.setEnabled(True)
 
     def goto_focus_area(self):
@@ -376,9 +375,8 @@ class StartQT4(QtGui.QMainWindow):
             print str(datetime.now())[11:21], "Goto focus area"
         self.reset_active_tile()
         self.set_statusbar()
-        self.set_text_browser(
-            "After focussing, continue video recording using the record "
-            "group buttons.")
+        self.set_text_browser("After focussing, continue video recording using the record "
+                              "group buttons.")
         self.workflow.goto_focus_area_flag = True
 
     def start_continue_recording(self):
@@ -388,8 +386,7 @@ class StartQT4(QtGui.QMainWindow):
             print str(datetime.now())[11:21], "Start/continue recording"
         if self.workflow.telescope.guiding_active:
             self.workflow.telescope.stop_guiding()
-        if self.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
-            'processed']:
+        if self.tc.list_of_tiles_sorted[self.workflow.active_tile_number]['processed']:
             self.mark_processed()
         (self.next_tile, next_tile_index) = self.find_next_unprocessed_tile()
 
@@ -397,11 +394,9 @@ class StartQT4(QtGui.QMainWindow):
             self.all_tiles_recorded = True
             self.ui.move_to_selected_tile.setEnabled(False)
             self.set_statusbar()
-            self.set_text_browser(
-                "All tiles have been recorded.")
+            self.set_text_browser("All tiles have been recorded.")
             if self.configuration.protocol:
-                print str(datetime.now())[11:21], \
-                    "All tiles have been recorded."
+                print str(datetime.now())[11:21], "All tiles have been recorded."
             self.reset_key_status()
         else:
             self.workflow.active_tile_number = next_tile_index
@@ -415,9 +410,8 @@ class StartQT4(QtGui.QMainWindow):
         if self.workflow.active_tile_number == -1:
             indices_shifted = indices
         else:
-            indices_shifted = indices[
-                              self.workflow.active_tile_number:] + indices[
-                                                                   0:self.workflow.active_tile_number]
+            indices_shifted = indices[self.workflow.active_tile_number:] + indices[
+                                                                           0:self.workflow.active_tile_number]
         next_tile = None
         next_tile_index = -1
         for i in indices_shifted:
@@ -430,50 +424,50 @@ class StartQT4(QtGui.QMainWindow):
 
     def mark_processed(self):
         self.tv.mark_processed([self.workflow.active_tile_number])
+        # After successful exposure, put active tile on list of tiles processed since last
+        # auto-align. This list will be reset to unprocessed later if the error in the next
+        # auto-align is too large.
+        if self.al.autoalign_initialized:
+            self.workflow.tiles_since_last_autoalign.append(self.workflow.active_tile_number)
 
     def select_tile(self):
         if self.workflow.active_tile_number > -1:
-            if (self.tc.list_of_tiles_sorted[self.workflow.active_tile_number]
-                ['processed'] == False):
+            if (self.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
+                    'processed'] == False):
                 self.tv.mark_unprocessed([self.workflow.active_tile_number])
-        self.tni = TileNumberInput(self.workflow.active_tile_number,
-                                   self.workflow)
+        self.tni = TileNumberInput(self.workflow.active_tile_number, self.workflow)
         self.tni.exec_()
         if self.configuration.protocol:
-            print str(datetime.now())[11:21], "Tile number ", \
-                self.workflow.active_tile_number, " selected"
+            print str(datetime.now())[
+                  11:21], "Tile number ", self.workflow.active_tile_number, " selected"
         self.ui.move_to_selected_tile.setEnabled(True)
         self.set_text_browser("")
 
     def set_tile_unprocessed(self):
         self.selected_tile_numbers = self.tv.get_selected_tile_numbers()
-        if len(
-                self.selected_tile_numbers) == 0 and self.workflow.active_tile_number != -1:
+        if len(self.selected_tile_numbers) == 0 and self.workflow.active_tile_number != -1:
             self.selected_tile_numbers.append(self.workflow.active_tile_number)
         if len(self.selected_tile_numbers) > 0:
-            self.selected_tile_numbers_string = str(
-                self.selected_tile_numbers)[1:-1]
+            self.selected_tile_numbers_string = str(self.selected_tile_numbers)[1:-1]
             self.gui_context = "set_tile_unprocessed"
             self.set_text_browser(
                 "Do you want to mark tile(s) " + self.selected_tile_numbers_string +
-                " as un-processed? Confirm with 'enter', "
-                "otherwise press 'esc'.")
+                " as un-processed? Confirm with 'enter', otherwise press 'esc'.")
 
     def mark_unprocessed(self):
         self.tv.mark_unprocessed(self.selected_tile_numbers)
         if self.configuration.protocol:
-            print str(datetime.now())[11:21], \
-                "Tile(s) " + self.selected_tile_numbers_string + " marked unprocessed."
+            print str(datetime.now())[
+                  11:21], "Tile(s) " + self.selected_tile_numbers_string + " marked unprocessed."
         self.all_tiles_recorded = False
         self.set_text_browser("")
         self.set_statusbar()
 
     def set_all_tiles_unprocessed(self):
         self.gui_context = "set_all_tiles_unprocessed"
-        self.set_text_browser(
-            "Do you want to mark all tiles "
-            "as un-processed? Confirm with 'enter', "
-            "otherwise press 'esc'.")
+        self.set_text_browser("Do you want to mark all tiles "
+                              "as un-processed? Confirm with 'enter', "
+                              "otherwise press 'esc'.")
 
     def mark_all_tiles_unprocessed(self):
         self.tv.mark_all_unprocessed()
@@ -481,32 +475,27 @@ class StartQT4(QtGui.QMainWindow):
         self.workflow.active_tile_number = -1
         self.set_text_browser("")
         if self.configuration.protocol:
-            print str(datetime.now())[11:21], \
-                "All tiles are marked as unprocessed."
+            print str(datetime.now())[11:21], "All tiles are marked as unprocessed."
 
     def set_all_tiles_processed(self):
         self.gui_context = "set_all_tiles_processed"
-        self.set_text_browser(
-            "Do you want to mark all tiles "
-            "as processed? Confirm with 'enter', "
-            "otherwise press 'esc'.")
+        self.set_text_browser("Do you want to mark all tiles "
+                              "as processed? Confirm with 'enter', "
+                              "otherwise press 'esc'.")
 
     def mark_all_tiles_processed(self):
         self.tv.mark_all_processed()
         self.all_tiles_recorded = True
         self.workflow.active_tile_number = -1
-        self.set_text_browser(
-            "All tiles are marked as processed.")
+        self.set_text_browser("All tiles are marked as processed.")
         if self.configuration.protocol:
-            print str(datetime.now())[11:21], \
-                "All tiles are marked as processed."
+            print str(datetime.now())[11:21], "All tiles are marked as processed."
 
     def move_to_selected_tile(self):
-        self.selected_tile = self.tc.list_of_tiles_sorted[
-            self.workflow.active_tile_number]
+        self.selected_tile = self.tc.list_of_tiles_sorted[self.workflow.active_tile_number]
         if self.configuration.protocol:
-            print str(datetime.now())[11:21], "Goto selected tile number ", \
-                self.workflow.active_tile_number
+            print str(datetime.now())[
+                  11:21], "Goto selected tile number ", self.workflow.active_tile_number
         self.tv.mark_active(self.workflow.active_tile_number)
         self.set_statusbar()
         self.set_text_browser("")
@@ -514,8 +503,8 @@ class StartQT4(QtGui.QMainWindow):
 
     def reset_active_tile(self):
         if self.workflow.active_tile_number > -1:
-            if (self.tc.list_of_tiles_sorted[self.workflow.active_tile_number]
-                ['processed'] == False):
+            if (self.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
+                    'processed'] == False):
                 self.tv.mark_unprocessed([self.workflow.active_tile_number])
             else:
                 self.mark_processed()
@@ -530,8 +519,7 @@ class StartQT4(QtGui.QMainWindow):
 
     def reset_key_status(self):
         if self.key_status_saved:
-            map(lambda x, y: x.setEnabled(y), self.button_list,
-                self.saved_key_status)
+            map(lambda x, y: x.setEnabled(y), self.button_list, self.saved_key_status)
             self.key_status_saved = False
 
     def disable_keys(self, index_list):
@@ -644,39 +632,36 @@ class StartQT4(QtGui.QMainWindow):
         if self.workflow.al.is_aligned:
             align_ra = degrees(self.workflow.al.ra_correction) * 60.
             align_de = degrees(self.workflow.al.de_correction) * 60.
-            status_text += (", mount alignment: (" + '%3.1f' % align_ra +
-                            "'," + '%3.1f' % align_de + "')")
+            status_text += (
+                ", mount alignment: (" + '%3.1f' % align_ra + "'," + '%3.1f' % align_de + "')")
         if self.autoalign_enabled:
             status_text += ", auto-align on"
         if self.workflow.al.is_drift_set:
             drift_ra = degrees(self.workflow.al.drift_ra) * 216000.
             drift_de = degrees(self.workflow.al.drift_de) * 216000.
-            status_text += (", drift rate: (" + '%4.2f' % drift_ra + "'/h, " +
-                            '%4.2f' % drift_de + "'/h)")
+            status_text += (
+                ", drift rate: (" + '%4.2f' % drift_ra + "'/h, " + '%4.2f' % drift_de + "'/h)")
         if self.camera_rotated:
             status_text += ", camera rotated"
         if self.focus_area_set:
             status_text += ", focus area selected"
         if self.workflow.active_tile_number >= 0:
-            status_text += ", aimed at tile " + str(
-                self.workflow.active_tile_number)
+            status_text += ", aimed at tile " + str(self.workflow.active_tile_number)
         if self.workflow.all_tiles_recorded:
             status_text += ", all tiles recorded"
         self.ui.statusbar.showMessage(status_text)
 
     def closeEvent(self, evnt):
-        quit_msg = "Are you sure you want to exit the MoonPanoramaMaker program?"
-        reply = QtGui.QMessageBox.question(self, 'Message',
-                                           quit_msg, QtGui.QMessageBox.Yes,
-                                           QtGui.QMessageBox.No)
+        quit_msg = "Are you sure you want to exit the MoonPanoramaMaker " \
+                   "program?"
+        reply = QtGui.QMessageBox.question(self, 'Message', quit_msg, QtGui.QMessageBox.Yes,
+            QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
             evnt.accept()
 
             (x0, y0, width, height) = self.geometry().getRect()
-            self.configuration.conf.set('Hidden Parameters', 'main window x0',
-                                        str(x0))
-            self.configuration.conf.set('Hidden Parameters', 'main window y0',
-                                        str(y0))
+            self.configuration.conf.set('Hidden Parameters', 'main window x0', str(x0))
+            self.configuration.conf.set('Hidden Parameters', 'main window y0', str(y0))
             try:
                 self.tv.close_tile_visualization()
             except AttributeError:

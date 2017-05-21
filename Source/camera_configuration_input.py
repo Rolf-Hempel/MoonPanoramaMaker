@@ -41,6 +41,8 @@ class CameraConfigurationInput(QtGui.QDialog, Ui_CameraDialog):
             self.pixel_horizontal_write)
         self.input_pixel_vertical.textChanged.connect(
             self.pixel_vertical_write)
+        self.input_repetition_count.textChanged.connect(
+            self.repetition_count_write)
         self.input_external_margin.textChanged.connect(
             self.external_margin_write)
         self.input_tile_overlap.textChanged.connect(self.tile_overlap_write)
@@ -55,6 +57,9 @@ class CameraConfigurationInput(QtGui.QDialog, Ui_CameraDialog):
         self.configuration_changed = True
 
     def pixel_vertical_write(self):
+        self.configuration_changed = True
+
+    def repetition_count_write(self):
         self.configuration_changed = True
 
     def external_margin_write(self):
@@ -97,6 +102,11 @@ class CameraConfigurationInput(QtGui.QDialog, Ui_CameraDialog):
                     "Pixel count vertical", "960")
                 return
 
+            self.new_repetition_count = str(self.input_repetition_count.text())
+            if Miscellaneous.testint(self.new_repetition_count, 1, 10) is None:
+                Miscellaneous.show_input_error("Repetition count", "3")
+                return
+
             self.new_external_margin_pixel = str(
                 self.input_external_margin.text())
             if Miscellaneous.testint(
@@ -123,6 +133,8 @@ class CameraConfigurationInput(QtGui.QDialog, Ui_CameraDialog):
                             self.new_pixel_horizontal)
             self.c.conf.set(self.section_name, 'pixel vertical',
                             self.new_pixel_vertical)
+            self.c.conf.set(self.section_name, 'repetition count',
+                            self.new_repetition_count)
             self.c.conf.set(self.section_name, 'external margin pixel',
                             self.new_external_margin_pixel)
             self.c.conf.set(self.section_name, 'tile overlap pixel',

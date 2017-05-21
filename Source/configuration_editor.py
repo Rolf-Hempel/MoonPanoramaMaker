@@ -91,6 +91,13 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
         self.input_telescope_lookup_precision.setText(
             self.c.conf.get("ASCOM", "telescope lookup precision"))
 
+        self.input_min_autoalign_interval.setText(
+            self.c.conf.get("Alignment", "min autoalign interval"))
+        self.input_max_autoalign_interval.setText(
+            self.c.conf.get("Alignment", "max autoalign interval"))
+        self.input_max_alignment_error.setText(
+            self.c.conf.get("Alignment", "max alignment error"))
+
         self.input_longitude.textChanged.connect(self.longitude_write)
         self.input_latitude.textChanged.connect(self.latitude_write)
         self.input_elevation.textChanged.connect(self.elevation_write)
@@ -128,6 +135,13 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
             self.polling_interval_write)
         self.input_telescope_lookup_precision.textChanged.connect(
             self.telescope_lookup_precision_write)
+
+        self.input_min_autoalign_interval.textChanged.connect(
+            self.min_autoalign_interval_write)
+        self.input_max_autoalign_interval.textChanged.connect(
+            self.max_autoalign_interval_write)
+        self.input_max_alignment_error.textChanged.connect(
+            self.max_alignment_error_write)
 
     def longitude_write(self):
         self.configuration_changed = True
@@ -227,6 +241,15 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
         self.configuration_changed = True
 
     def telescope_lookup_precision_write(self):
+        self.configuration_changed = True
+
+    def min_autoalign_interval_write(self):
+        self.configuration_changed = True
+
+    def max_autoalign_interval_write(self):
+        self.configuration_changed = True
+
+    def max_alignment_error_write(self):
         self.configuration_changed = True
 
     def accept(self):
@@ -370,7 +393,28 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
                 self.c.conf.set("ASCOM", "telescope lookup precision",
                                 input_string)
             else:
-                Miscellaneous.show_input_error("Polling interval", "0.1")
+                Miscellaneous.show_input_error("Telescope position lookup precision", "0.5")
+                return
+
+            input_string = str(self.input_min_autoalign_interval.text())
+            if Miscellaneous.testfloat(input_string, 20., 1800.):
+                self.c.conf.set("Alignment", "min autoalign interval", input_string)
+            else:
+                Miscellaneous.show_input_error("Minimum auto-alignment interval", "120.")
+                return
+
+            input_string = str(self.input_max_autoalign_interval.text())
+            if Miscellaneous.testfloat(input_string, 30., 3600.):
+                self.c.conf.set("Alignment", "max autoalign interval", input_string)
+            else:
+                Miscellaneous.show_input_error("Maximum auto-alignment interval", "900.")
+                return
+
+            input_string = str(self.input_max_alignment_error.text())
+            if Miscellaneous.testfloat(input_string, 10., 60.):
+                self.c.conf.set("Alignment", "max alignment error", input_string)
+            else:
+                Miscellaneous.show_input_error("Max alignment error", "30.")
                 return
 
         self.close()

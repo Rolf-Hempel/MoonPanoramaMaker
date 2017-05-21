@@ -40,6 +40,7 @@ class CameraConfigurationEditor(QtGui.QDialog, Ui_CameraDialog):
                                                     'pixel horizontal')
         self.new_pixel_vertical = self.c.conf.get(self.section_name,
                                                   'pixel vertical')
+        self.new_repetition_count = self.c.conf.get(self.section_name, 'repetition count')
         self.new_external_margin_pixel = self.c.conf.get(self.section_name,
                                                     'external margin pixel')
         self.new_tile_overlap_pixel = self.c.conf.get(self.section_name,
@@ -50,6 +51,7 @@ class CameraConfigurationEditor(QtGui.QDialog, Ui_CameraDialog):
         self.input_pixel_size.setText(self.new_pixel_size)
         self.input_pixel_horizontal.setText(self.new_pixel_horizontal)
         self.input_pixel_vertical.setText(self.new_pixel_vertical)
+        self.input_repetition_count.setText(self.new_repetition_count)
         self.input_external_margin.setText(self.new_external_margin_pixel)
         self.input_tile_overlap.setText(self.new_tile_overlap_pixel)
 
@@ -60,6 +62,7 @@ class CameraConfigurationEditor(QtGui.QDialog, Ui_CameraDialog):
             self.pixel_horizontal_write)
         self.input_pixel_vertical.textChanged.connect(
             self.pixel_vertical_write)
+        self.input_repetition_count.textChanged.connect(self.repetition_count_write)
         self.input_external_margin.textChanged.connect(
             self.external_margin_write)
         self.input_tile_overlap.textChanged.connect(self.tile_overlap_write)
@@ -71,6 +74,9 @@ class CameraConfigurationEditor(QtGui.QDialog, Ui_CameraDialog):
         self.configuration_changed = True
 
     def pixel_vertical_write(self):
+        self.configuration_changed = True
+
+    def repetition_count_write(self):
         self.configuration_changed = True
 
     def external_margin_write(self):
@@ -109,6 +115,13 @@ class CameraConfigurationEditor(QtGui.QDialog, Ui_CameraDialog):
             else:
                 self.c.conf.set(self.section_name, 'pixel vertical',
                                 self.new_pixel_vertical)
+
+            self.new_repetition_count = str(self.input_repetition_count.text())
+            if Miscellaneous.testint(self.new_repetition_count, 1, 10) is None:
+                Miscellaneous.show_input_error("Repetition count", "3")
+                return
+            else:
+                self.c.conf.set(self.section_name, 'repetition count', self.new_repetition_count)
 
             self.new_external_margin_pixel = str(
                 self.input_external_margin.text())
