@@ -58,6 +58,7 @@ class StartQT4(QtGui.QMainWindow):
         self.ui.setupUi(self)
         self.setChildrenFocusPolicy(QtCore.Qt.NoFocus)
 
+        # Switch on debug mode to emulate camera and visualize auto-alignment features and offsets.
         self.debug = False
 
         self.button_list = []
@@ -99,7 +100,7 @@ class StartQT4(QtGui.QMainWindow):
 
         self.configuration = Configuration()
 
-        self.workflow = Workflow(self, debug=self.debug)
+        self.workflow = Workflow(self)
 
         self.workflow.camera_ready_signal.connect(self.camera_ready)
         self.workflow.alignment_ready_signal.connect(self.start_workflow)
