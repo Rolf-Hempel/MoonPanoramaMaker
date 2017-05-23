@@ -58,6 +58,7 @@ class Workflow(QtCore.QThread):
         self.camera_initialization_flag = False
         self.slew_to_alignment_point_flag = False
         self.perform_alignment_flag = False
+        self.perform_autoalignment_flag = False
         self.slew_to_moon_limb_flag = False
         self.set_focus_area_flag = False
         self.goto_focus_area_flag = False
