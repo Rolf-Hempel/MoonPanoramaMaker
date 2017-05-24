@@ -28,51 +28,77 @@ from drift_rate_dialog import Ui_DriftRateDialog
 
 
 class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
+    """
+    This class implements the logic behind the drift_rate_dialog gui which controls how the mount
+    drift rate is to be determined. In particular, the rules for selecting the first and last
+    alignment points to be used for drift rate computation are set.
+    
+    """
+
     def __init__(self, configuration, al, parent=None):
+        """
+        Initialize drift computation and produce a table and plots for showing the available
+        alignment points for drift computation.
+        
+        :param configuration: object containing parameters set by the user
+        :param al: alignment object (instance of class Alignment)
+        """
         self.configuration = configuration
         self.al = al
+        # Open the gui window.
         QtGui.QDialog.__init__(self, parent)
         self.ui = Ui_DriftRateDialog()
         self.ui.setupUi(self)
 
+        # Create a table with alignment point info
         self.ui.tableWidget.setRowCount(len(al.alignment_points))
         flags = QtCore.Qt.ItemFlags()
         flags != QtCore.Qt.ItemIsEnabled
+        # Take the time of the first alignment point as start point for time computations.
         first_alignment_seconds = al.alignment_points[0]['time_seconds']
+        # Initialize lists for time (since first alignment) and corrections in RA and DE.
         self.time_offsets = []
         self.ra_corrections = []
         self.de_corrections = []
+        # For each alignment point: Add the data to the three above lists.
         for i in range(len(al.alignment_points)):
-            self.time_offsets.append((al.alignment_points[i][
-                                          'time_seconds'] - first_alignment_seconds) / 60.)
+            # For the 2D plot (below), time is counted in minutes.
+            self.time_offsets.append(
+                (al.alignment_points[i]['time_seconds'] - first_alignment_seconds) / 60.)
+            # Look up the time string to be displayed in the table.
             time_string = al.alignment_points[i]['time_string']
             item = QtGui.QTableWidgetItem(time_string)
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             item.setFlags(flags)
+            # Put time info into the first table column.
             self.ui.tableWidget.setItem(i, 0, item)
-            ra_correction = 60. * degrees(
-                al.alignment_points[i]['ra_correction'])
+            # The alignment corrections in RA and DE are counted in arc minutes.
+            ra_correction = 60. * degrees(al.alignment_points[i]['ra_correction'])
             self.ra_corrections.append(ra_correction)
             ra_correction_string = "{:10.2f}".format(ra_correction)
             item = QtGui.QTableWidgetItem(ra_correction_string)
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             item.setFlags(flags)
+            # Put the RA correction into the second table column.
             self.ui.tableWidget.setItem(i, 1, item)
-            de_correction = 60. * degrees(
-                al.alignment_points[i]['de_correction'])
+            de_correction = 60. * degrees(al.alignment_points[i]['de_correction'])
             self.de_corrections.append(de_correction)
             de_correction_string = "{:10.2f}".format(de_correction)
             item = QtGui.QTableWidgetItem(de_correction_string)
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             item.setFlags(flags)
+            # Put the DE correction into the third table column.
             self.ui.tableWidget.setItem(i, 2, item)
 
-        self.ui.mplwidget.plotDataPoints(self.time_offsets,
-                                         self.ra_corrections,
-                                         self.de_corrections,
-                                         self.al.first_index,
+        # Plot the table data as two Matplotlib graphs.
+        self.ui.mplwidget.plotDataPoints(self.time_offsets, self.ra_corrections,
+                                         self.de_corrections, self.al.first_index,
                                          self.al.last_index)
 
+        # Initialize radio buttons. Between calls to the drift rate dialog, info regarding whether
+        # or not drift computation is enabled, and if the user wants to use default values for
+        # the first and last alignment point to be used for drift computations, is held in the
+        # alignment object (al).
         if self.al.drift_disabled:
             self.ui.noRadioButton.setChecked(True)
         if self.al.default_first_drift:
@@ -80,50 +106,71 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
         if self.al.default_last_drift:
             self.ui.defaultLastRadioButton.setChecked(True)
 
+        # Create spin boxes for the selection of the first and last alignment point for drift
+        # computation.
         self.ui.spinBoxFirstIndex.setMinimum(1)
         self.ui.spinBoxFirstIndex.setMaximum(len(al.alignment_points) - 1)
         self.ui.spinBoxFirstIndex.setValue(al.first_index + 1)
         self.ui.spinBoxLastIndex.setMinimum(2)
         self.ui.spinBoxLastIndex.setMaximum(len(al.alignment_points))
-        # self.ui.spinBoxLastIndex.setValue(len(al.alignment_points))
         self.ui.spinBoxLastIndex.setValue(al.last_index + 1)
 
+        # If the OK button is pressed, start the drift computation.
         self.ui.buttonBox.accepted.connect(self.compute_drift)
-        self.ui.spinBoxFirstIndex.editingFinished.connect(
-            self.set_limit_spinBoxLastIndex)
-        self.ui.spinBoxFirstIndex.valueChanged.connect(
-            self.first_index_changed)
-        self.ui.spinBoxLastIndex.editingFinished.connect(
-            self.set_limit_spinBoxFirstIndex)
+        # Connect events in the gui with methods to store the entered data.
+        self.ui.spinBoxFirstIndex.editingFinished.connect(self.set_limit_spinBoxLastIndex)
+        self.ui.spinBoxFirstIndex.valueChanged.connect(self.first_index_changed)
+        self.ui.spinBoxLastIndex.editingFinished.connect(self.set_limit_spinBoxFirstIndex)
         self.ui.spinBoxLastIndex.valueChanged.connect(self.last_index_changed)
-        self.ui.defaultFirstRadioButton.toggled.connect(
-            self.toggle_default_first_radio_button)
-        self.ui.defaultLastRadioButton.toggled.connect(
-            self.toggle_default_last_radio_button)
+        self.ui.defaultFirstRadioButton.toggled.connect(self.toggle_default_first_radio_button)
+        self.ui.defaultLastRadioButton.toggled.connect(self.toggle_default_last_radio_button)
         self.ui.noRadioButton.toggled.connect(self.toggle_no_radio_button)
 
     def toggle_default_first_radio_button(self):
+        """
+        For the first alignment point, toggle on/off the default choice (first available data point)
+        
+        :return: -
+        """
+
         if self.configuration.protocol:
             print "toggle default button for first drift index"
         self.al.default_first_drift = not self.al.default_first_drift
 
     def toggle_default_last_radio_button(self):
+        """
+        For the last alignment point, toggle on/off the default choice (last available data point)
+        
+        :return: -
+        """
+
         if self.configuration.protocol:
             print "toggle default button for last drift index"
         self.al.default_last_drift = not self.al.default_last_drift
 
     def toggle_no_radio_button(self):
+        """
+        Toggle on/off if drift correction should be included in computing telescope coordinates
+        
+        :return: -
+        """
+
         if self.configuration.protocol:
             print "toggle no button"
         self.al.drift_disabled = not self.al.drift_disabled
+
+        # Drift computation is enabled.
         if not self.al.drift_disabled:
             if self.configuration.protocol:
                 print "drift enabled"
+            # Check if for the first alignment point the default is selected.
             if self.al.default_first_drift:
                 if self.configuration.protocol:
                     print "default first drift index"
+                # In this case disable the gui elements for alignment point number selection.
                 self.ui.labelFirstIndex.setDisabled(True)
                 self.ui.spinBoxFirstIndex.setDisabled(True)
+            # Same as above for the end of the drift computation interval.
             if self.al.default_last_drift:
                 if self.configuration.protocol:
                     print "default first drift index"
@@ -131,6 +178,14 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
                 self.ui.labelLastIndex.setDisabled(True)
 
     def first_index_changed(self):
+        """
+        In the Matplotlib plots of RA and DE drift, the first and last alignment points are
+        connected with a red line. Repeat plotting these lines when the first point changes
+        because the user chooses another point index.
+        
+        :return: -
+        """
+
         ax = self.ui.mplwidget.plotrect
         for line in ax.lines:
             if line.get_label() == 'drift':
@@ -139,13 +194,18 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
         for line in ax.lines:
             if line.get_label() == 'drift':
                 ax.lines.remove(line)
-        self.ui.mplwidget.plotDataPoints(self.time_offsets,
-                                         self.ra_corrections,
-                                         self.de_corrections, int(
-                self.ui.spinBoxFirstIndex.text()) - 1, int(
-                self.ui.spinBoxLastIndex.text()) - 1)
+        self.ui.mplwidget.plotDataPoints(self.time_offsets, self.ra_corrections,
+                                         self.de_corrections,
+                                         int(self.ui.spinBoxFirstIndex.text()) - 1,
+                                         int(self.ui.spinBoxLastIndex.text()) - 1)
 
     def last_index_changed(self):
+        """
+        Same as above if the end point of the drift computation interval changes.
+        
+        :return: -
+        """
+
         ax = self.ui.mplwidget.plotrect
         for line in ax.lines:
             if line.get_label() == 'drift':
@@ -154,61 +214,95 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
         for line in ax.lines:
             if line.get_label() == 'drift':
                 ax.lines.remove(line)
-        self.ui.mplwidget.plotDataPoints(self.time_offsets,
-                                         self.ra_corrections,
-                                         self.de_corrections, int(
-                self.ui.spinBoxFirstIndex.text()) - 1, int(
-                self.ui.spinBoxLastIndex.text()) - 1)
+        self.ui.mplwidget.plotDataPoints(self.time_offsets, self.ra_corrections,
+                                         self.de_corrections,
+                                         int(self.ui.spinBoxFirstIndex.text()) - 1,
+                                         int(self.ui.spinBoxLastIndex.text()) - 1)
 
     def set_limit_spinBoxLastIndex(self):
-        self.ui.spinBoxLastIndex.setMinimum(
-            1 + int(self.ui.spinBoxFirstIndex.text()))
+        """
+        In case the user chooses an alignment point with index>0 for the beginning of drift
+        computation, make sure that the spin box for selecting the end point starts with the
+        next higher index.
+        
+        :return: -
+        """
+
+        self.ui.spinBoxLastIndex.setMinimum(1 + int(self.ui.spinBoxFirstIndex.text()))
 
     def set_limit_spinBoxFirstIndex(self):
-        self.ui.spinBoxFirstIndex.setMaximum(
-            int(self.ui.spinBoxLastIndex.text()) - 1)
+        """
+        The corresponding reduction of range for the selection of the first alignment point index
+        in case the user has not chosen the last available index for the end of the drift
+        computation interval.
+        
+        :return: -
+        """
+
+        self.ui.spinBoxFirstIndex.setMaximum(int(self.ui.spinBoxLastIndex.text()) - 1)
 
     def compute_drift(self):
+        """
+        Compute new values for telescope drift in RA and DE
+        
+        :return: -
+        """
+
         if self.configuration.protocol:
             print "Enter compute_drift"
+        # If drift correction is disabled, set the flag in the alignment object (al) and close.
         if self.al.drift_disabled:
             if self.configuration.protocol:
                 print "noRadioButton is toggled"
             self.al.is_drift_set = False
             self.close()
             return
+        # The default for the first alignment point is the first available point (index 0).
         if self.al.default_first_drift:
             self.al.first_index = 0
         else:
+            # If default is de-selected: Get the value from spin box.
             self.al.first_index = int(self.ui.spinBoxFirstIndex.text()) - 1
+        # Same for end point of drift interval.
         if self.al.default_last_drift:
             self.al.last_index = len(self.al.alignment_points) - 1
         else:
             self.al.last_index = int(self.ui.spinBoxLastIndex.text()) - 1
+
+        # Drift rates are computed only if the chosen alignment points span a large enough time
+        # interval. Otherwise the results would not be reliable enough.
         if (self.al.alignment_points[self.al.last_index]['time_seconds'] -
                 self.al.alignment_points[self.al.first_index][
                     'time_seconds']) > self.configuration.minimum_drift_seconds:
             if self.configuration.protocol:
-                print "Start drift computation, first/last index: ", \
-                    self.al.first_index, ", ", self.al.last_index
+                print "Start drift computation, first/last index: ", self.al.first_index, ", ", \
+                    self.al.last_index
+            # The actual logic for drift rate computation is in method compute_drift_rate in class
+            # Alignment.
             self.al.compute_drift_rate()
         elif self.configuration.protocol:
             print "Time interval too short for drift computation"
+
+        # Close the gui.
         self.close()
 
     def keyPressEvent(self, event):
+        """
+        The gui should be usable without a mouse. Therefore, keystrokes (A and B) are used to
+        change the focus, to accept the input and start the computation (Enter), or to leave the
+        dialog (Esc).
+        :param event: keyPressEvent sent from the user interface.
+        :return: -
+        """
+
         if type(event) == QtGui.QKeyEvent:
             if event.key() == 16777220:  # Enter key
                 self.compute_drift()
             if event.key() == QtCore.Qt.Key_Escape:
                 self.close()
             if event.key() == QtCore.Qt.Key_A:
-                # if self.configuration.protocol:
-                #     print "A pressed"
                 self.ui.spinBoxFirstIndex.setFocus()
             if event.key() == QtCore.Qt.Key_B:
-                # if self.configuration.protocol:
-                #     print "B pressed"
                 self.ui.spinBoxLastIndex.setFocus()
 
 # import sys

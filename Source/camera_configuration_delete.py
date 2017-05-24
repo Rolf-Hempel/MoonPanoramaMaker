@@ -26,6 +26,12 @@ from camera_delete_dialog import Ui_Dialog
 
 
 class CameraConfigurationDelete(QtGui.QDialog, Ui_Dialog):
+    """
+    This class implements the activities executed when a camera configuration is to be deleted
+    from the list of available models. In particular, the configuration is to be marked as changed.
+    
+    """
+
     def __init__(self, parent=None):
         QtGui.QDialog.__init__(self, parent)
         self.setupUi(self)

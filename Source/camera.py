@@ -28,8 +28,32 @@ from socket_client import SocketClient, SocketClientDebug
 
 
 class Camera(QtCore.QThread):
+    """
+    This class provides an asynchronous interface to the video camera for the acquisition of videos.
+    A separate thread waits for triggers from the workflow object to start the camera. It then
+    sends a request to the MoonPanoramaMaker plugin in FireCapture via the socket_client, and waits
+    for the acknowledgement message which confirms that the video has been captured.
+    
+    Please note that the socket interface to FireCapture is also used in synchronous mode for still
+    picture capturing used by the autoalignment mechanism.
+    
+    """
+
     def __init__(self, configuration, telescope, mark_processed, debug=False):
+        """
+        Initialize the camera object.
+        
+        :param configuration: object containing parameters set by the user
+        :param telescope: encapsulates telescope control via ASCOM
+        :param mark_processed: a method in moon_panorama_maker which marks tiles as processed
+        :param debug: if True, the socket_client (FireCapture connection) is replaced with a
+        mockup object with the same interface. It does not capture videos, but returns the
+        acknowledgement as the real object does.
+        
+        """
         QtCore.QThread.__init__(self)
+        # During camera initialization (in class "workflow") the signal is connected with method
+        # "signal_from_camera" in moon_panormaa_maker.
         self.signal = QtCore.SIGNAL("signal")
 
         self.configuration = configuration
@@ -38,8 +62,9 @@ class Camera(QtCore.QThread):
         # Register method in StartQT4 (module moon_panorama_maker) for marking tile as processed.
         self.mark_processed = mark_processed
 
-        self.lookup_polling_interval = (self.configuration.conf.getfloat(
-            "ASCOM", "polling interval"))
+        # Avoid too much compute power consumption due to idle looping
+        self.lookup_polling_interval = (
+        self.configuration.conf.getfloat("ASCOM", "polling interval"))
         # Enable consecutive acquisition of more than one video (e.g. for exposures with different
         # filters.
         self.repetition_count = self.configuration.conf.getint("Camera", "repetition count")
@@ -50,6 +75,8 @@ class Camera(QtCore.QThread):
         self.terminate = False
         self.active_tile_number = -1
 
+        # The socket connection is hardwired. It could be made flexible to allow FireCapture
+        # and MoonPanoramaMaker to run on different computers.
         self.host = 'localhost'
         self.port = 9820
         # For debugging purposes, the connection to FireCapture can be replaced with a mockup class
@@ -79,7 +106,7 @@ class Camera(QtCore.QThread):
                 # Acquire "repetition_count" videos by triggering FireCapture through the socket.
                 for video_number in range(self.repetition_count):
                     if self.configuration.protocol:
-                        print "Camera: Send trigger to FireCapture, tile: ",\
+                        print "Camera: Send trigger to FireCapture, tile: ", \
                             self.active_tile_number, ", repetition number: ", video_number
                     try:
                         # The tile number is encoded in the message. The FireCapture plugin appends
@@ -101,10 +128,11 @@ class Camera(QtCore.QThread):
 
                 # All videos for this tile are acquired, mark tile as processed.
                 self.mark_processed()
+                # Trigger method "signal_from_camera" in moon_panorama_maker
                 self.emit(self.signal, "hi from camera")
                 if self.configuration.protocol:
-                    print "Camera, all videos for tile ", self.active_tile_number,\
-                        " captured, signal (tile processed) emitted"
+                    print "Camera, all videos for tile ", self.active_tile_number, " captured, " \
+                        "signal (tile processed) emitted"
                 self.active = False
 
             time.sleep(self.lookup_polling_interval)

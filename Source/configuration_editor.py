@@ -36,11 +36,29 @@ from miscellaneous import Miscellaneous
 
 
 class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
+    """
+    Update the parameters used by MoonPanoramaMaker which are stored in the configuration object.
+    The interaction with the user is through the ConfigurationDialog class.
+    
+    """
+
     def __init__(self, configuration, parent=None):
+        """
+        Initialize the text fields in the gui based on the configuration object, and connect
+        gui signals with methods to update the configuration object entries.
+        
+        :param configuration: object containing parameters set by the user
+        :param parent: 
+        """
+
         QtGui.QDialog.__init__(self, parent)
         self.setupUi(self)
+        # Configuration object c
         self.c = configuration
+        # Set the flag indicating if the configuration was changed to False.
         self.configuration_changed = False
+
+        # Start filling the text fields of the gui.
         self.input_longitude.setText(
             self.c.conf.get("Geographical Position", "longitude"))
         self.input_latitude.setText(
@@ -50,6 +68,7 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
         self.input_timezone.setText(
             self.c.conf.get("Geographical Position", "timezone"))
 
+        # Special treatment of available camera models: populate the camera_chooser with list.
         self.camlist = self.c.get_camera_list()
         self.camera_chooser.addItems(self.camlist)
         self.camera_chooser.setCurrentIndex(
@@ -98,6 +117,7 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
         self.input_max_alignment_error.setText(
             self.c.conf.get("Alignment", "max alignment error"))
 
+        # Connect textChanged signals with methods to update the corresponding parameters.
         self.input_longitude.textChanged.connect(self.longitude_write)
         self.input_latitude.textChanged.connect(self.latitude_write)
         self.input_elevation.textChanged.connect(self.elevation_write)
@@ -144,24 +164,65 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
             self.max_alignment_error_write)
 
     def longitude_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+        
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def latitude_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def elevation_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def timezone_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def camera_changed(self):
+        """
+        First check if the camera name is valid (i.e. not blank). Then copy all parameters of the
+        choosen camera into the "Camera" section of the configuration object. Finally, set the
+        configuration_changed flag to True.
+
+        :return: -
+        """
+
         if str(self.camera_chooser.currentText()) != "":
             self.c.copy_camera_configuration(
                 str(self.camera_chooser.currentText()))
             self.configuration_changed = True
 
     def start_edit_camera_dialog(self):
+        """
+        The "Edit camera" button is clicked: start the camera configuration gui and populate the
+        text fields with the parameters of the currently chosen camera. Start the editor gui. When
+        it closes, check if parameters have changed. If so, set the configuration_changed flag
+        to True.
+
+        :return: -
+        """
+
         camera_name = str(self.camera_chooser.currentText())
         self.editor = CameraConfigurationEditor(self.c, camera_name)
         self.editor.exec_()
@@ -169,56 +230,142 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
             self.configuration_changed = True
 
     def start_new_camera_dialog(self):
+        """
+        The "Input camera" button is clicked: Open the input camera dialog.
+
+        :return: -
+        """
+
         self.inputeditor = CameraConfigurationInput(self.c)
+        # Start the input gui.
         self.inputeditor.exec_()
+        # Check if new parameters have been entered.
         if self.inputeditor.configuration_changed:
+            # Mark the configuration object as changed.
             self.configuration_changed = True
+            # Update the list of available cameras
             self.camlist = self.c.get_camera_list()
+            # Update the camera chooser to contain the extended list of camera names.
             self.camera_chooser.clear()
             self.camera_chooser.addItems(self.camlist)
+            # Set the current chooser entry to the new camera model.
             self.camera_chooser.setCurrentIndex(
                 self.camlist.index(self.c.conf.get("Camera", "name")))
 
     def start_delete_camera_dialog(self):
+        """
+        The "Delete camera" button has been clicked: Open the delete camera dialog.
+
+        :return: -
+        """
+
         self.deleteeditor = CameraConfigurationDelete()
+        # Start the gui.
         self.deleteeditor.exec_()
+        # Check if the selected camera is really deleted.
         if self.deleteeditor.configuration_changed:
+            # Mark the configuration object as changed.
             self.configuration_changed = True
+            # Remove the section with parameters of the deleted camera model from configuration
+            # object.
             self.c.conf.remove_section(
                 'Camera ' + str(self.camera_chooser.currentText()))
+            # Update the list of available cameras
             self.camlist = self.c.get_camera_list()
+            # Update the camera chooser to contain the extended list of camera names.
             self.camera_chooser.clear()
             self.camera_chooser.addItems(self.camlist)
+            # The current camera is deleted, set the index of the chooser to 0 (default).
             self.camera_chooser.setCurrentIndex(0)
 
     def focal_length_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def protocol_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def protocol_to_file_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def limb_first_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def camera_automation_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def camera_trigger_delay_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def fig_size_horizontal_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def fig_size_vertical_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def label_font_size_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def label_shift_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def chooser_write(self):
@@ -232,24 +379,66 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
         self.configuration_changed = True
 
     def guiding_interval_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def wait_interval_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def polling_interval_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def telescope_lookup_precision_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def min_autoalign_interval_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def max_autoalign_interval_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def max_alignment_error_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
         self.configuration_changed = True
 
     def accept(self):

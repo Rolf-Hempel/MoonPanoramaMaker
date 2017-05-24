@@ -20,30 +20,54 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import sys
-import os.path
 import ConfigParser
+import os.path
+import sys
+
 from PyQt4 import QtGui
+
 from configuration_editor import ConfigurationEditor
 
 
 class Configuration:
+    """
+    The Configuration class is used to manage all parameters which can be changed or set by the
+    user. This includes input / output to file for persistent storage.
+    
+    """
+
     def __init__(self):
+        """
+        Initialize the configuration object.
+        
+        """
+
+        # The version number is displayed on the MPM main gui title line.
         self.version = "MoonPanoramaMaker 0.9.5"
+
+        # Set a parameter which cannot be changed by the user (minimum length of time interval
+        # for drift computation (10 minutes).
+
         self.minimum_drift_seconds = 600.
 
         self.conf = ConfigParser.ConfigParser()
 
-        self.protocol = True
+        # self.protocol = True
 
+        # The config file for persistent parameter storage is located in the user's home
+        # directory, as is the detailed MoonPanoramaMaker logfile.
         home = os.path.expanduser("~")
         self.config_filename = home + "\\.MoonPanoramaMaker.ini"
         self.protocol_filename = home + "\\MoonPanoramaMaker.log"
+
+        # If an existing config file is found, read it in and set the flag.
         if os.path.isfile(self.config_filename):
             self.conf.read(self.config_filename)
             self.configuration_read = True
         else:
-            # Code to set config info
+            # Code to set standard config info. The "Hidden Parameters" are not displayed in the
+            # configuration gui. Most of them are for placing gui windows where they had been at
+            # the previous session.
             self.configuration_read = False
             self.conf.add_section('Hidden Parameters')
             self.conf.set('Hidden Parameters', 'version ', self.version)
@@ -166,12 +190,26 @@ class Configuration:
             self.conf.set('Camera Celestron Skyris 618M', 'external margin pixel', '200')
             self.conf.set('Camera Celestron Skyris 618M', 'tile overlap pixel', '100')
 
+            # Fill the entries of section "Camera" by copying the entries from the chosen
+            # camera model.
             self.copy_camera_configuration(self.conf.get('Camera', 'name'))
 
     def set_protocol_flag(self):
+        """
+        Read from the configuration object if a protocol is to be written or not.
+        
+        :return: -
+        """
+
         self.protocol = self.conf.getboolean('Workflow', 'protocol')
 
     def get_camera_list(self):
+        """
+        Look up all camera models, for which parameters are stored in the configuration object.
+        
+        :return: list of all available camera names (strings)
+        """
+
         camera_list = []
         for name in self.conf.sections():
             if name[:7] == 'Camera ':
@@ -179,11 +217,18 @@ class Configuration:
         return camera_list
 
     def copy_camera_configuration(self, name):
+        """
+        Copy the parameters stored for a given camera model into the section "Camera" of the
+        configuration object. The parameters in this section are used by MoonPanoramaMaker's
+        computations.
+        
+        :param name: Name (string) of the selected camera model
+        :return: -
+        """
+
         self.section_name = 'Camera ' + name
-        self.conf.set('Camera', 'name', self.conf.get(self.section_name,
-                                                      'name'))
-        self.conf.set('Camera', 'pixel size',
-                      self.conf.get(self.section_name, 'pixel size'))
+        self.conf.set('Camera', 'name', self.conf.get(self.section_name, 'name'))
+        self.conf.set('Camera', 'pixel size', self.conf.get(self.section_name, 'pixel size'))
         self.conf.set('Camera', 'pixel horizontal',
                       self.conf.get(self.section_name, 'pixel horizontal'))
         self.conf.set('Camera', 'pixel vertical',
@@ -196,6 +241,13 @@ class Configuration:
                       self.conf.get(self.section_name, 'tile overlap pixel'))
 
     def write_config(self):
+        """
+        Write the contentes of the configuration object back to the configuration file in the
+        user's home directory.
+        
+        :return: -
+        """
+
         config_file = open(self.config_filename, 'w')
         self.conf.write(config_file)
         config_file.close()
