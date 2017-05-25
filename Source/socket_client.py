@@ -111,6 +111,9 @@ class SocketClientDebug:
     def mysend(self, text):
         pass
 
+    def myreceive(self, recv_count):
+        return "a" * recv_count
+
     def acquire_video(self, text):
         return "a"
 
@@ -137,8 +140,8 @@ class SocketClientDebug:
 if __name__ == "__main__":
     host = 'localhost'
     port = 9820
+    # mysocket = SocketClient(host, port)
     mysocket = SocketClientDebug(host, port)
-    # mysocket = SocketClientDebug(host, port)
     print "Client: socket connected"
     time.sleep(1.)
     try:

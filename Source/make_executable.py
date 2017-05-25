@@ -40,7 +40,7 @@ setup(windows=[{"script": "moon_panorama_maker.py"}],
                        "camera_dialog", "compute_drift_rate", "configuration",
                        "configuration_dialog", "configuration_editor",
                        "DisplayLandmark",
-                       "drift_rate_dialog", "edit_landmarks",
+                       "drift_rate_dialog", "edit_landmarks", "image_shift",
                        "input_error_dialog", "landmark_selection",
                        "matplotlibwidget",
                        "miscellaneous", "moon_ephem", "qtgui",
@@ -53,6 +53,7 @@ setup(windows=[{"script": "moon_panorama_maker.py"}],
       }},
       data_files=matplotlib.get_py2exe_datafiles(), )
 
+# Deal with the pytz problem. It was excluded in the above operation.
 srcDir = os.path.dirname(pytz.__file__)
 dstDir = os.path.join('dist', 'pytz')
 shutil.copytree(srcDir, dstDir, ignore=shutil.ignore_patterns('*.py'))

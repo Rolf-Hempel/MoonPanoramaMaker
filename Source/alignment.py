@@ -545,9 +545,7 @@ if __name__ == "__main__":
     host = 'localhost'
     port = 9820
 
-    debug = True
-
-    if debug:
+    if c.camera_debug:
         mysocket = SocketClientDebug(host, port)
     else:
         try:
@@ -561,9 +559,9 @@ if __name__ == "__main__":
 
     # date_time = datetime.now()
 
-    me = moon_ephem.MoonEphem(c, date_time, debug=True)
+    me = moon_ephem.MoonEphem(c, date_time, debug=c.ephemeris_debug)
 
-    al = Alignment(c, tel, me, debug=debug)
+    al = Alignment(c, tel, me, debug=c.alignment_debug)
     al.set_landmark()
 
     print "ra_offset_landmark (s): ", 240 * degrees(al.ra_offset_landmark)

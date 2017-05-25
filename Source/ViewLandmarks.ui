@@ -47,7 +47,7 @@
     <rect>
      <x>10</x>
      <y>410</y>
-     <width>381</width>
+     <width>461</width>
      <height>22</height>
     </rect>
    </property>
@@ -63,27 +63,6 @@
     <number>-1</number>
    </property>
   </widget>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>410</x>
-     <y>410</y>
-     <width>156</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-    </font>
-   </property>
-   <property name="locale">
-    <locale language="English" country="UnitedStates"/>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
   <widget class="Line" name="line">
    <property name="geometry">
     <rect>
@@ -95,6 +74,19 @@
    </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="OKButton">
+   <property name="geometry">
+    <rect>
+     <x>490</x>
+     <y>410</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>OK</string>
    </property>
   </widget>
  </widget>

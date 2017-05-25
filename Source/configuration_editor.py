@@ -23,8 +23,8 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
 
-basePath = os.path.dirname( os.path.abspath( sys.argv[0] ) )
-sys.path.insert( 0, basePath )
+basePath = os.path.dirname(os.path.abspath(sys.argv[0]))
+sys.path.insert(0, basePath)
 
 from PyQt4 import QtGui
 from pytz import timezone
@@ -59,54 +59,36 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
         self.configuration_changed = False
 
         # Start filling the text fields of the gui.
-        self.input_longitude.setText(
-            self.c.conf.get("Geographical Position", "longitude"))
-        self.input_latitude.setText(
-            self.c.conf.get("Geographical Position", "latitude"))
-        self.input_elevation.setText(
-            self.c.conf.get("Geographical Position", "elevation"))
-        self.input_timezone.setText(
-            self.c.conf.get("Geographical Position", "timezone"))
+        self.input_longitude.setText(self.c.conf.get("Geographical Position", "longitude"))
+        self.input_latitude.setText(self.c.conf.get("Geographical Position", "latitude"))
+        self.input_elevation.setText(self.c.conf.get("Geographical Position", "elevation"))
+        self.input_timezone.setText(self.c.conf.get("Geographical Position", "timezone"))
 
         # Special treatment of available camera models: populate the camera_chooser with list.
         self.camlist = self.c.get_camera_list()
         self.camera_chooser.addItems(self.camlist)
-        self.camera_chooser.setCurrentIndex(
-            self.camlist.index(self.c.conf.get("Camera", "name")))
+        self.camera_chooser.setCurrentIndex(self.camlist.index(self.c.conf.get("Camera", "name")))
 
-        self.input_focal_length.setText(
-            self.c.conf.get("Telescope", "focal length"))
+        self.input_focal_length.setText(self.c.conf.get("Telescope", "focal length"))
 
-        self.input_protocol.setText(
-            self.c.conf.get("Workflow", "protocol"))
-        self.input_protocol_to_file.setText(
-            self.c.conf.get("Workflow", "protocol to file"))
-        self.input_limb_first.setText(
-            self.c.conf.get("Workflow", "limb first"))
-        self.input_camera_automation.setText(
-            self.c.conf.get("Workflow", "camera automation"))
-        self.input_camera_trigger_delay.setText(
-            self.c.conf.get("Workflow", "camera trigger delay"))
+        self.input_protocol.setText(self.c.conf.get("Workflow", "protocol"))
+        self.input_protocol_to_file.setText(self.c.conf.get("Workflow", "protocol to file"))
+        self.input_limb_first.setText(self.c.conf.get("Workflow", "limb first"))
+        self.input_camera_automation.setText(self.c.conf.get("Workflow", "camera automation"))
+        self.input_camera_trigger_delay.setText(self.c.conf.get("Workflow", "camera trigger delay"))
 
         self.input_fig_size_horizontal.setText(
             self.c.conf.get("Tile Visualization", "figsize horizontal"))
         self.input_fig_size_vertical.setText(
             self.c.conf.get("Tile Visualization", "figsize vertical"))
-        self.input_label_font_size.setText(
-            self.c.conf.get("Tile Visualization", "label fontsize"))
-        self.input_label_shift.setText(
-            self.c.conf.get("Tile Visualization", "label shift"))
+        self.input_label_font_size.setText(self.c.conf.get("Tile Visualization", "label fontsize"))
+        self.input_label_shift.setText(self.c.conf.get("Tile Visualization", "label shift"))
 
-        self.input_chooser.setText(
-            self.c.conf.get("ASCOM", "chooser"))
-        self.input_hub.setText(
-            self.c.conf.get("ASCOM", "hub"))
-        self.input_guiding_interval.setText(
-            self.c.conf.get("ASCOM", "guiding interval"))
-        self.input_wait_interval.setText(
-            self.c.conf.get("ASCOM", "wait interval"))
-        self.input_polling_interval.setText(
-            self.c.conf.get("ASCOM", "polling interval"))
+        self.input_chooser.setText(self.c.conf.get("ASCOM", "chooser"))
+        self.input_hub.setText(self.c.conf.get("ASCOM", "hub"))
+        self.input_guiding_interval.setText(self.c.conf.get("ASCOM", "guiding interval"))
+        self.input_wait_interval.setText(self.c.conf.get("ASCOM", "wait interval"))
+        self.input_polling_interval.setText(self.c.conf.get("ASCOM", "polling interval"))
         self.input_telescope_lookup_precision.setText(
             self.c.conf.get("ASCOM", "telescope lookup precision"))
 
@@ -114,8 +96,7 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
             self.c.conf.get("Alignment", "min autoalign interval"))
         self.input_max_autoalign_interval.setText(
             self.c.conf.get("Alignment", "max autoalign interval"))
-        self.input_max_alignment_error.setText(
-            self.c.conf.get("Alignment", "max alignment error"))
+        self.input_max_alignment_error.setText(self.c.conf.get("Alignment", "max alignment error"))
 
         # Connect textChanged signals with methods to update the corresponding parameters.
         self.input_longitude.textChanged.connect(self.longitude_write)
@@ -131,37 +112,26 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
         self.input_focal_length.textChanged.connect(self.focal_length_write)
 
         self.input_protocol.textChanged.connect(self.protocol_write)
-        self.input_protocol_to_file.textChanged.connect(
-            self.protocol_to_file_write)
+        self.input_protocol_to_file.textChanged.connect(self.protocol_to_file_write)
         self.input_limb_first.textChanged.connect(self.limb_first_write)
-        self.input_camera_automation.textChanged.connect(
-            self.camera_automation_write)
-        self.input_camera_trigger_delay.textChanged.connect(
-            self.camera_trigger_delay_write)
-        self.input_fig_size_horizontal.textChanged.connect(
-            self.fig_size_horizontal_write)
-        self.input_fig_size_vertical.textChanged.connect(
-            self.fig_size_vertical_write)
-        self.input_label_font_size.textChanged.connect(
-            self.label_font_size_write)
+        self.input_camera_automation.textChanged.connect(self.camera_automation_write)
+        self.input_camera_trigger_delay.textChanged.connect(self.camera_trigger_delay_write)
+        self.input_fig_size_horizontal.textChanged.connect(self.fig_size_horizontal_write)
+        self.input_fig_size_vertical.textChanged.connect(self.fig_size_vertical_write)
+        self.input_label_font_size.textChanged.connect(self.label_font_size_write)
         self.input_label_shift.textChanged.connect(self.label_shift_write)
 
         self.input_chooser.textChanged.connect(self.chooser_write)
         self.input_hub.textChanged.connect(self.hub_write)
-        self.input_guiding_interval.textChanged.connect(
-            self.guiding_interval_write)
+        self.input_guiding_interval.textChanged.connect(self.guiding_interval_write)
         self.input_wait_interval.textChanged.connect(self.wait_interval_write)
-        self.input_polling_interval.textChanged.connect(
-            self.polling_interval_write)
+        self.input_polling_interval.textChanged.connect(self.polling_interval_write)
         self.input_telescope_lookup_precision.textChanged.connect(
             self.telescope_lookup_precision_write)
 
-        self.input_min_autoalign_interval.textChanged.connect(
-            self.min_autoalign_interval_write)
-        self.input_max_autoalign_interval.textChanged.connect(
-            self.max_autoalign_interval_write)
-        self.input_max_alignment_error.textChanged.connect(
-            self.max_alignment_error_write)
+        self.input_min_autoalign_interval.textChanged.connect(self.min_autoalign_interval_write)
+        self.input_max_autoalign_interval.textChanged.connect(self.max_autoalign_interval_write)
+        self.input_max_alignment_error.textChanged.connect(self.max_alignment_error_write)
 
     def longitude_write(self):
         """
@@ -209,8 +179,7 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
         """
 
         if str(self.camera_chooser.currentText()) != "":
-            self.c.copy_camera_configuration(
-                str(self.camera_chooser.currentText()))
+            self.c.copy_camera_configuration(str(self.camera_chooser.currentText()))
             self.configuration_changed = True
 
     def start_edit_camera_dialog(self):
@@ -268,8 +237,7 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
             self.configuration_changed = True
             # Remove the section with parameters of the deleted camera model from configuration
             # object.
-            self.c.conf.remove_section(
-                'Camera ' + str(self.camera_chooser.currentText()))
+            self.c.conf.remove_section('Camera ' + str(self.camera_chooser.currentText()))
             # Update the list of available cameras
             self.camlist = self.c.get_camera_list()
             # Update the camera chooser to contain the extended list of camera names.
@@ -369,13 +337,25 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
         self.configuration_changed = True
 
     def chooser_write(self):
-        self.c.conf.set("ASCOM", "chooser",
-                        str(self.input_chooser.text()))
+        """
+        Special case for the ASCOM chooser: No check for validity of the input string.
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
+        self.c.conf.set("ASCOM", "chooser", str(self.input_chooser.text()))
         self.configuration_changed = True
 
     def hub_write(self):
-        self.c.conf.set("ASCOM", "hub",
-                        str(self.input_hub.text()))
+        """
+        Special case for the ASCOM hub: No check for validity of the input string.
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
+        self.c.conf.set("ASCOM", "hub", str(self.input_hub.text()))
         self.configuration_changed = True
 
     def guiding_interval_write(self):
@@ -442,31 +422,41 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
         self.configuration_changed = True
 
     def accept(self):
+        """
+        If the OK button is clicked and the configuration has been changed, test all parameters for
+        validity. In case an out-of-bound value is entered, open an error correction dialog window.
+        
+        :return: -
+        """
+
         if self.configuration_changed:
+            # Get the input string from the gui text field.
             input_string = str(self.input_longitude.text())
+            # Test the input value if it is within the allowed interval (here [-360., +360.])
             if Miscellaneous.testfloat(input_string, -360., 360.):
-                self.c.conf.set("Geographical Position", "longitude",
-                                input_string)
+                self.c.conf.set("Geographical Position", "longitude", input_string)
             else:
+                # The value entered is out of bound, show a valid input value example.
                 Miscellaneous.show_input_error("Longitude", "7.39720")
                 return
 
+            # Repeat the same logic for the other input fields.
             input_string = str(self.input_latitude.text())
             if Miscellaneous.testfloat(input_string, -90., 90.):
-                self.c.conf.set("Geographical Position", "latitude",
-                                input_string)
+                self.c.conf.set("Geographical Position", "latitude", input_string)
             else:
                 Miscellaneous.show_input_error("Latitude", "50.69190")
                 return
 
             input_string = str(self.input_elevation.text())
             if Miscellaneous.testint(input_string, -100, 9000):
-                self.c.conf.set("Geographical Position", "elevation",
-                                input_string)
+                self.c.conf.set("Geographical Position", "elevation", input_string)
             else:
                 Miscellaneous.show_input_error("Elevation", "250")
                 return
 
+            # Special case time zone: Take the time zone string entered and try to convert it using
+            # the timezone method of pytz. If an error is raised, the input string was invalid.
             try:
                 timezone(str(self.input_timezone.text()))
                 self.c.conf.set("Geographical Position", "timezone",
@@ -484,11 +474,9 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
 
             input_string = str(self.input_protocol.text())
             if Miscellaneous.testbool(input_string) is not None:
-                self.c.conf.set("Workflow", "protocol",
-                                str(self.input_protocol.text()))
+                self.c.conf.set("Workflow", "protocol", str(self.input_protocol.text()))
             else:
-                Miscellaneous.show_input_error("Write session protocol",
-                                               "True")
+                Miscellaneous.show_input_error("Write session protocol", "True")
                 return
 
             input_string = str(self.input_protocol_to_file.text())
@@ -496,14 +484,12 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
                 self.c.conf.set("Workflow", "protocol to file",
                                 str(self.input_protocol_to_file.text()))
             else:
-                Miscellaneous.show_input_error("Write protocol to file",
-                                               "True")
+                Miscellaneous.show_input_error("Write protocol to file", "True")
                 return
 
             input_string = str(self.input_limb_first.text())
             if Miscellaneous.testbool(input_string) is not None:
-                self.c.conf.set("Workflow", "limb first",
-                                str(self.input_limb_first.text()))
+                self.c.conf.set("Workflow", "limb first", str(self.input_limb_first.text()))
             else:
                 Miscellaneous.show_input_error("Limb first", "True")
                 return
@@ -518,40 +504,35 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
 
             input_string = str(self.input_camera_trigger_delay.text())
             if Miscellaneous.testfloat(input_string, 0., 60.):
-                self.c.conf.set("Workflow", "camera trigger delay",
-                                input_string)
+                self.c.conf.set("Workflow", "camera trigger delay", input_string)
             else:
                 Miscellaneous.show_input_error("Camera trigger delay", "10.")
                 return
 
             input_string = str(self.input_fig_size_horizontal.text())
             if Miscellaneous.testfloat(input_string, 0., 25.):
-                self.c.conf.set("Tile Visualization", "figsize horizontal",
-                                input_string)
+                self.c.conf.set("Tile Visualization", "figsize horizontal", input_string)
             else:
                 Miscellaneous.show_input_error("Figure size horizontal", "10.")
                 return
 
             input_string = str(self.input_fig_size_vertical.text())
             if Miscellaneous.testfloat(input_string, 0., 25.):
-                self.c.conf.set("Tile Visualization", "figsize vertical",
-                                input_string)
+                self.c.conf.set("Tile Visualization", "figsize vertical", input_string)
             else:
                 Miscellaneous.show_input_error("Figure size vertical", "10.")
                 return
 
             input_string = str(self.input_label_font_size.text())
             if Miscellaneous.testint(input_string, 6, 16):
-                self.c.conf.set("Tile Visualization", "label fontsize",
-                                input_string)
+                self.c.conf.set("Tile Visualization", "label fontsize", input_string)
             else:
                 Miscellaneous.show_input_error("Font size for labels", "11")
                 return
 
             input_string = str(self.input_label_shift.text())
             if Miscellaneous.testfloat(input_string, 0., 1.):
-                self.c.conf.set("Tile Visualization", "label shift",
-                                input_string)
+                self.c.conf.set("Tile Visualization", "label shift", input_string)
             else:
                 Miscellaneous.show_input_error("Label shift parameter", "0.8")
                 return
@@ -579,8 +560,7 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
 
             input_string = str(self.input_telescope_lookup_precision.text())
             if Miscellaneous.testfloat(input_string, 0.1, 10.):
-                self.c.conf.set("ASCOM", "telescope lookup precision",
-                                input_string)
+                self.c.conf.set("ASCOM", "telescope lookup precision", input_string)
             else:
                 Miscellaneous.show_input_error("Telescope position lookup precision", "0.5")
                 return
@@ -606,9 +586,16 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
                 Miscellaneous.show_input_error("Max alignment error", "30.")
                 return
 
+        # All tests passed successfully, and all parameters have been written to the
+        # configuration object. Close the gui window.
         self.close()
 
     def reject(self):
+        """
+        The Cancel button is pressed, discard the changes and close the gui window.
+        :return: -
+        """
+
         self.configuration_changed = False
         self.close()
 

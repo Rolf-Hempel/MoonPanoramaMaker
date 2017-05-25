@@ -58,9 +58,6 @@ class StartQT4(QtGui.QMainWindow):
         self.ui.setupUi(self)
         self.setChildrenFocusPolicy(QtCore.Qt.NoFocus)
 
-        # Switch on debug mode to emulate camera and visualize auto-alignment features and offsets.
-        self.debug = False
-
         self.button_list = []
         self.ui.edit_configuration.clicked.connect(self.edit_configuration)
         self.button_list.append(self.ui.edit_configuration)
@@ -428,7 +425,7 @@ class StartQT4(QtGui.QMainWindow):
         # After successful exposure, put active tile on list of tiles processed since last
         # auto-align. This list will be reset to unprocessed later if the error in the next
         # auto-align is too large.
-        if self.al.autoalign_initialized:
+        if self.workflow.al.autoalign_initialized:
             self.workflow.tiles_since_last_autoalign.append(self.workflow.active_tile_number)
 
     def select_tile(self):
@@ -669,7 +666,7 @@ class StartQT4(QtGui.QMainWindow):
                 pass
             self.configuration.write_config()
             self.workflow.exiting = True
-            time.sleep(2. * self.workflow.run_loop_delay)
+            time.sleep(4. * self.workflow.run_loop_delay)
         else:
             evnt.ignore()
 

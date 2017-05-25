@@ -26,6 +26,11 @@ from matplotlib.figure import Figure
 
 
 class MatplotlibWidget(Canvas):
+    """
+    This widget creates the two plots of alignment shifts in RA and DE for the compute_drift_rate
+    dialog.
+    
+    """
     def __init__(self, parent=None, hold=False):
         super(MatplotlibWidget, self).__init__(Figure())
 
@@ -54,10 +59,25 @@ class MatplotlibWidget(Canvas):
 
     def plotDataPoints(self, al_point_numbers, ra_corrections, de_corrections,
                        first_index, last_index):
+        """
+        Plot alignment data points.
+        
+        :param al_point_numbers: number of available alignment points
+        :param ra_corrections: list with corrections in RA for all alignment points (in arc minutes)
+        :param de_corrections: list with corrections in DE for all alignment points (in arc minutes)
+        :param first_index: first alignment point index used for drift computation
+        :param last_index: last alignment point index used for drift computation
+        :return: -
+        """
+
+        # Plot RA corrections.
         self.plotrect.plot(al_point_numbers, ra_corrections, 'bo')
         xd = [al_point_numbers[first_index], al_point_numbers[last_index]]
         yd = [ra_corrections[first_index], ra_corrections[last_index]]
+        # Plot the points used for drift computation red and connect them with a line.
         self.plotrect.plot(xd, yd, 'ro-', label='drift')
+
+        # Same for DE corrections.
         self.plotdecl.plot(al_point_numbers, de_corrections, 'bo')
         xd = [al_point_numbers[first_index], al_point_numbers[last_index]]
         yd = [de_corrections[first_index], de_corrections[last_index]]

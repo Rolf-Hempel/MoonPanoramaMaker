@@ -76,8 +76,8 @@ class Workflow(QtCore.QThread):
 
     def run(self):
         self.date_time = datetime.now()
-        self.me = MoonEphem(self.gui.configuration, self.date_time)
-        self.al = Alignment(self.gui.configuration, self.telescope, self.me, debug=self.gui.debug)
+        self.me = MoonEphem(self.gui.configuration, self.date_time, debug=self.gui.configuration.ephemeris_debug)
+        self.al = Alignment(self.gui.configuration, self.telescope, self.me, debug=self.gui.configuration.alignment_debug)
         self.alignment_ready_signal.emit()
 
         while not self.exiting:
@@ -108,7 +108,7 @@ class Workflow(QtCore.QThread):
                         self.gui.configuration.conf.getfloat("Workflow", "camera trigger delay"))
                     if not self.camera_connected:
                         self.camera = Camera(self.gui.configuration, self.telescope,
-                            self.gui.mark_processed, debug=self.gui.debug)
+                            self.gui.mark_processed, debug=self.gui.configuration.camera_debug)
                         self.connect(self.camera, self.camera.signal, self.gui.signal_from_camera)
                         self.camera_connected = True
                         self.camera.start()

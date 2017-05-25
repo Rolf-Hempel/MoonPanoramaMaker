@@ -33,7 +33,23 @@ from moon_ephem import MoonEphem
 
 
 class LandmarkSelection:
+    """
+    This class keeps a list of landmark features on the moon and provides methods for selecting
+    a specific landmark as well as coordinate transformations which eventually give the offsets in
+    RA and DE relative to the moon center.
+    
+    """
     def __init__(self, me, configuration):
+        """
+        Initialization of the landmark list. For each landmark there must be a file "landmark.png"
+        in the subdirectory "landmark_pictures". This picture shows a section of the moon with
+        arrows pointing at the selected landmark.
+        
+        :param me: object with positions of the sun and moon, including libration info
+        :param configuration: object containing parameters set by the user
+        """
+
+        # Dictionary with selenographic [longitude, latitude] for each available landmark.
         self.landmarks = {
             'Aristarchus': [-47.49, 23.73],
             'Copernicus': [-20.08, 9.62],
@@ -47,9 +63,19 @@ class LandmarkSelection:
         }
         self.me = me
         self.configuration = configuration
+        # Initialize the selected landmark as empty string.
         self.selected_landmark = ""
 
     def select_landmark(self, date_time):
+        """
+        Update ephemeris and libration data for the moon, then open a gui window for landmark
+        selection. If the user has selected a landmark, compute true topocentric offset angles in
+        (RA, DE) for the landmark relative to the moon center and set the "landmark_selected" flag
+        to True. If no landmark is selected, set the flag to False.
+        
+        :param date_time: Datetime object with current time information
+        :return: Offsets in (RA, DE) of landmark relative to the center of the moon
+        """
         self.me.update(date_time)
         self.me.compute_libration()
         myapp = EditLandmarks(self.selected_landmark, self.landmarks,
@@ -64,7 +90,16 @@ class LandmarkSelection:
             return (1., 1.)
 
     def compute_landmark_offsets(self, landmark):
+        """
+        Compute offsets in (RA, DE) relative to the moon center for the landmark feature. Take into
+        account topocentric parallax and libration.
+        
+        :param landmark: name of the landmark (String)
+        :return: offset (radians) in (RA, DE) of landmark relative to moon center
+        """
+
         try:
+            # Get selenographic longitude and latitude of landmark.
             long = radians(self.landmarks[landmark][0])
             lat = radians(self.landmarks[landmark][1])
             if self.configuration.protocol:
@@ -72,12 +107,25 @@ class LandmarkSelection:
                     "New Landmark selected: ", landmark, \
                     ", longitude: ", degrees(long), ", latitude: ", degrees(
                     lat)
+            # Perform the coordinate transformation and return the offsets (in radians)
             return self.coord_translation(long, lat)
         except:
+            # This is an internal error and should not occur.
             print >> sys.stderr, "Error in landmark_selection: unknown landmark"
             return (0., 0.)
 
     def coord_translation(self, long, lat):
+        """
+        Translate selenographic coordinates on the moon into true topocentric displacements in
+        (RA, DE).
+        
+        :param long: selenographic longitude of landmark
+        :param lat: selenographic latitude of landmark
+        :return: offset (radians) in (RA, DE) of landmark relative to moon center
+        """
+
+        # Look at the user's guide for algorithmic details. (da_prime, dd_prime) are the
+        # displacements (radians) on the moon's disk, oriented with lunar north up.
         da_prime = -sin(long - self.me.topocentric_lib_long) * cos(
             lat) * self.me.radius
         y = -cos(long - self.me.topocentric_lib_long) * cos(
@@ -87,6 +135,8 @@ class LandmarkSelection:
             self.me.topocentric_lib_lat)
         dd_prime = y * sin(self.me.topocentric_lib_lat) + z * cos(
             self.me.topocentric_lib_lat)
+        # Rotate for position angle of the moon's rotational axis. Apply approximate correction
+        # to RA offset for the moon's declination angle.
         offset_ra = (da_prime * cos(self.me.pos_rot_north) + dd_prime * sin(
             self.me.pos_rot_north)) / cos(self.me.de)
         offset_de = -da_prime * sin(self.me.pos_rot_north) + dd_prime * cos(

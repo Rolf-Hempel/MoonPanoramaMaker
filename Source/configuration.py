@@ -45,6 +45,12 @@ class Configuration:
         # The version number is displayed on the MPM main gui title line.
         self.version = "MoonPanoramaMaker 0.9.5"
 
+        # Switch on debug modes used to emulate camera, visualize auto-alignment features/offsets
+        # and to set ephemeris computations to a fixed date and time.
+        self.camera_debug = False
+        self.alignment_debug = False
+        self.ephemeris_debug = False
+
         # Set a parameter which cannot be changed by the user (minimum length of time interval
         # for drift computation (10 minutes).
 
@@ -52,7 +58,8 @@ class Configuration:
 
         self.conf = ConfigParser.ConfigParser()
 
-        # self.protocol = True
+        # Initialize the protocol flag
+        self.protocol = True
 
         # The config file for persistent parameter storage is located in the user's home
         # directory, as is the detailed MoonPanoramaMaker logfile.
@@ -63,6 +70,8 @@ class Configuration:
         # If an existing config file is found, read it in and set the flag.
         if os.path.isfile(self.config_filename):
             self.conf.read(self.config_filename)
+            # Check if the file is for the current MPM version, otherwise update it
+            self.check_for_compatibility()
             self.configuration_read = True
         else:
             # Code to set standard config info. The "Hidden Parameters" are not displayed in the
@@ -70,7 +79,7 @@ class Configuration:
             # the previous session.
             self.configuration_read = False
             self.conf.add_section('Hidden Parameters')
-            self.conf.set('Hidden Parameters', 'version ', self.version)
+            self.conf.set('Hidden Parameters', 'version', self.version)
             self.conf.set('Hidden Parameters', 'main window x0', '350')
             self.conf.set('Hidden Parameters', 'main window y0', '50')
             self.conf.set('Hidden Parameters', 'tile window x0', '50')
@@ -193,6 +202,36 @@ class Configuration:
             # Fill the entries of section "Camera" by copying the entries from the chosen
             # camera model.
             self.copy_camera_configuration(self.conf.get('Camera', 'name'))
+
+    def check_for_compatibility(self):
+        """
+        Test if the MoonPanoramaMaker version number in the parameter file read differs from the
+        current version. If so, change / add parameters to make them compatible with the current
+        version. At program termination the new parameter set will be written, so next time the
+        parameters will be consistent.
+        
+        :return: -
+        """
+
+        version_read = self.conf.get('Hidden Parameters', 'version')
+        if version_read != self.version:
+            # The update support starts for version 0.9.3. Before that one, not many users had
+            # installed MoonPanoramaMaker.
+            if version_read == "MoonPanoramaMaker 0.9.3":
+                # Update the version number.
+                self.conf.set('Hidden Parameters', 'version', self.version)
+                # Add the "Alignment" section which was introduced with version 0.9.5.
+                self.conf.add_section('Alignment')
+                self.conf.set('Alignment', 'min autoalign interval', '200.')
+                self.conf.set('Alignment', 'max autoalign interval', '900.')
+                self.conf.set('Alignment', 'max alignment error', '40.')
+                # Set the repetition count parameter for each camera. This camera parameter was
+                # introduced with version 0.9.5., too. The parameter is in section "Camera" as well
+                # as in all parameter sets of supported camera models.
+                self.conf.set('Camera', 'repetition count', '1')
+                camlist = self.get_camera_list()
+                for cam in camlist:
+                    self.conf.set('Camera ' + cam, 'repetition count', '1')
 
     def set_protocol_flag(self):
         """

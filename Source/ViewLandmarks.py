@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ViewLandmarks.ui'
 #
-# Created: Sat Apr 02 17:24:10 2016
+# Created: Thu May 25 15:50:56 2017
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -40,25 +40,20 @@ class Ui_ViewLandmarks(object):
         self.label.setText(_fromUtf8(""))
         self.label.setObjectName(_fromUtf8("label"))
         self.comboBox = QtGui.QComboBox(ViewLandmarks)
-        self.comboBox.setGeometry(QtCore.QRect(10, 410, 381, 22))
+        self.comboBox.setGeometry(QtCore.QRect(10, 410, 461, 22))
         font = QtGui.QFont()
         font.setPointSize(10)
         self.comboBox.setFont(font)
         self.comboBox.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.comboBox.setObjectName(_fromUtf8("comboBox"))
-        self.buttonBox = QtGui.QDialogButtonBox(ViewLandmarks)
-        self.buttonBox.setGeometry(QtCore.QRect(410, 410, 156, 23))
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.buttonBox.setFont(font)
-        self.buttonBox.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.line = QtGui.QFrame(ViewLandmarks)
         self.line.setGeometry(QtCore.QRect(10, 390, 557, 21))
         self.line.setFrameShape(QtGui.QFrame.HLine)
         self.line.setFrameShadow(QtGui.QFrame.Sunken)
         self.line.setObjectName(_fromUtf8("line"))
+        self.OKButton = QtGui.QPushButton(ViewLandmarks)
+        self.OKButton.setGeometry(QtCore.QRect(490, 410, 75, 23))
+        self.OKButton.setObjectName(_fromUtf8("OKButton"))
 
         self.retranslateUi(ViewLandmarks)
         self.comboBox.setCurrentIndex(-1)
@@ -66,4 +61,5 @@ class Ui_ViewLandmarks(object):
 
     def retranslateUi(self, ViewLandmarks):
         ViewLandmarks.setWindowTitle(_translate("ViewLandmarks", "Select Landmark", None))
+        self.OKButton.setText(_translate("ViewLandmarks", "OK", None))
 

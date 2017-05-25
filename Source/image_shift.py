@@ -1,3 +1,25 @@
+# -*- coding: utf-8; -*-
+"""
+Copyright (c) 2017 Rolf Hempel, rolf6419@gmx.de
+
+This file is part of the MoonPanoramaMaker tool (MPM).
+https://github.com/Rolf-Hempel/MoonPanoramaMaker
+
+MPM is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with MPM.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+
 import datetime
 import os
 import shutil
@@ -14,27 +36,60 @@ from socket_client import SocketClientDebug
 
 
 class ImageShift:
+    """
+    The ImageShift class uses still pictures of the landmark area on the moon to measure the drift
+    of the telescope. At initialization time, a reference picture is taken (at this time the user
+    has brought the landmark under the camera cross hairs). During auto-alignment operations, new
+    images are taken and their offset versus the reference frame is determined.
+    
+    ImageShift uses the ORB keypoint detection mechanism from OpenCV. For outlier detection in
+    shift computation it uses the DBSCAN clustering algorithm from scikit-learn.
+    
+    """
+
     def __init__(self, configuration, camera_socket, debug=False):
+        """
+        Initialize the ImageShift object, capture the reference frame and find keypoints in the
+        reference frame.
+        
+        :param configuration: object containing parameters set by the user
+        :param camera_socket: the socket_client object used by the camera
+        :param debug: if set to True, display keypoints and matches in Matplotlib windows.
+        """
+
         self.configuration = configuration
         self.camera_socket = camera_socket
+        # Get camera and telescope parameters.
         self.pixel_size = (self.configuration.conf.getfloat(
             "Camera", "pixel size"))
         self.focal_length = (self.configuration.conf.getfloat(
             "Telescope", "focal length"))
         self.ol_inner_min_pixel = (self.configuration.conf.getint(
             "Camera", "tile overlap pixel"))
+        # The still pictures produced by the camera are reduced both in x and y pixel directions
+        # by "compression_factor". Set the compression factor such that the overlap between tiles
+        # is resolved in 40 pixels. In pictures of this resolution the telescope pointing can be
+        # determined precisely enough for auto-alignment.
         self.compression_factor = self.ol_inner_min_pixel / 40
+        # Compute the angle corresponding to a single pixel in the focal plane.
         self.pixel_angle = atan(self.pixel_size / self.focal_length)
+        # Compute the angle corresponding to the overlap between tiles.
         self.ol_angle = self.ol_inner_min_pixel * self.pixel_angle
+        # The scale value is the angle corresponding to a single pixel in the compressed camera
+        # images.
         self.scale = self.compression_factor * self.pixel_angle
         self.debug = debug
 
+        # During auto-alignment all still images captured are stored in a directory in the user's
+        # home directory. If such a directory is found from an earlier MPM run, delete it first.
         home = os.path.expanduser("~")
         self.image_dir = home + "\\MoonPanoramaMaker_alignment_images"
         try:
             shutil.rmtree(self.image_dir)
         except:
             pass
+        # Create directory for still images. In Windows this operation sometimes fails. Therefore,
+        # retry until the operation is successful.
         for retry in range(100):
             try:
                 os.mkdir(self.image_dir)
@@ -42,26 +97,29 @@ class ImageShift:
             except:
                 print "mkdir failed, retrying..."
 
+        # The counter is used to number the alignment images captured during auto-alignment.
         self.alignment_image_counter = 0
 
-        # create CLAHE and ORB objects.
+        # Create CLAHE and ORB objects.
         self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
         self.orb = cv2.ORB_create(WTA_K=3, nfeatures=50,
                                   scoreType=cv2.ORB_HARRIS_SCORE,
                                   edgeThreshold=30, patchSize=31,
                                   scaleFactor=1.2, nlevels=8)
-        # create BFMatcher object
+        # Create BFMatcher object
         self.bf = cv2.BFMatcher(cv2.NORM_HAMMING2, crossCheck=True)
 
+        # Capture the reference image which shows perfect alignment, apply compression.
         (reference_image_array, width, height, dynamic) = \
             self.camera_socket.acquire_still_image(self.compression_factor)
 
+        # Normalize brightness and contrast, and determine keypoints and their descriptors.
         (self.reference_image_array, self.reference_image,
          self.reference_image_kp, self.reference_image_des) = \
             self.normalize_and_analyze_image(reference_image_array,
                                              "alignment_reference_image.pgm")
 
-        # draw only keypoints location,not size and orientation
+        # Draw only keypoints location, not size and orientation
         if self.debug:
             img = cv2.drawKeypoints(self.reference_image_array,
                                     self.reference_image_kp,
@@ -70,31 +128,63 @@ class ImageShift:
             plt.show()
 
     def normalize_and_analyze_image(self, image_array, filename_appendix):
+        """
+        For an image array (as produced by the camera), optimize brightness and contrast. Store the
+        image in the reference image directory. Then use ORB for keypoint detection and descriptor
+        computation. 
+        
+        :param image_array: Numpy array with image as produced by the camera object.
+        :param filename_appendix: String to be appended to filename. The filename begins with
+        the current time (hours, minutes, seconds) for later reference.
+        :return: tuple with four objects: the normalized image array, the image object, the
+        keypoints, and the keypoint descriptors.
+        """
+
         height, width = image_array.shape[:2]
 
+        # Optimize the contrast in the image.
         normalized_image_array = self.clahe.apply(image_array)
+        # Build the normalized image from the luminance channel.
         normalized_image = fromarray(normalized_image_array, 'L')
-
+        # Write the normalized image to disk.
         normalized_image_filename = self.build_filename() + filename_appendix
         normalized_image.save(normalized_image_filename)
+        # Use the ORB for keypoint detection
         normalized_image_kp = self.orb.detect(normalized_image_array, None)
-        # compute the descriptors with ORB
+        # Compute the descriptors with ORB
         normalized_image_kp, normalized_image_des = self.orb.compute(
             normalized_image_array, normalized_image_kp)
         return (normalized_image_array, normalized_image, normalized_image_kp,
                 normalized_image_des)
 
     def build_filename(self):
+        """
+        Create the filename for an alignment image. The name begins with time info
+        (hour-minutes-seconds), followed by an underscore.
+        
+        :return: filename
+        """
+
         dt = str(datetime.datetime.now())
         return (self.image_dir + "\\" + dt[11:13] + "-" + dt[14:16] + "-" + \
                 dt[17:19] + "_")
 
     def shift_vs_reference(self):
+        """
+        Take an image through the camera_socket, normalize and analyze it, and compute the shift
+        (linear translation) of this image as compared to the reference frame.
+        
+        :return: A tuple of four objects: shift in x (radians), shift in y (radians), number of
+        keypoints with consistent shift values, number of outliers
+        """
+
         filename_appendix = "alignment_image-" + "{0:0>3}".format(
             self.alignment_image_counter) + ".pgm"
 
+        # Acquire a still image and apply compression.
         (shifted_image_array, width, height, dynamic) = \
             self.camera_socket.acquire_still_image(self.compression_factor)
+        # Normalize and analyze the image.
         (self.shifted_image_array, self.shifted_image, self.shifted_image_kp,
          self.shifted_image_des) = \
             self.normalize_and_analyze_image(shifted_image_array,
@@ -116,6 +206,7 @@ class ImageShift:
                                    matches[:10], None, flags=2)
             plt.imshow(img3), plt.show()
 
+        # Set up a matrix containing for all matches the pixel shifts in x and y.
         X_matrix = ndarray(shape=(len(matches), 2), dtype=float)
         for m in range(len(matches)):
             reference_index = matches[m].queryIdx
@@ -125,11 +216,15 @@ class ImageShift:
             X_matrix[m][1] = self.shifted_image_kp[shifted_index].pt[1] - \
                              self.reference_image_kp[reference_index].pt[1]
 
+        # Use DBSCAN to find the cluster with consistent shifts. Set the cluster radius to 3 pixels.
         db = DBSCAN(eps=3., min_samples=10).fit(X_matrix)
         core_samples_mask = zeros_like(db.labels_, dtype=bool)
         core_samples_mask[db.core_sample_indices_] = True
+        # The list "labels" defines the cluster number for each match. Only the first cluster
+        # (with number 0) will be used.
         labels = db.labels_
 
+        # Compute the average shift for all matches within the cluster.
         x_shift = 0.
         y_shift = 0.
         for m in range(len(matches)):
@@ -137,7 +232,9 @@ class ImageShift:
                 x_shift += X_matrix[m][0]
                 y_shift += X_matrix[m][1]
         self.alignment_image_counter += 1
+        # Count the matches outside the cluster (i.e. with label!=0).
         outliers = count_nonzero(labels)
+        # Compute number of matches in the cluster. If it is too low (<10), raise a RuntimeError.
         in_cluster = (len(labels) - outliers)
         if in_cluster < 10:
             raise RuntimeError(
@@ -145,6 +242,7 @@ class ImageShift:
                 str(self.alignment_image_counter - 1) +
                 " failed, consistent shifts: " + str(in_cluster) +
                 ", outliers: " + str(outliers))
+        # Translate the average shift values into radians.
         else:
             x_shift = (x_shift / in_cluster) * self.scale
             y_shift = (y_shift / in_cluster) * self.scale
