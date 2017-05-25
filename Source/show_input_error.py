@@ -26,7 +26,19 @@ from input_error_dialog import Ui_InputErrorDialog
 
 
 class ShowInputError(QtGui.QDialog, Ui_InputErrorDialog):
+    """
+    This class implements an InputErrorDialog window. It prompts the user to correct the input
+    of a parameter and gives a correctly formatted example.
+    
+    """
     def __init__(self, parameter_string, example_string, parent=None):
+        """
+        Open the window and show the message.
+        
+        :param parameter_string: string representation of the parameter
+        :param example_string: example for a correctly formatted parameter
+        """
+
         QtGui.QDialog.__init__(self, parent)
         self.setupUi(self)
         self.message.setText("Invalid input for parameter: \n" +
