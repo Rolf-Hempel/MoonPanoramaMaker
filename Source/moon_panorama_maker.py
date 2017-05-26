@@ -234,112 +234,268 @@ class StartQT4(QtGui.QMainWindow):
                                   "Confirm with 'enter', otherwise press 'esc'.")
 
     def camera_connect_request_answered(self):
+        """
+        Start camera initialization in workflow thread, if camera automation is active. This method
+        is either invoked directly from method "start_workflow", or by hitting the "Enter" key 
+        within the "camera connect request".
+        
+        :return: -
+        """
+
         self.workflow.camera_initialization_flag = True
 
     def camera_ready(self, de_center, m_diameter, phase_angle, pos_angle):
+        """
+        This method is started by the workflow thread when camera initialization is finished.
+        Set status flags and compute the optimal coverage of the sunlit part of the moon with
+        camera tiles.
+        
+        :param de_center: declination of the moon center
+        :param m_diameter: diameter (angle) of the moon
+        :param phase_angle: phase angle of the sunlit moon phase. 0 corresponds to new moon, and
+        pi to full moon.
+        :param pos_angle: position angle of the "north pole" of the sunlit moon phase, counted
+        counterclockwise.
+        :return: -
+        """
 
+        # Set status flags.
         self.camera_rotated = False
         self.focus_area_set = False
         self.autoalign_enabled = False
 
+        # Compute the tesselation of the sunlit moon phase.
         self.tc = TileConstructor(self.configuration, de_center, m_diameter, phase_angle, pos_angle)
 
+        # Open the Matplotlib window which displays the tesselation.
         self.tv = TileVisualization(self.configuration, self.tc)
 
+        # Initialization is complete, set the main gui status bar and proceed with landmark selection.
         self.initialized = True
         self.set_statusbar()
         self.select_new_landmark()
 
     def prompt_new_landmark_selection(self):
+        """
+        This method is invoked by pressing the gui button "New Landmark Selection". Before doing
+        so, ask the user for acknowledgement. Hitting "Enter" leads to method "select_new_landmark".
+        
+        :return: -
+        """
+
         self.gui_context = "new_landmark_selection"
         self.set_text_browser("Do you really want to set a new landmark and re-align mount? "
                               "Confirm with 'enter', otherwise press 'esc'.")
 
     def select_new_landmark(self):
+        """
+        Discard any previously selected landmark. De-activate all keys further down in the
+        observation workflow and ask the user to select a new landmark. When the selection is done,
+        compute the offset of the landmark relative to the moon center and enable further gui
+        activities.
+        
+        :return: -
+        """
+
+        # De-activate keys further down in the observation process.
         self.disable_keys([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+        # Invalidate the camera orientation.
         self.camera_rotated = False
         self.set_text_browser("Select a landmark from the list. ")
         if self.configuration.protocol:
             print str(datetime.now())[11:21], "Select a new landmark from the list."
+        # Invoke "set_landmark" method of the alignment object. It offers the user a gui interface
+        # for landmark selection. Based on the selection, the method computes the center offset.
         self.workflow.al.set_landmark()
         if self.workflow.al.is_landmark_offset_set:
+            # Enable the "Show Landmark" and "Alignment" buttons.
             self.ui.show_landmark.setEnabled(True)
             self.ui.alignment.setEnabled(True)
+            # Proceed with slewing the telescope to the approximate alignment point in the sky.
             self.wait_for_alignment()
 
     def show_landmark(self):
+        """
+        Show the currently selected landmark. ShowLandmark implements the gui. It is passed the
+        "LandmarkSelection" object which keeps the name of the landmark. The name is used to read
+        the corresponding picture file from subdirectory "landmark_pictures".
+        :return: -
+        """
+
         myapp = ShowLandmark(self.workflow.al.ls)
         myapp.exec_()
 
     def prompt_alignment(self):
+        """
+        The "Alignment" gui button is pressed. Ask the user for acknowledgement before a new
+        alignment is done.
+        
+        :return: -
+        """
+
         self.gui_context = "alignment"
         self.set_text_browser("Do you really want to perform a new alignment? "
                               "Confirm with 'enter', otherwise press 'esc'.")
 
     def wait_for_alignment(self):
+        """
+        Either the "Enter" key is pressed for acknowledgement, or "select_new_landmark" has been
+        executed. Slew the telescope to the expected position of the alignment point in the sky.
+        
+        :return: -
+        """
+
+        # Disable all keys while the telescope is moving.
         self.save_key_status()
         self.set_text_browser("Slewing telescope to alignment point, please wait.")
+        # If a tile is currently active, change its appearance in the tile visualization window to
+        # either processed or unprocessed. Mark no tile as active.
         self.reset_active_tile()
+        # Update status bar to show that telescope is not aimed at any tile.
         self.set_statusbar()
+        # Trigger telescope slewing in workflow thread.
         self.workflow.slew_to_alignment_point_flag = True
 
     def alignment_point_reached(self):
+        """
+        The workflow thread has sent the "alignment_point_reached_signal". Prompt the user to center
+        to center the landmark in the camera live view.
+        
+        :return: -
+        """
+
         self.reset_key_status()
+        # The telescope was aligned before, only small corrections are expected.
         if self.workflow.al.is_aligned:
             self.set_text_browser("Center landmark in camera live view (with arrow keys or "
                                   "telescope hand controller). Confirm with 'enter'.")
+        # First alignment: a greater offset is to be expected.
         else:
             self.set_text_browser("Move telescope to the Moon (with arrow keys or telescope hand"
                                   " controller), then center landmark in camera live view. "
                                   "Confirm with 'enter'.")
+        # Set the context for "Enter" key.
         self.gui_context = "alignment_point_reached"
 
     def perform_alignment(self):
+        """
+        The user has centered the landmark. Now take the alignment point.
+        
+        :return: -
+        """
+
+        # Trigger the workflow thread to read out the current coordinates as an alignment point.
         self.workflow.perform_alignment_flag = True
 
     def alignment_performed(self):
+        """
+        Triggered by the workflow thread when the alignment point has been processed.
+        
+        :return: -
+        """
+
+        # Activate the "Correct for Drift" gui button if enough alignment points are available.
         if self.workflow.al.drift_dialog_enabled:
             self.ui.configure_drift_correction.setEnabled(True)
+        # At this point correcting the camera orientation makes sense. Enable the gui button.
         self.ui.rotate_camera.setEnabled(True)
         self.set_statusbar()
+        # If the camera is properly oriented, prompt the user for proceeding with video recording.
         if self.camera_rotated:
             self.set_text_browser("Continue video recording using the record group buttons.")
+        # Otherwise (i.e. after first alignment), proceed with rotating the camera.
         else:
             self.perform_camera_rotation()
 
     def reset_autoalignment_button(self):
+        """
+        When the auto-alignment button is toggled back and forth, it changes color and text. This
+        auxiliary method resets the button to its original (not triggered) state.
+        
+        :return: -
+        """
+
         self.ui.autoalignment.setStyleSheet("background-color: light gray")
         self.ui.autoalignment.setText('Auto-Align on - B')
         self.ui.autoalignment.setShortcut("b")
 
     def prompt_autoalignment(self):
+        """
+        The auto-alignment button is pressed. Prompt the user for acknowledgement and set the
+        context for the "Enter" key.
+        
+        :return: -
+        """
+
         self.gui_context = "autoalignment"
         self.set_text_browser("Do you really want to switch on auto-alignment? "
                               "Confirm with 'enter', otherwise press 'esc'.")
 
     def wait_for_autoalignment(self):
+        """
+        The user has acknowledged that auto-alignment is to be switched on. Change the appearance of
+        the gui button and slew to the alignment point.
+        
+        :return: -
+        """
+
+        # Disable the "Alignment" button for manual alignment, and de-activate all buttons while the
+        # telescope slews to the alignment point.
         self.ui.alignment.setEnabled(False)
         self.save_key_status()
+        # the "autoalign_enabled" flag tells the workflow thread, that this is no manual alignment.
+        # In particular, when the point is reached, the workflow thread will emit the
+        # "autoalignment_point_reached_signal".
         self.autoalign_enabled = True
+        # Reconfigure the auto-alignment button.
         self.ui.autoalignment.clicked.connect(self.prompt_autoalignment_off)
         self.ui.autoalignment.setStyleSheet("background-color: red")
         self.ui.autoalignment.setText('Auto-Align off - B')
         self.ui.autoalignment.setShortcut("b")
+        # Write a text message to the text browser, reset the active tile in the tile visualization
+        # window, update the status bar and trigger the workflow thread to move the telescope.
         self.set_text_browser("Slewing telescope to alignment point, please wait.")
         self.reset_active_tile()
         self.set_statusbar()
         self.workflow.slew_to_alignment_point_flag = True
 
     def autoalignment_point_reached(self):
+        """
+        Triggered by the workflow thread when the telescope has reached the expected coordinates of
+        the alignment point. In auto-alignment, the first alignment is done by the user manually.
+        When the user has acknowledged that the landmark is properly centered, the reference frame
+        still image is captured. In later alignment operations the shift relative to this reference
+        frame is measured and used to determine the misalignment angles.
+        
+        :return: -
+        """
+
         self.reset_key_status()
+        # Prompt the user to center the landmark and to confirm with pressing "Enter".
         self.set_text_browser("Center landmark in camera live view (with arrow keys or "
                               "telescope hand controller). Confirm with 'enter'.")
         self.gui_context = "autoalignment_point_reached"
 
     def perform_autoalignment(self):
+        """
+        The "Enter" key was pressed in context "autoalignment_point_reached". Trigger the workflow
+        thread to initialize autoalignment.
+        
+        :return: -
+        """
+
         self.workflow.perform_autoalignment_flag = True
 
     def autoalignment_performed(self, success):
+        """
+        Triggered by the "autoalignment_performed_signal" in the workflow thread. Auto-alignment
+        initialization might have failed, e.g. if the reference frame captured was too blurry. In
+        this case de-activate auto-alignment and re-activate manual alignment.
+        
+        :param success: True if auto-alignment initialization was successful, False otherwise.
+        :return: -
+        """
+
         # If auto-alignment has been initialized successfully, read configuration parameters and
         # prepare for video acquisition loop.
         if success:
@@ -365,44 +521,105 @@ class StartQT4(QtGui.QMainWindow):
             self.wait_for_autoalignment_off()
 
     def prompt_autoalignment_off(self):
+        """
+        Connected to the "Auto-Align off" gui button while auto-alignment is active. Ask the user
+        before really switching back to manual alignment.
+        
+        :return: -
+        """
+
+        # Set the context for "Enter" detection and write prompt message to the text browser.
         self.gui_context = "autoalignment_off"
         self.set_text_browser("Do you really want to switch off auto-alignment? "
                               "Confirm with 'enter', otherwise press 'esc'.")
 
     def wait_for_autoalignment_off(self):
+        """
+        Invoked either automatically (auto-alignment failed) or by the user. Switch back to
+        manual alignment and reset auto-alignment button.
+        
+        :return: -
+        """
+
+        # Enable manual alignment, disable auto-alignment.
         self.ui.alignment.setEnabled(True)
         self.autoalign_enabled = False
         self.al.autoalign_initialized = False
+        # Reset the auto-alignment button.
         self.ui.autoalignment.clicked.connect(self.prompt_autoalignment)
         self.reset_autoalignment_button()
+        # Control is given back to the user. Update the status bar.
         self.set_text_browser("Continue video recording using the record group buttons.")
         self.set_statusbar()
 
     def configure_drift_correction(self):
+        """
+        The "Correct for Drift" button is pressed. Open a gui dialog for displaying available
+        alignment points and selecting points used for drift determination.
+        
+        :return: -
+        """
+
         drift_configuration_window = ComputeDriftRate(self.configuration, self.workflow.al)
         drift_configuration_window.exec_()
         self.set_statusbar()
 
     def prompt_rotate_camera(self):
+        """
+        The "Camera Orientation" button is pressed. Prompt the user for acknowledgement, because
+        in the middle of video acquisition this operation has severe consequences.
+        
+        :return: -
+        """
+
+        # Set the context and display the prompt message.
         self.gui_context = "rotate_camera"
         self.set_text_browser("Do you really want to rotate camera? "
                               "All tiles will be marked as un-processed. "
                               "Confirm with 'enter', otherwise press 'esc'.")
 
     def perform_camera_rotation(self):
+        """
+        Invoked either automatically after first alignment (method "alignment_performed") or on
+        user request.
+        
+        :return: -
+        """
+
+        # Switch back to manual alignment, if auto-alignment was active
         self.ui.alignment.setEnabled(True)
         self.autoalign_enabled = False
         self.reset_autoalignment_button()
+        # Disable keys further down in observation workflow.
         self.disable_keys([6, 7, 8, 9, 10, 11, 12, 13, 15])
+        # Display info for the user, and trigger workflow thread to move the telescope to the
+        # center point of the sunlit moon limb.
         self.set_text_browser("Slewing telescope to Moon limb, please wait.")
         self.workflow.slew_to_moon_limb_flag = True
 
     def prompt_camera_rotated_acknowledged(self):
+        """
+        Triggered by the workflow thread ("moon_limb_centered_signal") when the telescope has
+        reached the moon limb midpoint. Prompt the user to turn the camera properly.
+        
+        :return: -
+        """
+
+        # Set the context and display the prompt message.
         self.gui_context = "perform_camera_rotation"
         self.set_text_browser("Rotate camera until the moon limb at the center of the FOV is "
                               "oriented vertically. Confirm with 'enter'.")
 
     def finish_camera_rotation(self):
+        """
+        The user has rotated the camera and acknowledged by pressing "Enter". The system is now
+        ready for video acquisition. Activate the buttons of the record group and display an
+        info message in the text browser.
+        
+        :return: -
+        """
+
+        # Activate gui buttons.
         self.ui.autoalignment.setEnabled(True)
         self.ui.set_focus_area.setEnabled(True)
         self.ui.start_continue_recording.setEnabled(True)
@@ -410,34 +627,73 @@ class StartQT4(QtGui.QMainWindow):
         self.ui.set_tile_unprocessed.setEnabled(True)
         self.ui.set_all_tiles_unprocessed.setEnabled(True)
         self.ui.set_all_tiles_processed.setEnabled(True)
+        # When the camera orientation has changed, all tiles are marked "unprocessed"
         self.tv.mark_all_unprocessed()
         self.workflow.active_tile_number = -1
         self.camera_rotated = True
+        # Update the status bar and display message.
         self.set_statusbar()
         self.set_text_browser("Start video recording using the record group buttons, "
                               "or select the focus area.")
 
     def set_focus_area(self):
+        """
+        Triggered by the "Select Focus Area" gui button. The user is requested to move the telescope
+        manually to an appropriate location for focus checking, and to confirm the position with
+        pressing "Enter". This position is stored. The telescope can be moved back to this point
+        later by pressing "Goto Focus Area".
+        
+        :return: -
+        """
+
         if self.configuration.protocol:
             print str(datetime.now())[11:21], "Select focus area"
+        # Write the user prompt to the text browser.
         self.set_text_browser("Move telescope to focus area. Confirm with 'enter', otherwise "
                               "press 'esc'.")
+        # If the telescope was aimed at a tile, reset its "active" status, update the status bar,
+        # and set the context for the "Enter" key.
         self.reset_active_tile()
         self.set_statusbar()
         self.gui_context = "set_focus_area"
 
     def finish_set_focus_area(self):
+        """
+        The user has acknowledged the position of the focus area. Trigger the workflow thread to
+        capture the position.
+        
+        :return: -
+        """
+
         self.workflow.set_focus_area_flag = True
 
     def set_focus_area_finished(self):
+        """
+        Triggered by the "focus_area_set_signal" from the workflow thread. The focus area position
+        is captured. Now the user may proceed with video acquisition.
+        
+        :return: -
+        """
+
+        # Mark the focus area as being recorded, update status bar, and display message.
         self.focus_area_set = True
         self.set_statusbar()
         self.set_text_browser("Start / continue video recording using the record group buttons.")
+        # Enable the gui button "Goto Focus Area"
         self.ui.goto_focus_area.setEnabled(True)
 
     def goto_focus_area(self):
+        """
+        Triggered by pressing the "Goto Focus Area" button. Move the telescope to the recorded
+        position where camera focus can be checked.
+        
+        :return: -
+        """
+
         if self.configuration.protocol:
             print str(datetime.now())[11:21], "Goto focus area"
+        # If the telescope was aimed at a tile, reset its "active" status, update the status bar,
+        # display a message and trigger the workflow thread to move the telescope.
         self.reset_active_tile()
         self.set_statusbar()
         self.set_text_browser("After focussing, continue video recording using the record "
@@ -445,16 +701,38 @@ class StartQT4(QtGui.QMainWindow):
         self.workflow.goto_focus_area_flag = True
 
     def start_continue_recording(self):
+        """
+        Record the next video. Identify the next tile to be recorded. If there is one left,
+        trigger the workflow thread to move the telescope to the tile's location and record the
+        video.
+        
+        This method is invoked from three places:
+        - Manually by pressing the gui button "Start / Continue Recording"
+        - In manual camera mode, by pressing the enter key when the user has taken a video.
+        - In automatic camera mode, when the "signal_from_camera" method is executed.
+        
+        :return: -
+        """
+
+        # Disable the "Move to Selected Tile" button, because after this operation no selection is
+        # active any more.
         self.ui.move_to_selected_tile.setEnabled(False)
+        # De-activate all keys while the operation is in progress.
         self.save_key_status()
         if self.configuration.protocol:
             print str(datetime.now())[11:21], "Start/continue recording"
+        # If guiding was active (from last video recording), stop it now.
         if self.workflow.telescope.guiding_active:
             self.workflow.telescope.stop_guiding()
+        # Check if the currently active tile is marked "processed", change its display in the
+        # tile visualization window accordingly. It will not be marked as "active" any more.
         if self.tc.list_of_tiles_sorted[self.workflow.active_tile_number]['processed']:
             self.mark_processed()
+        # Look for the next unprocessed tile.
         (self.next_tile, next_tile_index) = self.find_next_unprocessed_tile()
 
+        # There is no unprocessed tile left, set the "all_tiles_recorded" flag, display a message,
+        # re-activate gui keys and exit the viceo acquisition loop
         if self.next_tile is None:
             self.all_tiles_recorded = True
             self.ui.move_to_selected_tile.setEnabled(False)
@@ -463,6 +741,10 @@ class StartQT4(QtGui.QMainWindow):
             if self.configuration.protocol:
                 print str(datetime.now())[11:21], "All tiles have been recorded."
             self.reset_key_status()
+        # There is at least one tile left. Set "active_tile_number" and change its display in the
+        # tile visualization window. Initialize the "camera_interrupted" flag. (The user may set
+        # it to True during video acquisition.) Finally, trigger the workflow thread to record the
+        # video.
         else:
             self.workflow.active_tile_number = next_tile_index
             self.tv.mark_active(self.workflow.active_tile_number)
@@ -471,12 +753,24 @@ class StartQT4(QtGui.QMainWindow):
             self.workflow.slew_to_tile_and_record_flag = True
 
     def find_next_unprocessed_tile(self):
+        """
+        Find the next tile to be recorded, i.e. which is not marked as "processed". Start searching
+        with the index following the current "active_tile_number".
+        
+        :return: (next tile, index of next tile), or (None, -1) if no "unprocessed" tile is left.
+        """
+
+        # Initialize an index vector, starting with 0. Its length is the total number of tiles.
         indices = range(len(self.tc.list_of_tiles_sorted))
+
+        # No "active_tile_number" set: Keep the tiles in their original order.
         if self.workflow.active_tile_number == -1:
             indices_shifted = indices
+        # Let the index vector start with the next index after "active_tile_number", and wrap around.
         else:
             indices_shifted = indices[self.workflow.active_tile_number:] + indices[
                                                                            0:self.workflow.active_tile_number]
+        # Look for first "unprocessed" tile in shifted order. Leave the loop when the first is found.
         next_tile = None
         next_tile_index = -1
         for i in indices_shifted:
@@ -485,9 +779,18 @@ class StartQT4(QtGui.QMainWindow):
                 next_tile = tile
                 next_tile_index = i
                 break
+
         return (next_tile, next_tile_index)
 
     def mark_processed(self):
+        """
+        Change the color of the currently "active_tile_number" in the tile visualization window to
+        indicate that it is "processed". If auto-alignment is active, keep a list of tiles processed
+        since last alignment point (for later rollback).
+        
+        :return: 
+        """
+
         self.tv.mark_processed([self.workflow.active_tile_number])
         # After successful exposure, put active tile on list of tiles processed since last
         # auto-align. This list will be reset to unprocessed later if the error in the next
@@ -592,6 +895,15 @@ class StartQT4(QtGui.QMainWindow):
             self.button_list[index].setEnabled(False)
 
     def signal_from_camera(self):
+        """
+        In "camera automation" mode, the camera has emitted its signal "signal" when video
+        acquisition is finished. (The signal is connected with this method in the workflow thread.)
+        If in the meantime the "Esc" key was pressed, stop the video acquisition loop. Otherwise
+        continue with method "start_continue_recording".
+        
+        :return: 
+        """
+
         if self.camera_interrupted:
             self.camera_interrupted = False
         else:

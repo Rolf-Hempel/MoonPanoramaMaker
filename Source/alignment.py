@@ -56,6 +56,7 @@ class Alignment:
         :param moon_ephem: object with positions of the sun and moon, including libration info
         :param debug: if set to True, display keypoints and shifts during auto-alignment
         """
+
         self.debug = debug
         self.configuration = configuration
         self.wait_interval = (self.configuration.conf.getfloat(
