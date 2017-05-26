@@ -38,26 +38,28 @@ from tile_visualization import TileVisualization
 from workflow import Workflow
 
 
-class TileNumberInput(QtGui.QDialog, Ui_TileNumberInputDialog):
-    def __init__(self, start_value, value_context, parent=None):
-        self.value_context = value_context
-        QtGui.QDialog.__init__(self, parent)
-        self.setupUi(self)
-        self.spinBox.setFocus()
-        self.spinBox.setValue(start_value)
-
-    def accept(self):
-        self.value_context.active_tile_number = self.spinBox.value()
-        self.close()
-
-
 class StartQT4(QtGui.QMainWindow):
+    """
+    This class is the main class of the MoonPanoramaMaker software. It implements the main gui and
+    through it communicates with the user. It creates the workflow thread which asynchronously
+    controls all program activities.
+    
+    """
     def __init__(self, parent=None):
+        """
+        Initialize the MoonPanoramaMaker environment.
+        
+        :param parent: None
+        """
+
+        # The (generated) QtGui class is contained in module qtgui.py.
         QtGui.QWidget.__init__(self, parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setChildrenFocusPolicy(QtCore.Qt.NoFocus)
 
+        # Build a list of gui buttons. It is used to control the de-activation and re-activation of
+        # gui buttons at runtime. Also, connect gui events with method invocations.
         self.button_list = []
         self.ui.edit_configuration.clicked.connect(self.edit_configuration)
         self.button_list.append(self.ui.edit_configuration)
@@ -92,13 +94,22 @@ class StartQT4(QtGui.QMainWindow):
         self.ui.autoalignment.clicked.connect(self.prompt_autoalignment)
         self.button_list.append(self.ui.autoalignment)
 
+        # The gui_context is used to know, at which point of program execution, for example, a
+        # "Enter" key was pressed.
         self.gui_context = ""
+        # Before gui buttons are de-activated, the activation status of all keys is saved for later
+        # restoration. At the moment, no key status is saved.
         self.key_status_saved = False
 
+        # Read in or (if no config file is found) create all configuration parameters.
         self.configuration = Configuration()
 
+        # Start the workflow thread. It is executed asynchronously to keep the gui from freezing
+        # during long-running tasks.
         self.workflow = Workflow(self)
 
+        # The workflow thread sends signals when a task is finished. Connect those signals with
+        # the appropriate gui activity.
         self.workflow.camera_ready_signal.connect(self.camera_ready)
         self.workflow.alignment_ready_signal.connect(self.start_workflow)
         self.workflow.alignment_point_reached_signal.connect(self.alignment_point_reached)
@@ -112,22 +123,42 @@ class StartQT4(QtGui.QMainWindow):
         self.workflow.reset_key_status_signal.connect(self.reset_key_status)
         self.workflow.set_text_browser_signal.connect(self.set_text_browser)
 
+        # Look up the location and size of the main gui. Replace the location parameters with those
+        # stored in the configuration file when the gui was closed last time. This way, the gui
+        # memorizes its location between MPM invocations.
         (x0, y0, width, height) = self.geometry().getRect()
         x0 = int(self.configuration.conf.get('Hidden Parameters', 'main window x0'))
         y0 = int(self.configuration.conf.get('Hidden Parameters', 'main window y0'))
         self.setGeometry(x0, y0, width, height)
         self.configuration.set_protocol_flag()
+
+        # Actions in the workflow thread are triggered by setting the corresponding flag in the gui
+        # thread to True. Here, trigger redirecting stdout to a file if requested in configuration.
         self.workflow.set_session_output_flag = True
+
+        # If the configuration was not read in from a previous run (i.e. only default values have
+        # been set so far), open the configuration editor gui.
         if not self.configuration.configuration_read:
             editor = ConfigurationEditor(self.configuration)
             editor.exec_()
+            # If the user made changes to the configuration, choices of writing a protocol and of
+            # re-directing it to a file might have changed. Therefore, repeat the two above
+            # initializations.
             if editor.configuration_changed:
                 self.configuration.set_protocol_flag()
                 self.workflow.set_session_output_flag = True
 
+        # Write the program version into the window title.
         self.setWindowTitle(QtCore.QString(self.configuration.version))
 
     def setChildrenFocusPolicy(self, policy):
+        """
+        This method is needed so that arrow key events are associated with this object. The arrow
+        keys are used to make pointing corrections to the telescope mount.
+        
+        :param policy: focus policy to be used
+        :return: -
+        """
         def recursiveSetChildFocusPolicy(parentQWidget):
             for childQWidget in parentQWidget.findChildren(QtGui.QWidget):
                 childQWidget.setFocusPolicy(policy)
@@ -136,6 +167,13 @@ class StartQT4(QtGui.QMainWindow):
         recursiveSetChildFocusPolicy(self)
 
     def edit_configuration(self):
+        """
+        This method is invoked with the "configuration" gui button. Open the configuration editor.
+        If the configuration is changed, close the tile visualization window and restart the
+        workflow.
+        
+        :return: -
+        """
         editor = ConfigurationEditor(self.configuration)
         editor.exec_()
         # print >> sys.stderr, "config changed:",
@@ -143,25 +181,53 @@ class StartQT4(QtGui.QMainWindow):
         #     ", config initialized: ", self.configuration_initialized
         if editor.configuration_changed:
             self.workflow.set_session_output_flag = True
-            try:
-                self.tv.close_tile_visualization()
-            except AttributeError:
-                pass
-            self.start_workflow()
+            self.do_restart()
+
+    def do_restart(self):
+        """
+        Do a program restart. First close the tile visualization window. Then restart the workflow.
+        
+        :return: -
+        """
+
+        try:
+            self.tv.close_tile_visualization()
+        except AttributeError:
+            pass
+        self.start_workflow()
 
     def restart(self):
+        """
+        This method is invoked with the "restart" gui button. Set the context and write a
+        confirmation message to the text browser. If "Enter" is pressed (in this context), the
+        do_restart method (above) is called.
+        
+        :return: -
+        """
         self.gui_context = "restart"
         self.set_text_browser("Do you really want to restart? "
                               "Confirm with 'enter', otherwise press 'esc'.")
 
     def start_workflow(self):
+        """
+        Start the observation workflow. Disable all keys which at this point do not make sense yet.
+        Then check if camera automation is selected in the configuration. If so, remind the user
+        to start the FireCapture program. If camera automation is de-selected, skip this reminder,
+        and proceed with method "camera_connect_request_answered".
+        
+        :return: -
+        """
+
         self.disable_keys([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
 
         self.camera_automation = (
             self.configuration.conf.getboolean("Workflow", "camera automation"))
         if not self.camera_automation:
+            # No camera automation: Go directly to "camera_connect_request_answered"
             self.camera_connect_request_answered()
         else:
+            # Pressing the "Enter" key in this context will invoke method
+            # "camera_connect_request_answered"
             self.gui_context = "camera connect request"
             self.set_text_browser("Make sure that FireCapture is started, and that "
                                   "'MoonPanoramaMaker' is selected in the PreProcessing section. "
@@ -283,8 +349,9 @@ class StartQT4(QtGui.QMainWindow):
                 self.configuration.conf.getfloat("Alignment", "max autoalign interval"))
             # The configuration parameter is in percent. In "workflow" it is compared to a value
             # between 0. and 1.
-            self.max_alignment_error = (
-                self.configuration.conf.getfloat("Alignment", "max alignment error")) / 100.
+            self.max_alignment_error = (self.configuration.conf.getfloat("Alignment",
+                                                                         "max alignment error")) \
+                                       / 100.
             # Initialize the maximum time between auto-aligns to the minimum acceptable value.
             # The interval will be increased at next auto-align if the correction is very small.
             self.max_seconds_between_autoaligns = self.min_autoalign_interval
@@ -449,8 +516,8 @@ class StartQT4(QtGui.QMainWindow):
             self.selected_tile_numbers_string = str(self.selected_tile_numbers)[1:-1]
             self.gui_context = "set_tile_unprocessed"
             self.set_text_browser(
-                "Do you want to mark tile(s) " + self.selected_tile_numbers_string +
-                " as un-processed? Confirm with 'enter', otherwise press 'esc'.")
+                "Do you want to mark tile(s) " + self.selected_tile_numbers_string + " as "
+                                                                                     "un-processed? Confirm with 'enter', otherwise press 'esc'.")
 
     def mark_unprocessed(self):
         self.tv.mark_unprocessed(self.selected_tile_numbers)
@@ -536,11 +603,7 @@ class StartQT4(QtGui.QMainWindow):
             if event.key() == 16777220:  # Enter key
                 if self.gui_context == "restart":
                     self.gui_context = ""
-                    try:
-                        self.tv.close_tile_visualization()
-                    except AttributeError:
-                        pass
-                    self.start_workflow()
+                    self.do_restart()
                 elif self.gui_context == "camera connect request":
                     self.gui_context = ""
                     self.camera_connect_request_answered()
@@ -653,7 +716,7 @@ class StartQT4(QtGui.QMainWindow):
         quit_msg = "Are you sure you want to exit the MoonPanoramaMaker " \
                    "program?"
         reply = QtGui.QMessageBox.question(self, 'Message', quit_msg, QtGui.QMessageBox.Yes,
-            QtGui.QMessageBox.No)
+                                           QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
             evnt.accept()
 
@@ -669,6 +732,19 @@ class StartQT4(QtGui.QMainWindow):
             time.sleep(4. * self.workflow.run_loop_delay)
         else:
             evnt.ignore()
+
+
+class TileNumberInput(QtGui.QDialog, Ui_TileNumberInputDialog):
+    def __init__(self, start_value, value_context, parent=None):
+        self.value_context = value_context
+        QtGui.QDialog.__init__(self, parent)
+        self.setupUi(self)
+        self.spinBox.setFocus()
+        self.spinBox.setValue(start_value)
+
+    def accept(self):
+        self.value_context.active_tile_number = self.spinBox.value()
+        self.close()
 
 
 if __name__ == "__main__":
