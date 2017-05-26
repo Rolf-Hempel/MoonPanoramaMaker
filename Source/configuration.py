@@ -47,7 +47,7 @@ class Configuration:
 
         # Switch on debug modes used to emulate camera, visualize auto-alignment features/offsets
         # and to set ephemeris computations to a fixed date and time.
-        self.camera_debug = False
+        self.camera_debug = True
         self.alignment_debug = False
         self.ephemeris_debug = False
 

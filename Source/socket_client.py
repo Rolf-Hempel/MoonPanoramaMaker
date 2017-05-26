@@ -29,58 +29,134 @@ import numpy as np
 
 
 class SocketClient:
+    """
+    The SocketClient class implements the communication endpoint on MoonPanoramaMaker's side for
+    video and still image acquisition through FireCapture. For video acquisition the blocking method
+    acquire_video is provided. Non-blocking video acquisition may be coded by using the lower-level
+    send and receive methods directly.
+     
+    """
+
     def __init__(self, host, port):
+        """
+        Initialization: create a socket connection to the socket server in the MoonPanoramaMaker
+        plugin in FireCapture.
+        
+        :param host: host id for the socket connection
+        :param port: port id on which the socket server is listening
+        """
+
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((host, port))
 
     def mysend(self, msg):
+        """
+        Send a string over the socket connection. If a failure occurs, a RuntimeError exception is
+        raised.
+        
+        :param msg: message to be sent (string)
+        :return: number of bytes sent
+        """
+
         sent = self.sock.send(msg)
         if sent == 0:
             raise RuntimeError("Send: socket connection broken")
 
     def myreceive(self, recv_count):
+        """
+        Receive a message (string) through the socket connection. If the socket connection is
+        interrupted during the operation, a RuntimeException is raised. Please note that this
+        method blocks if less bytes than recv_count are to be received.
+        
+        :param recv_count: number of bytes to be received
+        :return: message (string) received
+        """
+
+        # Recieve the first chunk of data.
         data = self.sock.recv(recv_count)
-        if data == 0:
-            return None
+        if data == '':
+            raise RuntimeError("Recv: socket connection broken")
+        # if data == 0:
+        #     return None
         total_rx = len(data)
         rcvd = data
+        # Append more chunks until the expected number of characters are received.
         while total_rx < recv_count:
             data = self.sock.recv(recv_count - total_rx)
-            if data == 0:
-                return None
+            if data == '':
+                raise RuntimeError("Recv: socket connection broken")
+            # if data == 0:
+            #     return None
             total_rx += len(data)
             rcvd = rcvd + data
-        if rcvd == '':
-            raise RuntimeError("Recv: socket connection broken")
+
+        # The expected number of characters have been received.
         return rcvd
 
     def myreceive_int(self, length):
+        """
+        Receive an integer value through the socket.
+        
+        :param length: length of the integer to be received (in bytes, usually 4, can be shorter)
+        :return: the value (int) of the integer received
+        """
+
+        # Receive the message. Its length is the number of bytes of the expected integer.
         message = self.myreceive(length)
+        # Translate each character into an int value.
         values = map(ord, message)
         value = 0
+        # Accumulate the total value of the integer and return it.
         for i in range(length):
             value += values[i] * 256 ** (length - 1 - i)
         return value
 
     def acquire_video(self, file_name_appendix):
+        """
+        Trigger the acquisition of a video in FireCapture and wait for the acknowledgement. The
+        character string File_name_appendix is used to encode detailed info (e.g. MPM tile numbers)
+        into the names of the video files. It is appended to the file name by FireCapture. The
+        string must be 9 characters long and can be anything except "terminate" or "still_pic".
+        
+        :param file_name_appendix: character string to be appended to the filename by FireCapture
+        :return: character returned by FireCapture as acknowledgement
+        """
+
         self.mysend(file_name_appendix)
         ack = self.sock.recv(1)
         return ack
 
     def acquire_still_image(self, compression_factor):
+        """
+        Trigger the acquisition of a monochrome still picture by FireCapture. The dynamic range of
+        the image can be either 8 or 16 bit. The full-scale camera image is reduced in size both
+        in x and y by parameter "compression_factor" (max. 2 digits). The size reduction is done on
+        the FireCapture side to reduce network traffic.
+        
+        :param compression_factor: factor by which pixel counts are to be reduced in both x and y
+        :return: tuple with four items: the image_array (numpy style), the width and height of the
+        image in pixels, and the dynamic depth of the image (1 for 8bit, 2 for 16bit).
+        """
+
+        # Trigger still picture acquisition. Append the two digit compression factor.
         self.mysend("still_pic")
         self.mysend("%02d" % compression_factor)
+        # Receive pixel sizes and info on dynamic depth of the image.
         width = self.myreceive_int(4)
         height = self.myreceive_int(4)
         dynamic = self.myreceive_int(4)
+        # Receive the image as a character string and convert it into int values.
         values = map(ord, self.myreceive(width * height * dynamic))
+        # Initialize a numpy array for the image.
         image_array = np.empty((height, width), dtype=np.uint8)
         pos = 0
+        # For 8bit image: just transfer the pixel values to the numpy array.
         if dynamic == 1:
             for j in range(height):
                 for i in range(width):
                     image_array[j, i] = values[pos]
                     pos += 1
+        # For 16 bit image: combine two consecutive values into the pixel value.
         elif dynamic == 2:
             for j in range(height):
                 for i in range(width):
@@ -91,6 +167,12 @@ class SocketClient:
         return (image_array, width, height, dynamic)
 
     def close(self):
+        """
+        Close the socket connection.
+        
+        :return: -
+        """
+
         self.sock.close()
 
 
@@ -104,36 +186,92 @@ class SocketClientDebug:
     """
 
     def __init__(self, host, port):
+        """
+        Initialization: set the name of the local directory from which the still images are to be
+        read. Since there will be no socket communication, parameters host and port are not used.
+        Instead of using the camera to capture still images, images are read from a local
+        subdirectory.
+        
+        :param host: host id for the socket connection (ignored)
+        :param port: port id on which the socket server is listening (ignored)
+        """
+
         self.image_directory = "alignment_test_images"
+        # Initialize the counter for still images acquired.
         self.image_counter = 0
+        # Create list of images stored in the image_directory.
         self.image_file_list = listdir(self.image_directory)
 
     def mysend(self, text):
+        """
+        Dummy method: do not do anything.
+        
+        :param text: text of the message (ignored)
+        :return: -
+        """
+
         pass
 
     def myreceive(self, recv_count):
+        """
+        Dummy method: no receive operation is performed. A faked message of the expected length is
+        returned.
+        
+        :param recv_count: number of bytes to be received
+        :return: message (string) received (faked) of length recv_count
+        """
+
         return "a" * recv_count
 
-    def acquire_video(self, text):
+    def acquire_video(self, file_name_appendix):
+        """
+        Dummy method: no video acquisition is triggered. Just return the acknowledgement character.
+        
+        :param file_name_appendix: character string to be appended to the filename (ignored)
+        :return: character "a" as acknowledgement
+        """
+
         return "a"
 
     def acquire_still_image(self, compression_factor):
+        """
+        Emulate still image acquisition by reading them from a local directory. The image can
+        be reduced in size by specifying a "comression_factor" > 1. Make sure not to call this
+        method more often than there are images in the directory. Otherwise a RuntimeExecption is
+        raised.
+        
+        :param compression_factor: factor by which pixel counts are to be reduced in both x and y
+        :return: tuple with four items: the image_array (numpy style), the width and height of the
+        image in pixels, and the dynamic depth of the image (1 for 8bit).
+        """
+
+        # Test if there is an unread image left in the local directory.
         if self.image_counter >= len(self.image_file_list):
             raise RuntimeError("still image counter out of range")
+        # Read the image from the file, and extract the luminance channel.
         still_image_file = self.image_file_list[self.image_counter]
-        still_image = Image.open(
-            self.image_directory + "/" + still_image_file).convert('L')
+        still_image = Image.open(self.image_directory + "/" + still_image_file).convert('L')
+        # Look up size info and compute new size after compression.
         (width, height) = still_image.size
         new_width = width / compression_factor
         new_height = height / compression_factor
-        still_image = still_image.resize((new_width, new_height),
-                                         Image.ANTIALIAS)
+        # If compression is active, resize the image.
+        if compression_factor != 1:
+            still_image = still_image.resize((new_width, new_height), Image.ANTIALIAS)
+        # Convert the image into an numpy array
         still_image_array = np.asarray(still_image)
         dynamic = 1
         self.image_counter += 1
+        # Return the image in the same format as the real socket client would do.
         return (still_image_array, new_width, new_height, dynamic)
 
     def close(self):
+        """
+        Dummy method for closing the socket.
+        
+        :return: -
+        """
+
         pass
 
 
@@ -147,16 +285,13 @@ if __name__ == "__main__":
     try:
         # Acquire Video
         print "Client: Acquire video file"
-        print "Client: acknowledgement from Server = ", \
-            mysocket.acquire_video("_tile_001")
+        print "Client: acknowledgement from Server = ", mysocket.acquire_video("_tile_001")
         time.sleep(2.)
         # Acquire still picture:
         print "Client: Acquire still picture"
         compression_factor = 1
-        (image_array, width, height, dynamic) = mysocket.acquire_still_image(
-            compression_factor)
-        print "Client: acknowledgement from Server = ", width, ", ", height, \
-            ", dynamic: ", dynamic
+        (image_array, width, height, dynamic) = mysocket.acquire_still_image(compression_factor)
+        print "Client: acknowledgement from Server = ", width, ", ", height, ", dynamic: ", dynamic
         time.sleep(2.)
         img = Image.fromarray(image_array, 'L')
         img.show()

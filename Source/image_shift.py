@@ -83,7 +83,7 @@ class ImageShift:
         # During auto-alignment all still images captured are stored in a directory in the user's
         # home directory. If such a directory is found from an earlier MPM run, delete it first.
         home = os.path.expanduser("~")
-        self.image_dir = home + "\\MoonPanoramaMaker_alignment_images"
+        self.image_dir = os.path.join(home, ".MoonPanoramaMaker_alignment_images")
         try:
             shutil.rmtree(self.image_dir)
         except:

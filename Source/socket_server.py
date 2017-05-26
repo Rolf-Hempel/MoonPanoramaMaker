@@ -25,13 +25,26 @@ import socket
 
 
 class SocketServer:
+    """
+    This class is obsolete code. It was used to test the communication between MoonPanoramaMaker
+    and FireCapture. The SocketServer is a stand-alone application which emulates the MPM plugin
+    in FireCapture. It takes reqests to start video capturing and sends faked acknowledgements back
+    to MPM.
+    
+    The class is obsolete because it does not implement the still image capturing required by
+    auto-alignment. Today MPM can be tested without the SocketServer by seeting the "camera_debug"
+    flag in configuration.py to True. Then, on the client side, the video and still-image requests
+    are handled by mockup class SocketClientDebug which does not communicate with FireCapture.
+    
+    """
+
     def __init__(self, host, port):
 
-        # create an INET, STREAMing socket
+        # Create an INET, STREAMing socket
         self.serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # bind the socket to localhost and port 1234
+        # Bind the socket to localhost and port 1234
         self.serversocket.bind((host, port))
-        # become a server socket
+        # Become a server socket
         self.serversocket.listen(1)
         print "Server started"
 
