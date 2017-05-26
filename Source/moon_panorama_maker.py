@@ -45,6 +45,7 @@ class StartQT4(QtGui.QMainWindow):
     controls all program activities.
     
     """
+
     def __init__(self, parent=None):
         """
         Initialize the MoonPanoramaMaker environment.
@@ -159,6 +160,7 @@ class StartQT4(QtGui.QMainWindow):
         :param policy: focus policy to be used
         :return: -
         """
+
         def recursiveSetChildFocusPolicy(parentQWidget):
             for childQWidget in parentQWidget.findChildren(QtGui.QWidget):
                 childQWidget.setFocusPolicy(policy)
@@ -270,7 +272,8 @@ class StartQT4(QtGui.QMainWindow):
         # Open the Matplotlib window which displays the tesselation.
         self.tv = TileVisualization(self.configuration, self.tc)
 
-        # Initialization is complete, set the main gui status bar and proceed with landmark selection.
+        # Initialization is complete, set the main gui status bar and proceed with landmark
+        # selection.
         self.initialized = True
         self.set_statusbar()
         self.select_new_landmark()
@@ -506,8 +509,7 @@ class StartQT4(QtGui.QMainWindow):
             # The configuration parameter is in percent. In "workflow" it is compared to a value
             # between 0. and 1.
             self.max_alignment_error = (self.configuration.conf.getfloat("Alignment",
-                                                                         "max alignment error")) \
-                                       / 100.
+                                        "max alignment error")) / 100.
             # Initialize the maximum time between auto-aligns to the minimum acceptable value.
             # The interval will be increased at next auto-align if the correction is very small.
             self.max_seconds_between_autoaligns = self.min_autoalign_interval
@@ -766,11 +768,13 @@ class StartQT4(QtGui.QMainWindow):
         # No "active_tile_number" set: Keep the tiles in their original order.
         if self.workflow.active_tile_number == -1:
             indices_shifted = indices
-        # Let the index vector start with the next index after "active_tile_number", and wrap around.
+        # Let the index vector start with the next index after "active_tile_number", and wrap
+        # around.
         else:
             indices_shifted = indices[self.workflow.active_tile_number:] + indices[
-                                                                           0:self.workflow.active_tile_number]
-        # Look for first "unprocessed" tile in shifted order. Leave the loop when the first is found.
+                                        0:self.workflow.active_tile_number]
+        # Look for first "unprocessed" tile in shifted order. Leave the loop when the first is
+        # found.
         next_tile = None
         next_tile_index = -1
         for i in indices_shifted:
@@ -788,7 +792,7 @@ class StartQT4(QtGui.QMainWindow):
         indicate that it is "processed". If auto-alignment is active, keep a list of tiles processed
         since last alignment point (for later rollback).
         
-        :return: 
+        :return: -
         """
 
         self.tv.mark_processed([self.workflow.active_tile_number])
@@ -799,60 +803,131 @@ class StartQT4(QtGui.QMainWindow):
             self.workflow.tiles_since_last_autoalign.append(self.workflow.active_tile_number)
 
     def select_tile(self):
+        """
+        Triggered by pressing the "Select Tile" bui button. Open a gui for selecting a tile index.
+        Then enable the "Move to Selected Tile" button which can be used to drive the mount to the
+        tile's position.
+        
+        :return: -
+        """
+
         if self.workflow.active_tile_number > -1:
+            # There is an active tile. If it is still unprocessed, mark it as such in the tile
+            # visualization window.
             if (self.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
                     'processed'] == False):
                 self.tv.mark_unprocessed([self.workflow.active_tile_number])
+        # Open the dialog for selecting a tile number. Class TileNumberInput (in this module, see
+        # below) extends the TileNumberInputDialog in module tile_number_input_dialog. Set the
+        # context to "workflow", so that on dialog closing the selected value will be stored in
+        # "active_tile_number" of the workflow object.
         self.tni = TileNumberInput(self.workflow.active_tile_number, self.workflow)
         self.tni.exec_()
         if self.configuration.protocol:
             print str(datetime.now())[
                   11:21], "Tile number ", self.workflow.active_tile_number, " selected"
         self.ui.move_to_selected_tile.setEnabled(True)
+        # Clear the text browser.
         self.set_text_browser("")
 
     def set_tile_unprocessed(self):
+        """
+        Tiles can be selected either done by drawing a rectangle in the tile visualization
+        window, or by the variable "active_tile_number" of the workflow object not being set to -1.
+        First, check if one mechanism results in an non-empty list. If so, present the list to the
+        user and ask for acknowledgement that these tiles should be marked as unprocessed.
+        
+        :return: -
+        """
+
+        # Initialize the list with (potentially) selected tiles in visualization window.
         self.selected_tile_numbers = self.tv.get_selected_tile_numbers()
+        # If empty, check if there is a non-trivial active_tile_number.
         if len(self.selected_tile_numbers) == 0 and self.workflow.active_tile_number != -1:
             self.selected_tile_numbers.append(self.workflow.active_tile_number)
+        # If one of the mechanisms produced a non-empty list, set the gui context and ask the
+        # user to confirm the operation.
         if len(self.selected_tile_numbers) > 0:
             self.selected_tile_numbers_string = str(self.selected_tile_numbers)[1:-1]
             self.gui_context = "set_tile_unprocessed"
             self.set_text_browser(
                 "Do you want to mark tile(s) " + self.selected_tile_numbers_string + " as "
-                                                                                     "un-processed? Confirm with 'enter', otherwise press 'esc'.")
+                "un-processed? Confirm with 'enter', otherwise press 'esc'.")
 
     def mark_unprocessed(self):
+        """
+        The user has confirmed that the selected tile numbers should be marked unprocessed. Method
+        "mark_unprocessed" in class "TileVisualization" both sets the corresponding flags and
+        changes the color of the tiles in the visualization window.
+        
+        :return: -
+        """
+
+        # The action is performed in class TileVisualization.
         self.tv.mark_unprocessed(self.selected_tile_numbers)
         if self.configuration.protocol:
             print str(datetime.now())[
                   11:21], "Tile(s) " + self.selected_tile_numbers_string + " marked unprocessed."
+        # Since at least one tile is unprocessed now, reset the "all_tiles_recorded" flag.
         self.all_tiles_recorded = False
         self.set_text_browser("")
         self.set_statusbar()
 
     def set_all_tiles_unprocessed(self):
+        """
+        Triggered by pressing the "Set All Tiles Unprocessed" button. Set the context for the
+        "Enter" key and ask the user for confirmation.
+        
+        :return: -
+        """
+
         self.gui_context = "set_all_tiles_unprocessed"
         self.set_text_browser("Do you want to mark all tiles "
                               "as un-processed? Confirm with 'enter', "
                               "otherwise press 'esc'.")
 
     def mark_all_tiles_unprocessed(self):
+        """
+        The user has confirmed that all tiles should be set unprocessed by pressing the "Enter" key.
+        Method "mark_all_unprocessed" in class "TileVisualization" both sets the corresponding flags
+        and changes the color of the tiles in the visualization window.
+        
+        :return: -
+        """
+
+        # Perform the task in class TileVisualization.
         self.tv.mark_all_unprocessed()
         self.all_tiles_recorded = False
+        # Reset the active tile number. Processing will start from the beginning.
         self.workflow.active_tile_number = -1
         self.set_text_browser("")
         if self.configuration.protocol:
             print str(datetime.now())[11:21], "All tiles are marked as unprocessed."
 
     def set_all_tiles_processed(self):
+        """
+        Triggered by pressing the "Set All Tiles Processed" button. Set the context for the
+        "Enter" key and ask the user for confirmation.
+        
+        :return: -
+        """
+
         self.gui_context = "set_all_tiles_processed"
         self.set_text_browser("Do you want to mark all tiles "
                               "as processed? Confirm with 'enter', "
                               "otherwise press 'esc'.")
 
     def mark_all_tiles_processed(self):
+        """
+        The user has confirmed that all tiles should be set processed by pressing the "Enter" key.
+        Method "mark_all_processed" in class "TileVisualization" both sets the corresponding flags
+        and changes the color of the tiles in the visualization window.
+        
+        :return: -
+        """
+
         self.tv.mark_all_processed()
+        # Mark the recording process as finished. No more tiles to record.
         self.all_tiles_recorded = True
         self.workflow.active_tile_number = -1
         self.set_text_browser("All tiles are marked as processed.")
@@ -860,16 +935,35 @@ class StartQT4(QtGui.QMainWindow):
             print str(datetime.now())[11:21], "All tiles are marked as processed."
 
     def move_to_selected_tile(self):
+        """
+        Triggered by the gui button "Move to Selected Tile". Mark the tile active in the tile
+        visualization window and trigger the workflow thread to move the telescope to the tile.
+        
+        :return: -
+        """
+
+        # Get the tile object from the list kept by the TileConstructor object.
         self.selected_tile = self.tc.list_of_tiles_sorted[self.workflow.active_tile_number]
         if self.configuration.protocol:
             print str(datetime.now())[
                   11:21], "Goto selected tile number ", self.workflow.active_tile_number
+        # Mark the tile active in the tile visualization window, refresh the status bar.
         self.tv.mark_active(self.workflow.active_tile_number)
         self.set_statusbar()
+        # Clear the text browser and instruct the workflow thread to move the mount.
         self.set_text_browser("")
         self.workflow.move_to_selected_tile_flag = True
 
     def reset_active_tile(self):
+        """
+        If a tile has been selected as active, but then it is not processed, it can be reset with
+        this method. It is marked as unprocessed in the TileConstructor object and in the tile
+        visualization window, and the currently "active_tile_number" is reset to -1.
+        
+        :return: -
+        """
+
+        # There is a selected active tile.
         if self.workflow.active_tile_number > -1:
             if (self.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
                     'processed'] == False):
@@ -879,18 +973,44 @@ class StartQT4(QtGui.QMainWindow):
         self.workflow.active_tile_number = -1
 
     def save_key_status(self):
+        """
+        For all buttons of the main gui: save the current state (enabled / disabled), then disable
+        all buttons. The saved state is restored with method "reset_key_status".
+        
+        :return: -
+        """
+
+        # Initialize the status list.
         self.saved_key_status = []
+        # For each button store a boolean indicating its being enabled / disabled.
         for button in self.button_list:
             self.saved_key_status.append(button.isEnabled())
+            # Disable the button.
             button.setEnabled(False)
+        # Set a flag indicating that the key status has been saved.
         self.key_status_saved = True
 
     def reset_key_status(self):
+        """
+        Reverse operation to save_key_status: Restore the status of all gui buttons and reset the
+        flag "key_status_saved" to False.
+        
+        :return: -
+        """
+
         if self.key_status_saved:
             map(lambda x, y: x.setEnabled(y), self.button_list, self.saved_key_status)
             self.key_status_saved = False
 
     def disable_keys(self, index_list):
+        """
+        Disable a specific list of gui buttons (as defined by their indices in the global
+        button_list).
+        
+        :param index_list: list with selected indices of gui buttons in button_list
+        :return: -
+        """
+
         for index in index_list:
             self.button_list[index].setEnabled(False)
 
@@ -911,6 +1031,17 @@ class StartQT4(QtGui.QMainWindow):
             self.start_continue_recording()
 
     def keyPressEvent(self, event):
+        """
+        Define activities to be performed when specific keyboard keys are pressed. This method
+        overrides the standard activity of the main window class.
+        
+        :param event: event object
+        :return: -
+        """
+
+        # To keep apart the various activities which are specified by pressing "Enter", the
+        # gui_context variable carries the context where the program waits for the "Enter" event.
+        # The context variable is reset and a specific action is triggered.
         if type(event) == QtGui.QKeyEvent and event.isAutoRepeat() == False:
             if event.key() == 16777220:  # Enter key
                 if self.gui_context == "restart":
@@ -961,17 +1092,24 @@ class StartQT4(QtGui.QMainWindow):
                     self.gui_context = ""
                     self.mark_all_tiles_processed()
 
-
+            # Escape key:
             elif event.key() == QtCore.Qt.Key_Escape:
+                # If "key_status_saved" is True, keys are disabled because an operation
+                # is going on.
                 if self.key_status_saved:
+                    # Tell the user to be patient (no immediate action)
                     self.set_text_browser("Please wait")
                     self.gui_context = ""
+                    # Tell the workflow thread that the recording loop is to be interrupted.
                     self.workflow.escape_pressed_flag = True
+                    # By setting this flag, the automatic exposure loop is interrupted in
+                    # method "signal_from_camera".
                     self.camera_interrupted = True
                 else:
                     self.set_text_browser("")
                     self.gui_context = ""
 
+            # The arrow keys start moving the telescope in the direction indicated.
             elif event.key() == QtCore.Qt.Key_Down:
                 self.workflow.telescope.move_south()
             elif event.key() == QtCore.Qt.Key_Up:
@@ -982,6 +1120,13 @@ class StartQT4(QtGui.QMainWindow):
                 self.workflow.telescope.move_west()
 
     def keyReleaseEvent(self, event):
+        """
+        The telescope moves as long as an arrow key is pressed. When it is released, tell the
+        telescope thread to stop the motion.
+        
+        :param event: event object
+        :return: -
+        """
         if type(event) == QtGui.QKeyEvent and event.isAutoRepeat() == False:
             if event.key() == QtCore.Qt.Key_Down:
                 self.workflow.telescope.stop_move_south()
@@ -993,68 +1138,133 @@ class StartQT4(QtGui.QMainWindow):
                 self.workflow.telescope.stop_move_west()
 
     def set_text_browser(self, text):
+        """
+        Display a text in the text browser field of the main gui. This is used for messages to the
+        user and for prompts for user actions.
+        
+        :param text: string to be displayed in the text browser
+        :return: -
+        """
+
         self.ui.prompt_text_browser.setText(text)
 
     def set_statusbar(self):
+        """
+        The status bar at the bottom of the main gui summarizes various infos on the process status.
+        Depending of the situation within the observation process, specific information may or may
+        not be available. Read out flags to decide which infos to present. The status information
+        is concatenated into a single "status_text" which eventually is written into the main gui
+        status bar.
+        
+        :return: -
+        """
+
+        # Show if the process is initialized or not.
         if self.initialized:
             status_text = "Initialized"
         else:
             status_text = ""
+        # Show name of selected landmark.
         if self.workflow.al.is_landmark_offset_set:
             status_text += ", landmark %s selected" % self.workflow.al.ls.selected_landmark
+        # Display current alignment corrections in RA, DE (in arc minutes)
         if self.workflow.al.is_aligned:
             align_ra = degrees(self.workflow.al.ra_correction) * 60.
             align_de = degrees(self.workflow.al.de_correction) * 60.
             status_text += (
                 ", mount alignment: (" + '%3.1f' % align_ra + "'," + '%3.1f' % align_de + "')")
+        # If auto-alignment is active, add a note on that.
         if self.autoalign_enabled:
             status_text += ", auto-align on"
+        # Show drift rates in arc minutes per hour.
         if self.workflow.al.is_drift_set:
             drift_ra = degrees(self.workflow.al.drift_ra) * 216000.
             drift_de = degrees(self.workflow.al.drift_de) * 216000.
             status_text += (
                 ", drift rate: (" + '%4.2f' % drift_ra + "'/h, " + '%4.2f' % drift_de + "'/h)")
+        # Tell if camera is properly oriented.
         if self.camera_rotated:
             status_text += ", camera rotated"
+        # Tell if a focus area has been selected.
         if self.focus_area_set:
             status_text += ", focus area selected"
+        # Tell at which tile the telescope is currently pointing.
         if self.workflow.active_tile_number >= 0:
             status_text += ", aimed at tile " + str(self.workflow.active_tile_number)
+        # Tell if all tiles have been recorded.
         if self.workflow.all_tiles_recorded:
             status_text += ", all tiles recorded"
+        # Write the complete message to the status bar.
         self.ui.statusbar.showMessage(status_text)
 
     def closeEvent(self, evnt):
+        """
+        When the user asks to close the main gui, a dialog is presented asking for confirmation.
+        In case the user confirms, do cleanup activities before closing the main gui. 
+        
+        :param evnt: event object
+        :return: -
+        """
+
+        # Ask the user for confirmation.
         quit_msg = "Are you sure you want to exit the MoonPanoramaMaker " \
                    "program?"
         reply = QtGui.QMessageBox.question(self, 'Message', quit_msg, QtGui.QMessageBox.Yes,
                                            QtGui.QMessageBox.No)
+        # Positive reply: Do it.
         if reply == QtGui.QMessageBox.Yes:
             evnt.accept()
 
+            # Store the geometry of main window, so it is placed the same at next program start.
             (x0, y0, width, height) = self.geometry().getRect()
             self.configuration.conf.set('Hidden Parameters', 'main window x0', str(x0))
             self.configuration.conf.set('Hidden Parameters', 'main window y0', str(y0))
             try:
+                # The tile visualization window geometry is saved as well before closing the window.
                 self.tv.close_tile_visualization()
             except AttributeError:
                 pass
+            # Write the whole configuration back to disk.
             self.configuration.write_config()
+            # Stop the workflow thread. This will terminate the camera thread and close the protocol
+            # file.
             self.workflow.exiting = True
             time.sleep(4. * self.workflow.run_loop_delay)
         else:
+            # No confirmation by the user: Don't stop program execution.
             evnt.ignore()
 
 
 class TileNumberInput(QtGui.QDialog, Ui_TileNumberInputDialog):
+    """
+    This class extends the (generated) class Ui_TileNumberInputDialog. Methods __init__ and accept
+    override their parent versions.
+    
+    """
+
     def __init__(self, start_value, value_context, parent=None):
+        """
+        Initialization of the TileNumberInputDialog.
+        
+        :param start_value: the spinBox is preset at this particular start value.
+        :param value_context: name of an object where the entered spinBox value is to be stored.
+        """
         self.value_context = value_context
         QtGui.QDialog.__init__(self, parent)
         self.setupUi(self)
         self.spinBox.setFocus()
+        # Initialize spinBox to current tile number
         self.spinBox.setValue(start_value)
 
     def accept(self):
+        """
+        On exit from the dialog, save the selected tile number.
+        
+        :return: -
+        """
+
+        # Store the tile number in instance variable "active_tile_number" in the object
+        # "value_context", and close the window.
         self.value_context.active_tile_number = self.spinBox.value()
         self.close()
 
