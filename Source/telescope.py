@@ -41,6 +41,7 @@ class OperateTelescope(threading.Thread):
     acknowledged completion. Others are non-blocking.
     
     """
+
     def __init__(self, configuration):
         """
         Look up configuration parameters (section ASCOM), initialize the instruction queue and
@@ -53,16 +54,13 @@ class OperateTelescope(threading.Thread):
 
         # Look up configuration parameters.
         self.configuration = configuration
-        self.lookup_wait_interval = (configuration.conf.getfloat(
-            "ASCOM", "wait interval"))
-        self.lookup_polling_interval = (configuration.conf.getfloat(
-            "ASCOM", "polling interval"))
+        self.lookup_wait_interval = (configuration.conf.getfloat("ASCOM", "wait interval"))
+        self.lookup_polling_interval = (configuration.conf.getfloat("ASCOM", "polling interval"))
         self.polling_length = int(self.lookup_polling_interval * 1000.)
-        self.lookup_guiding_interval = (configuration.conf.getfloat(
-            "ASCOM", "guiding interval"))
+        self.lookup_guiding_interval = (configuration.conf.getfloat("ASCOM", "guiding interval"))
         self.guiding_length = int(self.lookup_guiding_interval * 1000.)
-        self.lookup_telescope_lookup_precision = (configuration.conf.getfloat(
-            "ASCOM", "telescope lookup precision") / 3600.)
+        self.lookup_telescope_lookup_precision = (
+        configuration.conf.getfloat("ASCOM", "telescope lookup precision") / 3600.)
 
         # Initialize an empty instruction queue.
         self.instructions = []
@@ -133,8 +131,7 @@ class OperateTelescope(threading.Thread):
         pythoncom.CoInitialize()
 
         # Initialize the ASCOM chooser and open a window where the telescope hub can be selected.
-        x = win32com.client.Dispatch(
-            self.configuration.conf.get("ASCOM", "chooser"))
+        x = win32com.client.Dispatch(self.configuration.conf.get("ASCOM", "chooser"))
         x.DeviceType = 'Telescope'
         # Set the comboBox in the chooser to the hub specified in the configuration.
         name = x.Choose(self.configuration.conf.get("ASCOM", "hub"))
@@ -145,17 +142,14 @@ class OperateTelescope(threading.Thread):
         # Check if the telescope was already connected to the hub. If not, establish the connection.
         if self.tel.Connected:
             if self.configuration.protocol:
-                print str(datetime.now())[11:21], \
-                    "->Telescope was already connected"
+                print str(datetime.now())[11:21], "->Telescope was already connected"
         else:
             self.tel.Connected = True
             if self.tel.Connected:
                 if self.configuration.protocol:
-                    print str(datetime.now())[11:21], \
-                        "Connected to telescope now"
+                    print str(datetime.now())[11:21], "Connected to telescope now"
             else:
-                print str(datetime.now())[11:21], \
-                    "Unable to connect to telescope, expect exception"
+                print str(datetime.now())[11:21], "Unable to connect to telescope, expect exception"
 
         # Serve the instruction queue, until the "terminate" instruction is encountered.
         while True:
@@ -167,14 +161,11 @@ class OperateTelescope(threading.Thread):
                 # Slew the telescope to a given (RA, DE) position.
                 if instruction['name'] == "slew to":
                     if self.configuration.protocol:
-                        print str(datetime.now())[11:21], \
-                            "Slewing telescope to: RA: ", \
-                            instruction['rect'] * 15., ", DE: ", \
-                            instruction['decl']
+                        print str(datetime.now())[11:21], "Slewing telescope to: RA: ", instruction[
+                                                        'rect'] * 15., ", DE: ", instruction['decl']
                     # Instruct the ASCOM driver to execute the SlewToCoordinates instruction.
                     # Please note that coordinates are in hours (RA) and degrees (DE).
-                    self.tel.SlewToCoordinates(instruction['rect'],
-                                               instruction['decl'])
+                    self.tel.SlewToCoordinates(instruction['rect'], instruction['decl'])
 
                 # Wait until the mount is standing still, then look up the current mount position.
                 elif instruction['name'] == "lookup tel position":
@@ -183,10 +174,10 @@ class OperateTelescope(threading.Thread):
                     decl = 91.
                     iter_count = 0
                     # Idle loop until changes in RA,DE are smaller than specified threshold.
-                    while (abs(self.tel.RightAscension - rect) >
-                                   self.lookup_telescope_lookup_precision / 15. or
-                                   abs(self.tel.Declination - decl) >
-                                   self.lookup_telescope_lookup_precision):
+                    while (abs(
+                                self.tel.RightAscension - rect) >
+                                   self.lookup_telescope_lookup_precision / 15. or abs(
+                            self.tel.Declination - decl) > self.lookup_telescope_lookup_precision):
                         # if self.configuration.protocol:
                         #     print "diff(RA): ",\
                         #         abs(self.tel.RightAscension - rect) * 54000.,\
@@ -202,17 +193,15 @@ class OperateTelescope(threading.Thread):
                     # Signal that the instruction is finished.
                     instruction['finished'] = True
                     if self.configuration.protocol:
-                        print str(datetime.now())[11:21], \
-                            "Position look-up: RA: ", rect * 15., ", DE: ", \
-                            decl, ", iterations: ", iter_count
+                        print str(datetime.now())[11:21], "Position look-up: RA: ", rect * 15., \
+                            ", DE: ", decl, ", iterations: ", iter_count
 
                 # Find out which ASCOM directions correspond to directions in the sky.
                 elif instruction['name'] == "calibrate":
                     # Look up the current RA position of the mount.
                     ra_begin = self.tel.RightAscension
                     # Look up the specified length of the test movements in RA, DE.
-                    calibrate_pulse_length = instruction[
-                        'calibrate_pulse_length']
+                    calibrate_pulse_length = instruction['calibrate_pulse_length']
                     # Issue an ASCOM "move east" instruction and wait a short time.
                     self.tel.PulseGuide(2, calibrate_pulse_length)
                     time.sleep(calibrate_pulse_length / 500.)
@@ -270,10 +259,8 @@ class OperateTelescope(threading.Thread):
                     current_ra = radians(self.tel.RightAscension * 15.)
                     current_de = radians(self.tel.Declination)
                     # Compute whre the telescope should be aimed at this time.
-                    target_ra = start_ra + rate_ra * (
-                        current_time - start_time)
-                    target_de = start_de + rate_de * (
-                        current_time - start_time)
+                    target_ra = start_ra + rate_ra * (current_time - start_time)
+                    target_de = start_de + rate_de * (current_time - start_time)
                     # The telescope has been moved too little in RA. Issue a PulseGuide.
                     if abs(target_ra - start_ra) > abs(current_ra - start_ra):
                         print "Pulse guide in RA"
@@ -295,8 +282,7 @@ class OperateTelescope(threading.Thread):
                 # These instructions are used when the user presses one of the arrow keys.
                 elif instruction['name'] == "start moving north":
                     # Issue a PulseGuide in the specified direction.
-                    self.tel.PulseGuide(self.direction_north,
-                                        self.polling_length)
+                    self.tel.PulseGuide(self.direction_north, self.polling_length)
                     # Re-insert this instruction into the queue, and wait a short time.
                     self.instructions.insert(0, instruction)
                     time.sleep(self.lookup_polling_interval)
@@ -310,8 +296,7 @@ class OperateTelescope(threading.Thread):
                 # The following instructions are analog to the two above. They handle the three
                 # other coordinate directions.
                 elif instruction['name'] == "start moving south":
-                    self.tel.PulseGuide(self.direction_south,
-                                        self.polling_length)
+                    self.tel.PulseGuide(self.direction_south, self.polling_length)
                     self.instructions.insert(0, instruction)
                     time.sleep(self.lookup_polling_interval)
 
@@ -320,8 +305,7 @@ class OperateTelescope(threading.Thread):
                     instruction['finished'] = True
 
                 elif instruction['name'] == "start moving east":
-                    self.tel.PulseGuide(self.direction_east,
-                                        self.polling_length)
+                    self.tel.PulseGuide(self.direction_east, self.polling_length)
                     self.instructions.insert(0, instruction)
                     time.sleep(self.lookup_polling_interval)
 
@@ -330,8 +314,7 @@ class OperateTelescope(threading.Thread):
                     instruction['finished'] = True
 
                 elif instruction['name'] == "start moving west":
-                    self.tel.PulseGuide(self.direction_west,
-                                        self.polling_length)
+                    self.tel.PulseGuide(self.direction_west, self.polling_length)
                     self.instructions.insert(0, instruction)
                     time.sleep(self.lookup_polling_interval)
 
@@ -343,9 +326,8 @@ class OperateTelescope(threading.Thread):
                 elif instruction['name'] == "pulse correction":
                     # If a "calibrate" instruction was executed, correct the ASCOM direction values
                     # (0,1,2,3) to reflect the real motion of the telescope.
-                    direction = [self.direction_north, self.direction_south,
-                                 self.direction_east, self.direction_west][
-                        instruction['direction']]
+                    direction = [self.direction_north, self.direction_south, self.direction_east,
+                                 self.direction_west][instruction['direction']]
                     # The pulse_length is counted in milliseconds.
                     pulse_length = instruction['pulse_length']
                     # Perform the ASCOM PulseGuide instruction.
@@ -362,8 +344,7 @@ class OperateTelescope(threading.Thread):
         # See comment at the beginning of this method.
         pythoncom.CoUninitialize()
         if self.configuration.protocol:
-            print str(datetime.now())[11:21], \
-                "Ending OperateTelescope thread"
+            print str(datetime.now())[11:21], "Ending OperateTelescope thread"
 
     def remove_instruction(self, instruction):
         """
@@ -377,7 +358,6 @@ class OperateTelescope(threading.Thread):
         for inst in self.instructions:
             if instruction['name'] == inst['name']:
                 self.instructions.remove(inst)
-
 
 
 class Telescope:
@@ -395,10 +375,8 @@ class Telescope:
         """
 
         self.configuration = configuration
-        self.lookup_wait_interval = (configuration.conf.getfloat(
-            "ASCOM", "wait interval"))
-        self.lookup_polling_interval = (configuration.conf.getfloat(
-            "ASCOM", "polling interval"))
+        self.lookup_wait_interval = (configuration.conf.getfloat("ASCOM", "wait interval"))
+        self.lookup_polling_interval = (configuration.conf.getfloat("ASCOM", "polling interval"))
 
         # Instantiate the OperateTelescope object and start the thread.
         self.optel = OperateTelescope(self.configuration)
@@ -420,13 +398,12 @@ class Telescope:
         # too large, otherwise this operation will take too long.
         self.calibrate_pulse_length = self.lookup_wait_interval * 1000
         if self.configuration.protocol:
-            print str(datetime.now())[11:21], \
-                "Calibrating guiding direction, time interval (ms): ", \
+            print str(datetime.now())[
+                  11:21], "Calibrating guiding direction, time interval (ms): ", \
                 self.calibrate_pulse_length
         # Choose the instruction, and set the pulse length.
         calibrate_instruction = self.optel.calibrate
-        calibrate_instruction[
-            'calibrate_pulse_length'] = self.calibrate_pulse_length
+        calibrate_instruction['calibrate_pulse_length'] = self.calibrate_pulse_length
         # Initialize the "finished" field to False, and insert the instruction into the queue.
         calibrate_instruction['finished'] = False
         self.optel.instructions.insert(0, calibrate_instruction)
@@ -468,10 +445,8 @@ class Telescope:
         self.pointing_correction_de = de - decl_lookup
         # Write the corrections to the protocol file.
         if self.configuration.protocol:
-            print str(datetime.now())[11:21], \
-                "New pointing correction computed (deg.): RA: ", \
-                degrees(self.pointing_correction_ra), ", DE: ", \
-                degrees(self.pointing_correction_de)
+            print str(datetime.now())[11:21], "New pointing correction computed (deg.): RA: ",\
+                degrees(self.pointing_correction_ra), ", DE: ", degrees(self.pointing_correction_de)
 
     def lookup_tel_position_uncorrected(self):
         """
@@ -487,8 +462,7 @@ class Telescope:
         self.optel.instructions.insert(0, lookup_tel_position_instruction)
         while not lookup_tel_position_instruction['finished']:
             time.sleep(self.lookup_polling_interval)
-        return (lookup_tel_position_instruction['ra'],
-                lookup_tel_position_instruction['de'])
+        return (lookup_tel_position_instruction['ra'], lookup_tel_position_instruction['de'])
 
     def lookup_tel_position(self):
         """
@@ -500,8 +474,7 @@ class Telescope:
         :return: (RA, DE) where the telescope is currently pointing (coordinates in radians).
         """
 
-        (tel_ra_uncorrected,
-         tel_de_uncorrected) = self.lookup_tel_position_uncorrected()
+        (tel_ra_uncorrected, tel_de_uncorrected) = self.lookup_tel_position_uncorrected()
         # Apply the correction as measured during the last slew-to operation.
         return (tel_ra_uncorrected + self.pointing_correction_ra,
                 tel_de_uncorrected + self.pointing_correction_de)
@@ -520,11 +493,9 @@ class Telescope:
         start_guiding_instruction['rate_ra'] = rate_ra
         start_guiding_instruction['rate_de'] = rate_de
         if self.configuration.protocol:
-            print str(datetime.now())[11:21], "Start guiding, Rate(RA): ", \
-                degrees(start_guiding_instruction['rate_ra']) * 216000., \
-                ", Rate(DE): ", \
-                degrees(start_guiding_instruction['rate_de']) * 216000., \
-                " (arc min. / hour)"
+            print str(datetime.now())[11:21], "Start guiding, Rate(RA): ", degrees(
+                start_guiding_instruction['rate_ra']) * 216000., ", Rate(DE): ", degrees(
+                start_guiding_instruction['rate_de']) * 216000., " (arc min. / hour)"
         # Insert the instruction into the queue.
         self.optel.instructions.insert(0, start_guiding_instruction)
         # Set the "guiding_active" flag to True.
