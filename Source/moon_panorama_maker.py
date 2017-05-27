@@ -220,6 +220,8 @@ class StartQT4(QtGui.QMainWindow):
         :return: -
         """
 
+        # Just in case: reset the autoalignment button.
+        self.reset_autoalignment_button()
         self.disable_keys([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
 
         self.camera_automation = (
@@ -487,6 +489,8 @@ class StartQT4(QtGui.QMainWindow):
         :return: -
         """
 
+        self.set_text_browser("Initializing auto-alignment, please wait")
+        self.save_key_status()
         self.workflow.perform_autoalignment_flag = True
 
     def autoalignment_performed(self, success):
@@ -499,6 +503,7 @@ class StartQT4(QtGui.QMainWindow):
         :return: -
         """
 
+        self.reset_key_status()
         # If auto-alignment has been initialized successfully, read configuration parameters and
         # prepare for video acquisition loop.
         if success:
@@ -546,12 +551,13 @@ class StartQT4(QtGui.QMainWindow):
         # Enable manual alignment, disable auto-alignment.
         self.ui.alignment.setEnabled(True)
         self.autoalign_enabled = False
-        self.al.autoalign_initialized = False
+        self.workflow.al.autoalign_initialized = False
         # Reset the auto-alignment button.
         self.ui.autoalignment.clicked.connect(self.prompt_autoalignment)
         self.reset_autoalignment_button()
         # Control is given back to the user. Update the status bar.
-        self.set_text_browser("Continue video recording using the record group buttons.")
+        self.set_text_browser("Auto-alignment disabled, "
+                              "continue video recording using the record group buttons.")
         self.set_statusbar()
 
     def configure_drift_correction(self):

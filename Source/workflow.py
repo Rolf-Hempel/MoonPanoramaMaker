@@ -270,6 +270,10 @@ class Workflow(QtCore.QThread):
                             self.gui.max_seconds_between_autoaligns = max(
                                 (self.gui.max_seconds_between_autoaligns / 1.5),
                                 self.gui.min_autoalign_interval)
+                            if self.gui.configuration.protocol:
+                                print str(datetime.now())[11:21], "Auto-alignment: Error is ", \
+                                          relative_alignment_error/self.gui.max_alignment_error,\
+                                          " times max. allowed, roll back to last alignment point."
                             # Videos since last auto-alignment have to be repeated.
                             if len(self.tile_indices_since_last_autoalign) > 0:
                                 self.gui.tv.mark_unprocessed(self.tile_indices_since_last_autoalign)
@@ -281,7 +285,7 @@ class Workflow(QtCore.QThread):
                             self.tile_indices_since_last_autoalign = []
                         # If the alignment error was very low, increase time between auto-alignments
                         # (within bounds).
-                        elif relative_alignment_error < self.gui.min_alignment_error:
+                        elif relative_alignment_error < self.gui.max_alignment_error/5.:
                             self.gui.max_seconds_between_autoaligns = min(
                                 (self.gui.max_seconds_between_autoaligns * 1.5),
                                 self.gui.max_autoalign_interval)
