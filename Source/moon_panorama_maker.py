@@ -111,8 +111,8 @@ class StartQT4(QtGui.QMainWindow):
 
         # The workflow thread sends signals when a task is finished. Connect those signals with
         # the appropriate gui activity.
-        self.workflow.camera_ready_signal.connect(self.camera_ready)
         self.workflow.alignment_ready_signal.connect(self.start_workflow)
+        self.workflow.camera_ready_signal.connect(self.camera_ready)
         self.workflow.alignment_point_reached_signal.connect(self.alignment_point_reached)
         self.workflow.alignment_performed_signal.connect(self.alignment_performed)
         self.workflow.autoalignment_point_reached_signal.connect(self.autoalignment_point_reached)

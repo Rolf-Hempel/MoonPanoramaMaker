@@ -422,7 +422,8 @@ class Telescope:
 
     def slew_to(self, ra, de):
         """
-        Move the telescope to a given position (ra, de) in the sky.
+        Move the telescope to a given position (ra, de) in the sky. This method blocks until the
+        position is reached.
         
         :param ra: Target right ascension (radians)
         :param de: Target declination (radians)

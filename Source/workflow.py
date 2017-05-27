@@ -34,8 +34,17 @@ from telescope import Telescope
 
 
 class Workflow(QtCore.QThread):
-    camera_ready_signal = QtCore.pyqtSignal(float, float, float, float)
+    """
+    The Workflow class creates a thread which runs in parallel to the main gui. Communication
+    between the main gui and the workflow thread is realized as follows: Actions in this
+    thread are triggered by flags set in the main gui thread. In the reverse direction, this
+    thread emits signals which are connected with methods in the main gui.
+    
+    """
+
+    # Define the list of signals with which this thread communicates with the main gui.
     alignment_ready_signal = QtCore.pyqtSignal()
+    camera_ready_signal = QtCore.pyqtSignal(float, float, float, float)
     alignment_point_reached_signal = QtCore.pyqtSignal()
     alignment_performed_signal = QtCore.pyqtSignal()
     autoalignment_point_reached_signal = QtCore.pyqtSignal()
@@ -48,6 +57,13 @@ class Workflow(QtCore.QThread):
     set_text_browser_signal = QtCore.pyqtSignal(QtCore.QString)
 
     def __init__(self, gui, parent=None):
+        """
+        Establish the connection with the main gui, set some instance variables and initialize all
+        flags to False.
+        
+        :param gui: main gui object
+        """
+
         QtCore.QThread.__init__(self, parent)
         self.gui = gui
 
@@ -66,8 +82,10 @@ class Workflow(QtCore.QThread):
         self.move_to_selected_tile_flag = False
         self.escape_pressed_flag = False
 
+        # Save the descriptor of standard output. Stdout might be redirected to a file.
         self.stdout_saved = sys.stdout
 
+        # Start the telescope.
         self.telescope = Telescope(self.gui.configuration)
 
         self.camera_connected = False
@@ -75,12 +93,25 @@ class Workflow(QtCore.QThread):
         self.start()
 
     def run(self):
+        """
+        Execute the workflow thread. Its main part is a permanent loop which looks for activity
+        flags set by the main gui. When a flag is true, the corresponding action is performed.
+        On completion, a signal is emitted.
+        
+        :return: -
+        """
+
+        # Set the time to current time and create moon ephemeris and alignment objects.
         self.date_time = datetime.now()
-        self.me = MoonEphem(self.gui.configuration, self.date_time, debug=self.gui.configuration.ephemeris_debug)
-        self.al = Alignment(self.gui.configuration, self.telescope, self.me, debug=self.gui.configuration.alignment_debug)
+        self.me = MoonEphem(self.gui.configuration, self.date_time,
+                            debug=self.gui.configuration.ephemeris_debug)
+        self.al = Alignment(self.gui.configuration, self.telescope, self.me,
+                            debug=self.gui.configuration.alignment_debug)
+        # Trigger execution of method "start_workflow" in main gui.
         self.alignment_ready_signal.emit()
 
         while not self.exiting:
+            # Re-direct stdout to a file if requested in configuration.
             if self.set_session_output_flag:
                 self.set_session_output_flag = False
                 if self.gui.configuration.conf.getboolean('Workflow', 'protocol to file'):
@@ -100,7 +131,8 @@ class Workflow(QtCore.QThread):
                         self.gui.configuration.version, "\n", \
                         "----------------------------------------------------"
 
-
+            # If camera automation is on, check if the camera is already connected. If not,
+            # create a Camera object and connect the camera.
             elif self.camera_initialization_flag:
                 self.camera_initialization_flag = False
                 if self.gui.camera_automation:
@@ -108,14 +140,18 @@ class Workflow(QtCore.QThread):
                         self.gui.configuration.conf.getfloat("Workflow", "camera trigger delay"))
                     if not self.camera_connected:
                         self.camera = Camera(self.gui.configuration, self.telescope,
-                            self.gui.mark_processed, debug=self.gui.configuration.camera_debug)
+                                             self.gui.mark_processed,
+                                             debug=self.gui.configuration.camera_debug)
                         self.connect(self.camera, self.camera.signal, self.gui.signal_from_camera)
                         self.camera_connected = True
                         self.camera.start()
+
+                # Initialize some instance variables.
                 self.al.is_landmark_offset_set = False
                 self.active_tile_number = -1
                 self.all_tiles_recorded = False
 
+                # Update the current positions of sun and moon.
                 self.date_time = datetime.now()
                 self.me.update(self.date_time)
 
@@ -129,27 +165,43 @@ class Workflow(QtCore.QThread):
                         de_center), ", m_diameter:", degrees(m_diameter), ", phase_angle:", degrees(
                         phase_angle), ", pos_angle:", degrees(pos_angle)
 
+                # Start the camera_ready method in main gui. Send ephemeris info with signal.
+                # Gui will construct the tiles and start the tile visualization window.
                 self.camera_ready_signal.emit(de_center, m_diameter, phase_angle, pos_angle)
 
+            # Slew the telescope to the coordinates of the alignment point.
             elif self.slew_to_alignment_point_flag:
                 self.slew_to_alignment_point_flag = False
+                # First calibrate the north/south/east/west directions of the mount
+                # This would not be necessary every time!
                 self.telescope.calibrate()
+                # Compute alignment point coordinates and instruct telescope to move there.
                 (ra_landmark, de_landmark) = (self.al.compute_telescope_coordinates_of_landmark())
                 if self.gui.configuration.protocol:
                     print str(datetime.now())[11:21], "Slew to alignment point"
                 self.telescope.slew_to(ra_landmark, de_landmark)
+                # Depending on the context where this activity was triggered emit different signals.
                 if self.gui.autoalign_enabled:
+                    # In auto-alignment mode: Trigger method "autoalignment_point_reached" in gui.
                     self.autoalignment_point_reached_signal.emit()
                 else:
+                    # In manual alignment mode: Trigger method "alignment_point_reached" in gui.
                     self.alignment_point_reached_signal.emit()
 
+            # The mount has been aimed manually at the exact landmark location. Define an alignment
+            # point.
             elif self.perform_alignment_flag:
                 self.perform_alignment_flag = False
                 if self.gui.configuration.protocol:
                     print str(datetime.now())[11:21], "Center landmark in camera live view"
                 self.al.align(alignment_manual=True)
+                # Trigger method "alignment_performed" in gui.
                 self.alignment_performed_signal.emit()
 
+            # The mount has been aimed manually at the exact landmark location. Initialize
+            # auto-alignment by taking a reference frame with the camera. This operation may fail
+            # (e.g. if reference frame shows too little detail). Inform gui about success via a
+            # signal argument.
             elif self.perform_autoalignment_flag:
                 self.perform_autoalignment_flag = False
                 if self.gui.configuration.protocol:
@@ -161,33 +213,45 @@ class Workflow(QtCore.QThread):
                     # Initialize list of tiles captured from now on. If at the next auto-alignment
                     # the pointing precision is too low, they have to be repeated.
                     self.tiles_since_last_autoalign = []
+                    # Signal success to gui, start method "autoalign_performed" there.
                     self.autoalignment_performed_signal.emit(True)
                     if self.gui.configuration.protocol:
                         print str(datetime.now())[11:21], "Auto-alignment initialization successful"
                 except RuntimeError:
+                    # Signal failure to gui, start method "autoalign_performed" there.
                     self.autoalignment_performed_signal.emit(False)
                     if self.gui.configuration.protocol:
                         print str(datetime.now())[11:21], "Auto-alignment initialization failed"
 
+            # Slew the telescope to the moon's limb midpoint. Triggered by "perform_camera_rotation"
+            # in gui.
             elif self.slew_to_moon_limb_flag:
                 self.slew_to_moon_limb_flag = False
+                # Compute coordinates of limb center point and slew telescope there.
                 (ra, de) = self.al.center_offset_to_telescope_coordinates(
                     self.gui.tc.delta_ra_limb_center, self.gui.tc.delta_de_limb_center)
                 if self.gui.configuration.protocol:
                     print str(datetime.now())[11:21], "Slew to Moon limb"
                 self.telescope.slew_to(ra, de)
+                # Signal success to gui, start method "prompt_camera_rotated_acknowledged" in gui.
                 self.moon_limb_centered_signal.emit()
 
+            # Memorize the current telescope location as focus area. Triggered by method
+            # "finish_set_focus_area" in gui.
             elif self.set_focus_area_flag:
                 self.set_focus_area_flag = False
                 self.al.set_focus_area()
+                # Start method "set_focus_area_finished" in gui.
                 self.focus_area_set_signal.emit()
 
+            # Move telescope to the focus area. Triggered by method "goto_focus_area" in gui.
             elif self.goto_focus_area_flag:
                 self.goto_focus_area_flag = False
                 (ra_focus, de_focus) = (self.al.compute_telescope_coordinates_of_focus_area())
                 self.telescope.slew_to(ra_focus, de_focus)
 
+            # This is the most complicated activity of this thread. It is triggered in three
+            # different situations (see method "start_continue_recording" in gui).
             elif self.slew_to_tile_and_record_flag:
                 self.slew_to_tile_and_record_flag = False
                 # Maximum time between auto-alignments has passed, do a new alignment
@@ -250,7 +314,8 @@ class Workflow(QtCore.QThread):
                 if self.gui.camera_automation:
                     # Wait a little until telescope pointing has stabilized.
                     time.sleep(self.camera_trigger_delay)
-                    # Send tile number to camera (for inclusion in video file name) and start camera.
+                    # Send tile number to camera (for inclusion in video file name) and start
+                    # camera.
                     self.camera.active_tile_number = self.active_tile_number
                     self.camera.triggered = True
                     if self.gui.configuration.protocol:
@@ -269,19 +334,20 @@ class Workflow(QtCore.QThread):
                     self.set_text_browser_signal.emit("Start video. After the video is finished, "
                                                       "confirm with 'enter'.")
 
+            # Triggered by method "move_to_selected_tile" in moon_panorama_maker.
             elif self.move_to_selected_tile_flag:
                 self.move_to_selected_tile_flag = False
-                # Triggered by method "move_to_selected_tile" in moon_panorama_maker. First
-                # translate tile number into telescope coordinates.
+                # First translate tile number into telescope coordinates.
                 (ra_selected_tile, de_selected_tile) = (
                     self.al.tile_to_telescope_coordinates(self.gui.selected_tile))
-                # Move telescope to aim point.
+                # Move telescope to aim point. (This is a blocking operation.)
                 self.telescope.slew_to(ra_selected_tile, de_selected_tile)
 
+            # The escape key has been pressed during video workflow. Wait until running activities
+            # are safe to be interrupted. Then give control back to gui.
             elif self.escape_pressed_flag:
                 self.escape_pressed_flag = False
-                # The escape key has been pressed during video workflow. Wait while camera is
-                # active.
+                # Wait while camera is active.
                 if self.gui.camera_automation:
                     delay = float(self.gui.configuration.conf.get('ASCOM', 'polling interval'))
                     while (self.camera.active):
@@ -290,10 +356,13 @@ class Workflow(QtCore.QThread):
                 # give key control back to the user.
                 self.telescope.stop_guiding()
                 self.set_text_browser_signal.emit("")
+                # Start method "reset_key_status" in gui to re-activate gui buttons.
                 self.reset_key_status_signal.emit()
 
+            # Sleep time inserted to limit CPU consumption by idle looping.
             time.sleep(self.run_loop_delay)
 
+        # The "exiting" flag is set (by gui method "CloseEvent"). Terminate the telescope first.
         self.telescope.terminate()
         # If camera automation is active, set termination flag in camera and wait a short while.
         if self.camera_automation:
