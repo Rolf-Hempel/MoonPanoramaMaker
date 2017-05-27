@@ -621,8 +621,8 @@ class StartQT4(QtGui.QMainWindow):
         :return: -
         """
 
-        # Activate gui buttons.
-        self.ui.autoalignment.setEnabled(True)
+        # Activate gui buttons. Auto-alignment is possible only when camera_automation is active.
+        self.ui.autoalignment.setEnabled(self.camera_automation)
         self.ui.set_focus_area.setEnabled(True)
         self.ui.start_continue_recording.setEnabled(True)
         self.ui.select_tile.setEnabled(True)
@@ -759,20 +759,30 @@ class StartQT4(QtGui.QMainWindow):
         Find the next tile to be recorded, i.e. which is not marked as "processed". Start searching
         with the index following the current "active_tile_number".
         
+        A special case is when an auto-alignment error is too large. Then the videos taken since
+        the previous auto-alignment are discarded and have to be repeated. In this case, go back to
+        the first of these tiles and continue from there.
+        
         :return: (next tile, index of next tile), or (None, -1) if no "unprocessed" tile is left.
         """
 
         # Initialize an index vector, starting with 0. Its length is the total number of tiles.
         indices = range(len(self.tc.list_of_tiles_sorted))
 
-        # No "active_tile_number" set: Keep the tiles in their original order.
-        if self.workflow.active_tile_number == -1:
-            indices_shifted = indices
-        # Let the index vector start with the next index after "active_tile_number", and wrap
-        # around.
-        else:
+        # After failure in auto-alignment, let the index vector start with index "repeat_from_here",
+        # and wrap around.
+        if self.workflow.repeat_from_here != -1:
+            indices_shifted = indices[self.workflow.repeat_from_here:] + indices[
+                                        0:self.workflow.repeat_from_here]
+            self.workflow.repeat_from_here = -1
+        # Let the index vector start with index "active_tile_number", and wrap around.
+        elif self.workflow.active_tile_number != -1:
             indices_shifted = indices[self.workflow.active_tile_number:] + indices[
                                         0:self.workflow.active_tile_number]
+        # No "repeat from here" and no "active_tile_number" set: Keep the tiles in original order.
+        else:
+            indices_shifted = indices
+
         # Look for first "unprocessed" tile in shifted order. Leave the loop when the first is
         # found.
         next_tile = None
@@ -800,7 +810,7 @@ class StartQT4(QtGui.QMainWindow):
         # auto-align. This list will be reset to unprocessed later if the error in the next
         # auto-align is too large.
         if self.workflow.al.autoalign_initialized:
-            self.workflow.tiles_since_last_autoalign.append(self.workflow.active_tile_number)
+            self.workflow.tile_indices_since_last_autoalign.append(self.workflow.active_tile_number)
 
     def select_tile(self):
         """

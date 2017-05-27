@@ -149,6 +149,7 @@ class Workflow(QtCore.QThread):
                 # Initialize some instance variables.
                 self.al.is_landmark_offset_set = False
                 self.active_tile_number = -1
+                self.repeat_from_here = -1
                 self.all_tiles_recorded = False
 
                 # Update the current positions of sun and moon.
@@ -212,7 +213,7 @@ class Workflow(QtCore.QThread):
                     self.al.initialize_auto_align(self.camera.mysocket)
                     # Initialize list of tiles captured from now on. If at the next auto-alignment
                     # the pointing precision is too low, they have to be repeated.
-                    self.tiles_since_last_autoalign = []
+                    self.tile_indices_since_last_autoalign = []
                     # Signal success to gui, start method "autoalign_performed" there.
                     self.autoalignment_performed_signal.emit(True)
                     if self.gui.configuration.protocol:
@@ -270,11 +271,14 @@ class Workflow(QtCore.QThread):
                                 (self.gui.max_seconds_between_autoaligns / 1.5),
                                 self.gui.min_autoalign_interval)
                             # Videos since last auto-alignment have to be repeated.
-                            if len(self.tiles_since_last_autoalign) > 0:
-                                self.gui.tv.mark_unprocessed(self.tiles_since_last_autoalign)
+                            if len(self.tile_indices_since_last_autoalign) > 0:
+                                self.gui.tv.mark_unprocessed(self.tile_indices_since_last_autoalign)
                             # Reset list of tiles since last auto-align (a fresh auto-align has
-                            # been just performed).
-                            self.tiles_since_last_autoalign = []
+                            # been just performed). Save the first index of the invalidated tiles.
+                            # When the gui method "find_next_unprocessed_tile" will look for the
+                            # next unprocessed tile, it will start with this one.
+                            self.repeat_from_here = self.tile_indices_since_last_autoalign[0]
+                            self.tile_indices_since_last_autoalign = []
                         # If the alignment error was very low, increase time between auto-alignments
                         # (within bounds).
                         elif relative_alignment_error < self.gui.min_alignment_error:
