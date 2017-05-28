@@ -257,9 +257,8 @@ class Alignment:
         # Capture an alignment reference frame
         self.im_shift = ImageShift(self.configuration, camera_socket,
                                    debug=self.debug)
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], \
-                "Alignment reference frame captured"
+        if self.configuration.protocol_level > 1:
+            Miscellaneous.protocol("Alignment reference frame captured.")
 
         # The shift_angle is the overlap width between panorama tiles.
         self.shift_angle = self.im_shift.ol_angle
@@ -293,13 +292,16 @@ class Alignment:
             # If the image was not good enough for automatic shift determination, disable auto-
             # alignment.
             except RuntimeError as e:
-                print str(datetime.now())[11:21], str(e)
+                if self.configuration.protocol_level > 2:
+                    Miscellaneous.protocol(str(e))
                 raise RuntimeError
             if self.configuration.protocol:
-                print str(datetime.now())[11:21], \
-                    "Frame captured for autoalignment, x_shift: ", x_shift / self.im_shift.pixel_angle, \
-                    ", y_shift: ", y_shift / self.im_shift.pixel_angle, " (pixels), consistent shifts: ", \
-                    in_cluster, ", outliers: ", outliers
+                if self.configuration.protocol_level > 2:
+                    Miscellaneous.protocol("Frame captured for autoalignment, x_shift: " +
+                                           str(x_shift / self.im_shift.pixel_angle) +
+                                           ", y_shift: " + str(y_shift / self.im_shift.pixel_angle)+
+                                           " (pixels), consistent shifts: " + str(in_cluster) +
+                                           ", outliers: " + str(outliers))
             xy_shifts.append([x_shift, y_shift])
         # Subtract second position from first and third position
         shift_vector_0_measured = [xy_shifts[0][0] - xy_shifts[1][0],
@@ -311,9 +313,9 @@ class Alignment:
         # are mirror-inverted in x or y.
         self.flip_x = np.sign(shift_vector_0_measured[0])
         self.flip_y = np.sign(shift_vector_2_measured[1])
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], \
-                "Autoalign, mirroring in x: ", self.flip_x, ", in y: ", self.flip_y
+        if self.configuration.protocol_level > 2:
+            Miscellaneous.protocol("Autoalign, mirroring detected in x: " + str(self.flip_x) +
+                                   ", in y: " + str(self.flip_y))
         # Determine how much the measured shifts deviate from the expected shifts in the focal
         # plane. If the difference is too large, auto-alignment initialization is interpreted as
         # not successful.
@@ -323,14 +325,14 @@ class Alignment:
             abs(shift_vector_2_measured[1]) - self.shift_angle) / self.shift_angle
         error = max(error_x, error_y)
         if error > self.max_autoalign_error:
-            if self.configuration.protocol:
-                print "Autoalign initialization failed, error in x: ", \
-                    error_x * 100., ", in y: ", error_y * 100., " (percent)"
+            if self.configuration.protocol_level > 0:
+                Miscellaneous.protocol("Autoalign initialization failed, error in x: " +
+                    str(error_x * 100.) + ", in y: " + str(error_y * 100.) + " (percent)")
             raise RuntimeError
         else:
-            if self.configuration.protocol:
-                print "Autoalign successful, error in x: ", \
-                    error_x * 100., ", in y: ", error_y * 100., " (percent)"
+            if self.configuration.protocol_level > 0:
+                Miscellaneous.protocol("Autoalign successful, error in x: " +
+                    str(error_x * 100.) + ", in y: " + str(error_y * 100.) + " (percent)")
         self.autoalign_initialized = True
         # Return the relative error as compared with tile overlap width.
         return error
@@ -360,11 +362,11 @@ class Alignment:
             (self.alignment_points[self.last_index]['de_correction'] -
              self.alignment_points[self.first_index][
                  'de_correction']) / time_diff)
-        if self.configuration.protocol:
-            print "Computing drift rate using alignment points ", \
-                self.first_index, " and ", self.last_index, \
-                ". Drift in Ra: ", degrees(self.drift_ra) * 216000., \
-                ", drift in De: ", degrees(self.drift_de) * 216000.
+        if self.configuration.protocol_level > 1:
+            Miscellaneous.protocol("Drift rate based on alignment points " + str(self.first_index) +
+                                   " and " + str(self.last_index) + ": Drift in Ra = " +
+                                   str(degrees(self.drift_ra) * 216000.) + ", drift in De = " +
+                                   str(degrees(self.drift_de) * 216000.) + " (in arc min/hour)")
         # Set flag to true to indicate that a valid drift rate has been determined.
         self.is_drift_set = True
 
@@ -378,7 +380,8 @@ class Alignment:
         """
 
         if not self.is_aligned:
-            print "Cannot set focus area without alignment"
+            if self.configuration.protocol_level > 0:
+                Miscellaneous.protocol("Internal error: Attempt to set focus area without alignment")
             raise RuntimeError("Cannot set focus area without alignment")
         # Look up the current position of the telescope mount.
         (ra_focus, de_focus) = self.tel.lookup_tel_position()
@@ -419,10 +422,9 @@ class Alignment:
                 de_offset += time_diff * self.drift_de
         # Before the first alignment, set offsets to zero and print a warning to stdout.
         else:
-            if self.configuration.protocol:
-                print str(datetime.now())[11:21], \
-                    "Info: I will apply zero coordinate correction before " \
-                    "alignment."
+            if self.configuration.protocol_level > 2:
+                Miscellaneous.protocol("Info: I will apply zero coordinate correction before " \
+                                        "alignment.")
             ra_offset = 0.
             de_offset = 0.
         return (ra_offset, de_offset)
@@ -438,7 +440,15 @@ class Alignment:
 
         correction = self.compute_coordinate_correction()
         # Add corrections to ephemeris position to get telescope coordinates
-        return (ra + correction[0], de + correction[1])
+        telescope_ra = ra + correction[0]
+        telescope_de = de + correction[1]
+        if self.configuration.protocol_level > 2:
+            Miscellaneous.protocol("Translating equatorial to telescope coordinates, " \
+                                   "correction in RA: " + str(degrees(correction[0])) +
+                                   ", in DE: " + str(degrees(correction[1])) + ", Telescope RA: " +
+                                   str(degrees(telescope_ra)) + ", Telescope DE: " +
+                                   str(degrees(telescope_de)) + " (all in degrees)")
+        return (telescope_ra, telescope_de)
 
     def telescope_to_ephemeris_coordinates(self, ra, de):
         """
@@ -467,11 +477,12 @@ class Alignment:
 
         # Compute current position of the moon.
         self.me.update(datetime.now())
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], \
-                "Translating center offset to telescope coordinates, " \
-                "moon position: RA: ", \
-                degrees(self.me.ra), ", DE: ", degrees(self.me.de)
+        if self.configuration.protocol_level > 2:
+            Miscellaneous.protocol("Translating center offset to equatorial coordinates, " \
+                                    "center offsets: RA: " + str(degrees(delta_ra)) +
+                                    ", DE: " + str(degrees(delta_de)) +
+                                    ", moon position (center): RA: " + str(degrees(self.me.ra)) +
+                                    ", DE: " + str(degrees(self.me.de)) + "(all in degrees)")
         # Add the offset to moon center coordinates.
         ra = self.me.ra + delta_ra
         de = self.me.de + delta_de

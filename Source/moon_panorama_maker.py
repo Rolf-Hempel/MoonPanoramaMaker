@@ -182,6 +182,7 @@ class StartQT4(QtGui.QMainWindow):
         # editor.configuration_changed, \
         #     ", config initialized: ", self.configuration_initialized
         if editor.configuration_changed:
+            self.configuration.set_protocol_level()
             self.workflow.set_session_output_flag = True
             self.do_restart()
 
