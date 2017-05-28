@@ -29,6 +29,7 @@ from PyQt4 import QtGui
 
 import configuration
 from edit_landmarks import EditLandmarks
+from miscellaneous import Miscellaneous
 from moon_ephem import MoonEphem
 
 
@@ -102,11 +103,10 @@ class LandmarkSelection:
             # Get selenographic longitude and latitude of landmark.
             long = radians(self.landmarks[landmark][0])
             lat = radians(self.landmarks[landmark][1])
-            if self.configuration.protocol:
-                print str(datetime.now())[11:21], \
-                    "New Landmark selected: ", landmark, \
-                    ", longitude: ", degrees(long), ", latitude: ", degrees(
-                    lat)
+            if self.configuration.protocol_level > 1:
+                Miscellaneous.protocol("New Landmark selected: " + landmark +
+                    ", selenographic longitude: " + str(degrees(long)) + ", latitude: " +
+                    str(degrees(lat)))
             # Perform the coordinate transformation and return the offsets (in radians)
             return self.coord_translation(long, lat)
         except:

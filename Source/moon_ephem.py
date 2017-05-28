@@ -28,6 +28,7 @@ import ephem
 import pytz
 
 import configuration
+from miscellaneous import Miscellaneous
 
 
 class MoonEphem:
@@ -153,11 +154,11 @@ class MoonEphem:
             if 1. < abs(current_time - self.stored_time) < 7200.:
                 self.rate_ra = (self.ra - self.stored_ra) / (current_time - self.stored_time)
                 self.rate_de = (self.de - self.stored_de) / (current_time - self.stored_time)
-                if self.configuration.protocol:
-                    print str(date_time)[
-                          11:21], "Computing Moon speed (arc min./hour), RA: ", degrees(
-                        self.rate_ra) * 216000., ", DE: ", degrees(
-                        self.rate_de) * 216000., ", times (s): ", self.stored_time, current_time
+                if self.configuration.protocol_level > 2:
+                    Miscellaneous.protocol("Computing Moon speed (arc min./hour), RA: " +
+                                           str(degrees(self.rate_ra) * 216000.) + ", DE: " +
+                                           str(degrees(self.rate_de) * 216000.) + ", times (s): " +
+                                           str(self.stored_time) + ", " + str(current_time))
                 # Replace the stored time stamp and coordinates with the current values.
                 self.stored_time = current_time
                 self.stored_ra = self.ra

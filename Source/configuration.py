@@ -73,6 +73,7 @@ class Configuration:
             # Check if the file is for the current MPM version, otherwise update it
             self.check_for_compatibility()
             self.configuration_read = True
+            print "configuration read from file"
         else:
             # Code to set standard config info. The "Hidden Parameters" are not displayed in the
             # configuration gui. Most of them are for placing gui windows where they had been at
@@ -202,6 +203,9 @@ class Configuration:
             # Fill the entries of section "Camera" by copying the entries from the chosen
             # camera model.
             self.copy_camera_configuration(self.conf.get('Camera', 'name'))
+
+        # Set the "protocol_level" variable. This will control the amount of protocol output.
+        self.set_protocol_level()
 
     def check_for_compatibility(self):
         """

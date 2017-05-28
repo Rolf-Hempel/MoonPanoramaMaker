@@ -29,6 +29,8 @@ import numpy
 import pythoncom
 import win32com.client
 
+from miscellaneous import Miscellaneous
+
 
 class OperateTelescope(threading.Thread):
     """
@@ -116,9 +118,8 @@ class OperateTelescope(threading.Thread):
         self.direction_east = 2
         self.direction_west = 3
 
-        # if self.configuration.protocol:
-        #     print str(datetime.now())[11:21], \
-        #         "OperateTelescope thread initialized"
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("OperateTelescope thread initialized")
 
     def run(self):
         """
@@ -141,28 +142,29 @@ class OperateTelescope(threading.Thread):
 
         # Check if the telescope was already connected to the hub. If not, establish the connection.
         if self.tel.Connected:
-            if self.configuration.protocol:
-                print str(datetime.now())[11:21], "->Telescope was already connected"
+            if self.configuration.protocol_level > 1:
+                Miscellaneous.protocol("The Telescope was already connected to the hub")
         else:
             self.tel.Connected = True
             if self.tel.Connected:
-                if self.configuration.protocol:
-                    print str(datetime.now())[11:21], "Connected to telescope now"
+                if self.configuration.protocol_level > 1:
+                    Miscellaneous.protocol("Telescope and hub are connected now.")
             else:
-                print str(datetime.now())[11:21], "Unable to connect to telescope, expect exception"
+                if self.configuration.protocol_level > 0:
+                    Miscellaneous.protocol("Unable to connect hub and telescope, expect exception")
 
         # Serve the instruction queue, until the "terminate" instruction is encountered.
         while True:
             if len(self.instructions) > 0:
                 # Get the next instruction from the queue, look up its type (name), and execute it.
                 instruction = self.instructions.pop()
-                # print >> sys.stderr, instruction['name']
 
                 # Slew the telescope to a given (RA, DE) position.
                 if instruction['name'] == "slew to":
-                    if self.configuration.protocol:
-                        print str(datetime.now())[11:21], "Slewing telescope to: RA: ", instruction[
-                                                        'rect'] * 15., ", DE: ", instruction['decl']
+                    if self.configuration.protocol_level > 1:
+                        Miscellaneous.protocol("Slewing telescope to: RA: " + str(instruction[
+                                                'rect'] * 15.) + ", DE: " + str(instruction[
+                                                'decl']) + " degrees")
                     # Instruct the ASCOM driver to execute the SlewToCoordinates instruction.
                     # Please note that coordinates are in hours (RA) and degrees (DE).
                     self.tel.SlewToCoordinates(instruction['rect'], instruction['decl'])
@@ -174,15 +176,10 @@ class OperateTelescope(threading.Thread):
                     decl = 91.
                     iter_count = 0
                     # Idle loop until changes in RA,DE are smaller than specified threshold.
-                    while (abs(
-                                self.tel.RightAscension - rect) >
-                                   self.lookup_telescope_lookup_precision / 15. or abs(
-                            self.tel.Declination - decl) > self.lookup_telescope_lookup_precision):
-                        # if self.configuration.protocol:
-                        #     print "diff(RA): ",\
-                        #         abs(self.tel.RightAscension - rect) * 54000.,\
-                        #         ", diff(DE): ",\
-                        #         abs(self.tel.Declination - decl) * 3600.
+                    while (abs(self.tel.RightAscension - rect) >
+                                   self.lookup_telescope_lookup_precision / 15. or
+                            abs(self.tel.Declination - decl) >
+                                   self.lookup_telescope_lookup_precision):
                         rect = self.tel.RightAscension
                         decl = self.tel.Declination
                         iter_count += 1
@@ -192,9 +189,9 @@ class OperateTelescope(threading.Thread):
                     instruction['de'] = radians(decl)
                     # Signal that the instruction is finished.
                     instruction['finished'] = True
-                    if self.configuration.protocol:
-                        print str(datetime.now())[11:21], "Position look-up: RA: ", rect * 15., \
-                            ", DE: ", decl, ", iterations: ", iter_count
+                    if self.configuration.protocol_level > 2:
+                        Miscellaneous.protocol("Position looked-up: RA: " + str(rect * 15.) +
+                            ", DE: " + str(decl) + " (degrees), iterations: " + str(iter_count))
 
                 # Find out which ASCOM directions correspond to directions in the sky.
                 elif instruction['name'] == "calibrate":
@@ -253,7 +250,6 @@ class OperateTelescope(threading.Thread):
                 # issued than PulseGuides are necessary. Therefore, it cannot happen that the
                 # telescope lags behind permanently.
                 elif instruction['name'] == "continue guiding":
-                    # print "Executing continue guiding"
                     # Look up the time and current pointing of the telescope.
                     current_time = time.mktime(datetime.now().timetuple())
                     current_ra = radians(self.tel.RightAscension * 15.)
@@ -263,11 +259,13 @@ class OperateTelescope(threading.Thread):
                     target_de = start_de + rate_de * (current_time - start_time)
                     # The telescope has been moved too little in RA. Issue a PulseGuide.
                     if abs(target_ra - start_ra) > abs(current_ra - start_ra):
-                        print "Pulse guide in RA"
+                        if self.configuration.protocol_level > 2:
+                            Miscellaneous.protocol("Pulse guide in RA")
                         self.tel.PulseGuide(direction_ra, self.guiding_length)
                     # The telescope has been moved too little in DE. Issue a PulseGuide.
                     if abs(target_de - start_de) > abs(current_de - start_de):
-                        print "Pulse guide in DE"
+                        if self.configuration.protocol_level > 2:
+                            Miscellaneous.protocol("Pulse guide in DE")
                         self.tel.PulseGuide(direction_de, self.guiding_length)
                     # Re-insert this instruction into the queue.
                     self.instructions.insert(0, instruction)
@@ -343,8 +341,8 @@ class OperateTelescope(threading.Thread):
 
         # See comment at the beginning of this method.
         pythoncom.CoUninitialize()
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], "Ending OperateTelescope thread"
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("Ending OperateTelescope thread")
 
     def remove_instruction(self, instruction):
         """
@@ -397,10 +395,9 @@ class Telescope:
         # Set the pulse length for test movements. Make sure that "lookup_wait_interval" is not
         # too large, otherwise this operation will take too long.
         self.calibrate_pulse_length = self.lookup_wait_interval * 1000
-        if self.configuration.protocol:
-            print str(datetime.now())[
-                  11:21], "Calibrating guiding direction, time interval (ms): ", \
-                self.calibrate_pulse_length
+        if self.configuration.protocol_level > 2:
+            Miscellaneous.protocol("Calibrating guiding direction, time interval (ms): " +
+                str(self.calibrate_pulse_length))
         # Choose the instruction, and set the pulse length.
         calibrate_instruction = self.optel.calibrate
         calibrate_instruction['calibrate_pulse_length'] = self.calibrate_pulse_length
@@ -410,15 +407,15 @@ class Telescope:
         # Idle loop until the calibration is finished. Write out the results.
         while not calibrate_instruction['finished']:
             time.sleep(self.lookup_polling_interval)
-        if self.configuration.protocol:
+        if self.configuration.protocol_level > 2:
             if self.optel.direction_east == 2:
-                print "Direction for corrections in RA: normal"
+                Miscellaneous.protocol("Direction for corrections in RA: normal")
             else:
-                print "Direction for corrections in RA: reversed"
+                Miscellaneous.protocol("Direction for corrections in RA: reversed")
             if self.optel.direction_north == 0:
-                print "Direction for corrections in DE: normal"
+                Miscellaneous.protocol("Direction for corrections in DE: normal")
             else:
-                print "Direction for corrections in DE: reversed"
+                Miscellaneous.protocol("Direction for corrections in DE: reversed")
 
     def slew_to(self, ra, de):
         """
@@ -445,9 +442,10 @@ class Telescope:
         self.pointing_correction_ra = ra - rect_lookup
         self.pointing_correction_de = de - decl_lookup
         # Write the corrections to the protocol file.
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], "New pointing correction computed (deg.): RA: ",\
-                degrees(self.pointing_correction_ra), ", DE: ", degrees(self.pointing_correction_de)
+        if self.configuration.protocol_level > 2:
+            Miscellaneous.protocol("New pointing correction computed (deg.): RA: " +
+                str(degrees(self.pointing_correction_ra)) + ", DE: " +
+                str(degrees(self.pointing_correction_de)) + " (degrees)")
 
     def lookup_tel_position_uncorrected(self):
         """
@@ -493,10 +491,10 @@ class Telescope:
         start_guiding_instruction = self.optel.start_guiding
         start_guiding_instruction['rate_ra'] = rate_ra
         start_guiding_instruction['rate_de'] = rate_de
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], "Start guiding, Rate(RA): ", degrees(
-                start_guiding_instruction['rate_ra']) * 216000., ", Rate(DE): ", degrees(
-                start_guiding_instruction['rate_de']) * 216000., " (arc min. / hour)"
+        if self.configuration.protocol_level > 2:
+            Miscellaneous.protocol("Start guiding, Rate(RA): " + str(degrees(
+                start_guiding_instruction['rate_ra']) * 216000.) + ", Rate(DE): " + str(degrees(
+                start_guiding_instruction['rate_de']) * 216000.) + " (arc min. / hour)")
         # Insert the instruction into the queue.
         self.optel.instructions.insert(0, start_guiding_instruction)
         # Set the "guiding_active" flag to True.
@@ -510,8 +508,8 @@ class Telescope:
         :return: -
         """
 
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], "Stop guiding"
+        if self.configuration.protocol_level > 2:
+            Miscellaneous.protocol("Stop guiding")
         # Insert the instruction into the low-level queue and wait until it is finished.
         stop_guiding_instruction = self.optel.stop_guiding
         stop_guiding_instruction['finished'] = False
@@ -644,9 +642,9 @@ class Telescope:
         :return: 
         """
 
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], "Terminating telescope"
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("Terminating telescope")
         self.optel.instructions.insert(0, self.optel.terminate)
         self.optel.join()
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], "Telescope terminated"
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("Telescope terminated")

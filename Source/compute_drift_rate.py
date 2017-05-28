@@ -25,6 +25,7 @@ from math import degrees
 from PyQt4 import QtCore, QtGui
 
 from drift_rate_dialog import Ui_DriftRateDialog
+from miscellaneous import Miscellaneous
 
 
 class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
@@ -133,8 +134,8 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
         :return: -
         """
 
-        if self.configuration.protocol:
-            print "toggle default button for first drift index"
+        if self.configuration.protocol_level > 2:
+            Miscellaneous.protocol("Drift computation: Toggle default button for first drift index")
         self.al.default_first_drift = not self.al.default_first_drift
 
     def toggle_default_last_radio_button(self):
@@ -144,8 +145,8 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
         :return: -
         """
 
-        if self.configuration.protocol:
-            print "toggle default button for last drift index"
+        if self.configuration.protocol_level > 2:
+            Miscellaneous.protocol("Drift computation: Toggle default button for last drift index")
         self.al.default_last_drift = not self.al.default_last_drift
 
     def toggle_no_radio_button(self):
@@ -155,25 +156,25 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
         :return: -
         """
 
-        if self.configuration.protocol:
-            print "toggle no button"
+        if self.configuration.protocol_level > 2:
+            Miscellaneous.protocol("Drift computation: Toggle no button")
         self.al.drift_disabled = not self.al.drift_disabled
 
         # Drift computation is enabled.
         if not self.al.drift_disabled:
-            if self.configuration.protocol:
-                print "drift enabled"
+            if self.configuration.protocol_level > 2:
+                Miscellaneous.protocol("Drift computation: Drift enabled")
             # Check if for the first alignment point the default is selected.
             if self.al.default_first_drift:
-                if self.configuration.protocol:
-                    print "default first drift index"
+                if self.configuration.protocol_level > 2:
+                    Miscellaneous.protocol("Drift computation: Default first drift index")
                 # In this case disable the gui elements for alignment point number selection.
                 self.ui.labelFirstIndex.setDisabled(True)
                 self.ui.spinBoxFirstIndex.setDisabled(True)
             # Same as above for the end of the drift computation interval.
             if self.al.default_last_drift:
-                if self.configuration.protocol:
-                    print "default first drift index"
+                if self.configuration.protocol_level > 2:
+                    Miscellaneous.protocol("Drift computation: Default first drift index")
                 self.ui.spinBoxLastIndex.setDisabled(True)
                 self.ui.labelLastIndex.setDisabled(True)
 
@@ -248,12 +249,10 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
         :return: -
         """
 
-        if self.configuration.protocol:
-            print "Enter compute_drift"
         # If drift correction is disabled, set the flag in the alignment object (al) and close.
         if self.al.drift_disabled:
-            if self.configuration.protocol:
-                print "noRadioButton is toggled"
+            if self.configuration.protocol_level > 0:
+                Miscellaneous.protocol("Drift computation is disabled: No correction for drift.")
             self.al.is_drift_set = False
             self.close()
             return
@@ -274,14 +273,14 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
         if (self.al.alignment_points[self.al.last_index]['time_seconds'] -
                 self.al.alignment_points[self.al.first_index][
                     'time_seconds']) > self.configuration.minimum_drift_seconds:
-            if self.configuration.protocol:
-                print "Start drift computation, first/last index: ", self.al.first_index, ", ", \
-                    self.al.last_index
+            if self.configuration.protocol_level > 2:
+                Miscellaneous.protocol("Start drift computation, first/last index: " +
+                                       str(self.al.first_index) + ", " + str(self.al.last_index))
             # The actual logic for drift rate computation is in method compute_drift_rate in class
             # Alignment.
             self.al.compute_drift_rate()
-        elif self.configuration.protocol:
-            print "Time interval too short for drift computation"
+        elif self.configuration.protocol_level > 1:
+            Miscellaneous.protocol("Time between alignments too short for drift computation.")
 
         # Close the gui.
         self.close()

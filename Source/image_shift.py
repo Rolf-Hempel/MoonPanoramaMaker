@@ -32,6 +32,7 @@ from numpy import ndarray, zeros_like, count_nonzero
 from sklearn.cluster import DBSCAN
 
 from configuration import Configuration
+from miscellaneous import Miscellaneous
 from socket_client import SocketClientDebug
 
 
@@ -95,7 +96,8 @@ class ImageShift:
                 os.mkdir(self.image_dir)
                 break
             except:
-                print "mkdir failed, retrying..."
+                if self.configuration.protocol_level > 1:
+                    Miscellaneous.protocol("In imageShift: mkdir failed, retrying...")
 
         # The counter is used to number the alignment images captured during auto-alignment.
         self.alignment_image_counter = 0

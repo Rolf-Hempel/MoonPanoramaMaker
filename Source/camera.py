@@ -24,6 +24,7 @@ import time
 
 from PyQt4 import QtCore
 
+from miscellaneous import Miscellaneous
 from socket_client import SocketClient, SocketClientDebug
 
 
@@ -83,18 +84,19 @@ class Camera(QtCore.QThread):
         # which reads still images from files. These can be used to test the autoaligh mechanism.
         if debug:
             self.mysocket = SocketClientDebug(self.host, self.port)
-            if self.configuration.protocol:
-                print "Camera: Debug mode, still camera emulated"
-                print "Camera: OperateCamera thread initialized"
+            if self.configuration.protocol_level > 0:
+                Miscellaneous.protocol("Camera in debug mode, still camera emulated.")
         else:
             try:
                 self.mysocket = SocketClient(self.host, self.port)
             except:
-                print "Camera: Connection to FireCapture failed, expect exception"
+                if self.configuration.protocol_level > 0:
+                    Miscellaneous.protocol(
+                        "Camera connection to FireCapture failed, expect exception")
                 return
             if self.configuration.protocol:
-                print "Camera: Connection to FireCapture program established"
-                print "Camera: OperateCamera thread initialized"
+                if self.configuration.protocol_level > 0:
+                    Miscellaneous.protocol("Camera: Connection to FireCapture program established")
 
     def run(self):
         while True:
@@ -105,38 +107,42 @@ class Camera(QtCore.QThread):
                 self.active = True
                 # Acquire "repetition_count" videos by triggering FireCapture through the socket.
                 for video_number in range(self.repetition_count):
-                    if self.configuration.protocol:
-                        print "Camera: Send trigger to FireCapture, tile: ", \
-                            self.active_tile_number, ", repetition number: ", video_number
+                    if self.configuration.protocol_level > 0:
+                        Miscellaneous.protocol("Camera: Send trigger to FireCapture, tile: " +
+                            str(self.active_tile_number) + ", repetition number: " +
+                            str(video_number))
                     try:
                         # The tile number is encoded in the message. The FireCapture plugin appends
                         # this message to the video file names (to keep the files apart later).
                         msg = "_Tile-" + "{0:0>3}".format(self.active_tile_number)
                         self.mysocket.mysend(msg)
                     except Exception as e:
-                        print "Camera, Error message in trigger: ", str(e)
-                    if self.configuration.protocol:
-                        print "Camera: Wait for FireCapture to finish exposure"
+                        if self.configuration.protocol_level > 0:
+                            Miscellaneous.protocol("Camera, Error message in trigger: " + str(e))
+                    if self.configuration.protocol_level > 2:
+                        Miscellaneous.protocol("Camera: Wait for FireCapture to finish exposure")
                     try:
                         # Wait for FireCapture to finish the exposure.
                         ack_length = 1
                         ack = self.mysocket.myreceive(ack_length)
                     except Exception as e:
-                        print "Camera, Error message in ack: ", str(e)
-                    if self.configuration.protocol:
-                        print "Camera: acknowledgement from FireCapture = ", ack
+                        if self.configuration.protocol_level > 0:
+                            Miscellaneous.protocol("Camera, Error message in ack: " + str(e))
+                    if self.configuration.protocol_level > 2:
+                        Miscellaneous.protocol("Camera: acknowledgement from FireCapture = " + ack)
 
                 # All videos for this tile are acquired, mark tile as processed.
                 self.mark_processed()
                 # Trigger method "signal_from_camera" in moon_panorama_maker
                 self.emit(self.signal, "hi from camera")
-                if self.configuration.protocol:
-                    print "Camera, all videos for tile ", self.active_tile_number, " captured, " \
-                        "signal (tile processed) emitted"
+                if self.configuration.protocol_level > 0:
+                    Miscellaneous.protocol("Camera, all videos for tile " +
+                                           str(self.active_tile_number) +
+                                           " captured, signal (tile processed) emitted")
                 self.active = False
 
             time.sleep(self.lookup_polling_interval)
 
         self.mysocket.close()
-        if self.configuration.protocol:
-            print "Camera: Connection to FireCapture program closed"
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("Camera: Connection to FireCapture program closed")
