@@ -482,7 +482,7 @@ class Alignment:
                                     "center offsets: RA: " + str(degrees(delta_ra)) +
                                     ", DE: " + str(degrees(delta_de)) +
                                     ", moon position (center): RA: " + str(degrees(self.me.ra)) +
-                                    ", DE: " + str(degrees(self.me.de)) + "(all in degrees)")
+                                    ", DE: " + str(degrees(self.me.de)) + " (all in degrees)")
         # Add the offset to moon center coordinates.
         ra = self.me.ra + delta_ra
         de = self.me.de + delta_de

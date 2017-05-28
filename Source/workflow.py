@@ -29,6 +29,7 @@ from PyQt4 import QtCore
 
 from alignment import Alignment
 from camera import Camera
+from miscellaneous import Miscellaneous
 from moon_ephem import MoonEphem
 from telescope import Telescope
 
@@ -124,12 +125,11 @@ class Workflow(QtCore.QThread):
                 else:
                     # print >> sys.stderr, "redirecting output to stdout"
                     sys.stdout = self.stdout_saved
-                if self.gui.configuration.protocol:
-                    print "\n----------------------------------------------------\n", str(
-                        datetime.now())[
-                                                                                      :10], \
-                        self.gui.configuration.version, "\n", \
-                        "----------------------------------------------------"
+                if self.gui.configuration.protocol_level > 0:
+                    Miscellaneous.protocol("(Re-)starting the workflow."
+                        "\n----------------------------------------------------\n" +
+                        str(datetime.now())[:10] + " " + self.gui.configuration.version + "\n" +
+                        "----------------------------------------------------")
 
             # If camera automation is on, check if the camera is already connected. If not,
             # create a Camera object and connect the camera.
@@ -161,10 +161,14 @@ class Workflow(QtCore.QThread):
                 phase_angle = self.me.phase_angle
                 pos_angle = self.me.pos_angle_pole
                 if self.gui.configuration.protocol:
-                    print "\n", str(datetime.now())[
-                                11:21], "MoonPanoramaMaker (re)started, de_center:", degrees(
-                        de_center), ", m_diameter:", degrees(m_diameter), ", phase_angle:", degrees(
-                        phase_angle), ", pos_angle:", degrees(pos_angle)
+                    if self.gui.configuration.protocol_level > 0:
+                        Miscellaneous.protocol("MoonPanoramaMaker (re)started, moon center RA: " +
+                                               str(degrees(self.me.ra)) + ", DE: " +
+                                                str(degrees(self.me.de)) + " (degrees), " +
+                                               "diameter: " + str(degrees(m_diameter)*60.) +
+                                                " ('),  phase_angle:" + str(degrees(phase_angle)) +
+                                                ", pos_angle: " + str(degrees(pos_angle)) +
+                                               " (degrees)")
 
                 # Start the camera_ready method in main gui. Send ephemeris info with signal.
                 # Gui will construct the tiles and start the tile visualization window.
@@ -178,8 +182,8 @@ class Workflow(QtCore.QThread):
                 self.telescope.calibrate()
                 # Compute alignment point coordinates and instruct telescope to move there.
                 (ra_landmark, de_landmark) = (self.al.compute_telescope_coordinates_of_landmark())
-                if self.gui.configuration.protocol:
-                    print str(datetime.now())[11:21], "Slew to alignment point"
+                if self.gui.configuration.protocol_level > 0:
+                    Miscellaneous.protocol("Moving telescope to alignment point.")
                 self.telescope.slew_to(ra_landmark, de_landmark)
                 # Depending on the context where this activity was triggered emit different signals.
                 if self.gui.autoalign_enabled:
@@ -193,8 +197,8 @@ class Workflow(QtCore.QThread):
             # point.
             elif self.perform_alignment_flag:
                 self.perform_alignment_flag = False
-                if self.gui.configuration.protocol:
-                    print str(datetime.now())[11:21], "Center landmark in camera live view"
+                if self.gui.configuration.protocol_level > 0:
+                    Miscellaneous.protocol("Performing manual alignment.")
                 self.al.align(alignment_manual=True)
                 # Trigger method "alignment_performed" in gui.
                 self.alignment_performed_signal.emit()
@@ -205,8 +209,8 @@ class Workflow(QtCore.QThread):
             # signal argument.
             elif self.perform_autoalignment_flag:
                 self.perform_autoalignment_flag = False
-                if self.gui.configuration.protocol:
-                    print str(datetime.now())[11:21], "Try to initialize auto-alignment"
+                if self.gui.configuration.protocol_level > 0:
+                    Miscellaneous.protocol("Trying to initialize auto-alignment.")
                 # Try to initialize auto-alignment. Signal (caught in moon_panorama_maker in
                 # method "autoalignment_performed" carries info on success / failure as boolean.
                 try:
@@ -216,13 +220,13 @@ class Workflow(QtCore.QThread):
                     self.tile_indices_since_last_autoalign = []
                     # Signal success to gui, start method "autoalign_performed" there.
                     self.autoalignment_performed_signal.emit(True)
-                    if self.gui.configuration.protocol:
-                        print str(datetime.now())[11:21], "Auto-alignment initialization successful"
+                    if self.gui.configuration.protocol_level > 0:
+                        Miscellaneous.protocol("Auto-alignment initialization successful.")
                 except RuntimeError:
                     # Signal failure to gui, start method "autoalign_performed" there.
                     self.autoalignment_performed_signal.emit(False)
-                    if self.gui.configuration.protocol:
-                        print str(datetime.now())[11:21], "Auto-alignment initialization failed"
+                    if self.gui.configuration.protocol_level > 0:
+                        Miscellaneous.protocol("Auto-alignment initialization failed.")
 
             # Slew the telescope to the moon's limb midpoint. Triggered by "perform_camera_rotation"
             # in gui.
@@ -231,8 +235,8 @@ class Workflow(QtCore.QThread):
                 # Compute coordinates of limb center point and slew telescope there.
                 (ra, de) = self.al.center_offset_to_telescope_coordinates(
                     self.gui.tc.delta_ra_limb_center, self.gui.tc.delta_de_limb_center)
-                if self.gui.configuration.protocol:
-                    print str(datetime.now())[11:21], "Slew to Moon limb"
+                if self.gui.configuration.protocol_level > 0:
+                    Miscellaneous.protocol("Moving telescope to Moon limb.")
                 self.telescope.slew_to(ra, de)
                 # Signal success to gui, start method "prompt_camera_rotated_acknowledged" in gui.
                 self.moon_limb_centered_signal.emit()
@@ -242,6 +246,8 @@ class Workflow(QtCore.QThread):
             elif self.set_focus_area_flag:
                 self.set_focus_area_flag = False
                 self.al.set_focus_area()
+                if self.gui.configuration.protocol_level > 1:
+                    Miscellaneous.protocol("Location of focus area saved.")
                 # Start method "set_focus_area_finished" in gui.
                 self.focus_area_set_signal.emit()
 
@@ -249,6 +255,8 @@ class Workflow(QtCore.QThread):
             elif self.goto_focus_area_flag:
                 self.goto_focus_area_flag = False
                 (ra_focus, de_focus) = (self.al.compute_telescope_coordinates_of_focus_area())
+                if self.gui.configuration.protocol_level > 0:
+                    Miscellaneous.protocol("Moving telescope to focus area.")
                 self.telescope.slew_to(ra_focus, de_focus)
 
             # This is the most complicated activity of this thread. It is triggered in three
@@ -258,8 +266,8 @@ class Workflow(QtCore.QThread):
                 # Maximum time between auto-alignments has passed, do a new alignment
                 if self.al.autoalign_initialized and self.al.seconds_since_last_alignment() > \
                         self.gui.max_seconds_between_autoaligns:
-                    if self.gui.configuration.protocol:
-                        print str(datetime.now())[11:21], "Try to perform auto-alignment"
+                    if self.gui.configuration.protocol_level > 0:
+                        Miscellaneous.protocol("Trying to perform auto-alignment.")
                     try:
                         # Perform an auto-alignment. Return value gives size of correction relative
                         # to width of overlap between tiles (between 0. and 1.).
@@ -270,10 +278,11 @@ class Workflow(QtCore.QThread):
                             self.gui.max_seconds_between_autoaligns = max(
                                 (self.gui.max_seconds_between_autoaligns / 1.5),
                                 self.gui.min_autoalign_interval)
-                            if self.gui.configuration.protocol:
-                                print str(datetime.now())[11:21], "Auto-alignment: Error is ", \
-                                          relative_alignment_error/self.gui.max_alignment_error,\
-                                          " times max. allowed, roll back to last alignment point."
+                            if self.gui.configuration.protocol_level > 0:
+                                Miscellaneous.protocol("Auto-alignment inaccurate: Error is " +
+                                        str(relative_alignment_error/self.gui.max_alignment_error) +
+                                        " times of the maximum allowed, roll back to last " +
+                                        "alignment point.")
                             # Videos since last auto-alignment have to be repeated.
                             if len(self.tile_indices_since_last_autoalign) > 0:
                                 self.gui.tv.mark_unprocessed(self.tile_indices_since_last_autoalign)
@@ -289,25 +298,29 @@ class Workflow(QtCore.QThread):
                             self.gui.max_seconds_between_autoaligns = min(
                                 (self.gui.max_seconds_between_autoaligns * 1.5),
                                 self.gui.max_autoalign_interval)
-                        if self.gui.configuration.protocol:
-                            print str(datetime.now())[11:21], "Auto-alignment successful"
+                        if self.gui.configuration.protocol_level > 0:
+                            Miscellaneous.protocol("Auto-alignment successful")
                     # Auto-alignment was not successful, continue in moon_panorama_maker with
                     # method "wait_for_autoalignment_off" (reset auto-alignment, including gui
                     # button, enable manual alignment button, and prompt user to continue manually.)
                     except RuntimeError:
                         self.autoalignment_reset_signal.emit()
-                        print str(datetime.now())[11:21], "Auto-alignment failed"
+                        if self.gui.configuration.protocol_level > 0:
+                            Miscellaneous.protocol("Auto-alignment failed, revert to manual mode.")
                         # No video acquisition because of missing alignment.
                         continue
 
                 # Alignment is up-to-date, move telescoppe to active tile for video acquisition.
                 self.set_text_browser_signal.emit(
                     "Moving telescope to tile " + str(self.active_tile_number) + ", please wait.")
-                if self.gui.configuration.protocol:
-                    print "Moving telescope to tile ", self.active_tile_number, ", RA offset: ", \
-                        degrees(
-                        self.gui.next_tile['delta_ra_center']), ", DE offset: ", degrees(
-                        self.gui.next_tile['delta_de_center'])
+                if self.gui.configuration.protocol_level > 0:
+                    Miscellaneous.protocol("Moving telescope to tile " +
+                                           str(self.active_tile_number))
+                if self.gui.configuration.protocol_level > 2:
+                    Miscellaneous.protocol("RA offset ('): " +
+                                           str(degrees(self.gui.next_tile['delta_ra_center'])*60.) +
+                                           ", DE offset ('): " +
+                                           str(degrees(self.gui.next_tile['delta_de_center'])*60.))
                 (ra, de) = self.al.tile_to_telescope_coordinates(self.gui.next_tile)
                 self.telescope.slew_to(ra, de)
                 self.set_statusbar_signal.emit()
@@ -326,11 +339,11 @@ class Workflow(QtCore.QThread):
                     # camera.
                     self.camera.active_tile_number = self.active_tile_number
                     self.camera.triggered = True
-                    if self.gui.configuration.protocol:
-                        print str(datetime.now())[
-                              11:21], "Exposure of tile ", self.active_tile_number, " started " \
-                                                                                    "automatically."
+                    if self.gui.configuration.protocol_level > 1:
+                        Miscellaneous.protocol("Exposure of tile " + str(self.active_tile_number) +
+                                               " started automatically.")
                     # If meanwhile the Esc key has been pressed, do not ask for pressing it again.
+                    # Otherwise tell the user that he/she can interrupt by pressing 'Exc'.
                     if not self.escape_pressed_flag:
                         self.set_text_browser_signal.emit("Video started automatically. "
                                                           "Press 'Esc' to interrupt loop after "

@@ -380,8 +380,8 @@ class Telescope:
         self.optel = OperateTelescope(self.configuration)
         self.optel.start()
 
-        self.pointing_correction_ra = 0.
-        self.pointing_correction_de = 0.
+        self.readout_correction_ra = 0.
+        self.readout_correction_de = 0.
         self.guiding_active = False
 
     def calibrate(self):
@@ -439,13 +439,13 @@ class Telescope:
         (rect_lookup, decl_lookup) = self.lookup_tel_position_uncorrected()
         # For some mounts there is a systematic difference between target and the position
         # looked-up. Compute the difference. It will be used to correct future look-ups.
-        self.pointing_correction_ra = ra - rect_lookup
-        self.pointing_correction_de = de - decl_lookup
+        self.readout_correction_ra = ra - rect_lookup
+        self.readout_correction_de = de - decl_lookup
         # Write the corrections to the protocol file.
         if self.configuration.protocol_level > 2:
-            Miscellaneous.protocol("New pointing correction computed (deg.): RA: " +
-                str(degrees(self.pointing_correction_ra)) + ", DE: " +
-                str(degrees(self.pointing_correction_de)) + " (degrees)")
+            Miscellaneous.protocol("New coordinate read-out correction computed (deg.): RA: " +
+                                   str(degrees(self.readout_correction_ra)) + ", DE: " +
+                                   str(degrees(self.readout_correction_de)) + " (degrees)")
 
     def lookup_tel_position_uncorrected(self):
         """
@@ -475,8 +475,8 @@ class Telescope:
 
         (tel_ra_uncorrected, tel_de_uncorrected) = self.lookup_tel_position_uncorrected()
         # Apply the correction as measured during the last slew-to operation.
-        return (tel_ra_uncorrected + self.pointing_correction_ra,
-                tel_de_uncorrected + self.pointing_correction_de)
+        return (tel_ra_uncorrected + self.readout_correction_ra,
+                tel_de_uncorrected + self.readout_correction_de)
 
     def start_guiding(self, rate_ra, rate_de):
         """

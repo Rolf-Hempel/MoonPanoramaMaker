@@ -1118,6 +1118,8 @@ class StartQT4(QtGui.QMainWindow):
                 if self.key_status_saved:
                     # Tell the user to be patient (no immediate action)
                     self.set_text_browser("Please wait")
+                    if self.configuration.protocol_level > 0:
+                        Miscellaneous.protocol("The user has interrupted the workflow.")
                     self.gui_context = ""
                     # Tell the workflow thread that the recording loop is to be interrupted.
                     self.workflow.escape_pressed_flag = True
