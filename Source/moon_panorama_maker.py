@@ -421,7 +421,8 @@ class StartQT4(QtGui.QMainWindow):
         """
 
         self.ui.autoalignment.setStyleSheet("background-color: light gray")
-        self.ui.autoalignment.setText('Auto-Align on - B')
+        self.ui.autoalignment.setFont(QtGui.QFont("MS Shell Dlg 2", weight=QtGui.QFont.Normal))
+        self.ui.autoalignment.setText('Auto-Alignment on - B')
         self.ui.autoalignment.setShortcut("b")
 
     def prompt_autoalignment(self):
@@ -454,8 +455,9 @@ class StartQT4(QtGui.QMainWindow):
         self.autoalign_enabled = True
         # Reconfigure the auto-alignment button.
         self.ui.autoalignment.clicked.connect(self.prompt_autoalignment_off)
-        self.ui.autoalignment.setStyleSheet("background-color: red")
-        self.ui.autoalignment.setText('Auto-Align off - B')
+        self.ui.autoalignment.setStyleSheet("background-color: red; color: white")
+        self.ui.autoalignment.setFont(QtGui.QFont("MS Shell Dlg 2", weight=QtGui.QFont.Bold))
+        self.ui.autoalignment.setText('Auto-Alignment off - B')
         self.ui.autoalignment.setShortcut("b")
         # Write a text message to the text browser, reset the active tile in the tile visualization
         # window, update the status bar and trigger the workflow thread to move the telescope.

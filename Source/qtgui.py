@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qtgui.ui'
 #
-# Created: Fri May 19 20:54:22 2017
+# Created: Sun May 28 08:45:21 2017
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -167,6 +167,6 @@ class Ui_MainWindow(object):
         self.configure_drift_correction.setText(_translate("MainWindow", "Correct for Drift - D", None))
         self.configure_drift_correction.setShortcut(_translate("MainWindow", "D", None))
         self.autoalignment.setToolTip(_translate("MainWindow", "Switch on / off auto-alignment", None))
-        self.autoalignment.setText(_translate("MainWindow", "Auto-Align on - B", None))
+        self.autoalignment.setText(_translate("MainWindow", "Auto-Alignment on - B", None))
         self.autoalignment.setShortcut(_translate("MainWindow", "B", None))
 
