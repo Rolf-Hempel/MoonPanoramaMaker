@@ -73,7 +73,6 @@ class Configuration:
             # Check if the file is for the current MPM version, otherwise update it
             self.check_for_compatibility()
             self.configuration_read = True
-            print "configuration read from file"
         else:
             # Code to set standard config info. The "Hidden Parameters" are not displayed in the
             # configuration gui. Most of them are for placing gui windows where they had been at

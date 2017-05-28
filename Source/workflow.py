@@ -268,6 +268,7 @@ class Workflow(QtCore.QThread):
                         self.gui.max_seconds_between_autoaligns:
                     if self.gui.configuration.protocol_level > 0:
                         Miscellaneous.protocol("Trying to perform auto-alignment.")
+                    self.set_text_browser_signal.emit("Trying to perform auto-alignment.")
                     try:
                         # Perform an auto-alignment. Return value gives size of correction relative
                         # to width of overlap between tiles (between 0. and 1.).
@@ -303,10 +304,11 @@ class Workflow(QtCore.QThread):
                     # Auto-alignment was not successful, continue in moon_panorama_maker with
                     # method "wait_for_autoalignment_off" (reset auto-alignment, including gui
                     # button, enable manual alignment button, and prompt user to continue manually.)
-                    except RuntimeError:
+                    except RuntimeError as e:
                         self.autoalignment_reset_signal.emit()
                         if self.gui.configuration.protocol_level > 0:
-                            Miscellaneous.protocol("Auto-alignment failed, revert to manual mode.")
+                            Miscellaneous.protocol("Auto-alignment failed, revert to manual mode." +
+                                                   " Error message: " + str(e))
                         # No video acquisition because of missing alignment.
                         continue
 

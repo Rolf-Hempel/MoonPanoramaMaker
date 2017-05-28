@@ -108,12 +108,11 @@ class Alignment:
         # A landmark has been selected, store and print coordinate offsets.
         if self.ls.landmark_selected:
             (self.ra_offset_landmark, self.de_offset_landmark) = offsets
-            if self.configuration.protocol:
-                print str(datetime.now())[11:21], \
-                    "Landmark offset (RA): ", \
-                    degrees(self.ra_offset_landmark) * 60., \
-                    ", landmark offset (DE): ", \
-                    degrees(self.de_offset_landmark) * 60.
+            if self.configuration.protocol_level > 1:
+                Miscellaneous.protocol("Landmark offset from center RA ('): " +
+                    str(degrees(self.ra_offset_landmark) * 60.) +
+                    ", landmark offset from center DE ('): " +
+                    str(degrees(self.de_offset_landmark) * 60.))
             self.is_landmark_offset_set = True
         else:
             self.is_landmark_offset_set = False
@@ -134,7 +133,8 @@ class Alignment:
 
         # Alignment is only possible after a landmark has been selected.
         if not self.is_landmark_offset_set:
-            print "Error: Landmark offset not set"
+            if self.configuration.protocol_level > 0:
+                Miscellaneous.protocol("Error in alignment: Landmark offset not set")
             raise RuntimeError("Error: Landmark offset not set")
 
         # Manual alignment: The telescope is aimed at the current location of the landmark. Look
@@ -159,16 +159,15 @@ class Alignment:
                 # Measure shift against reference frame
                 (x_shift, y_shift, in_cluster, outliers) = \
                     self.im_shift.shift_vs_reference()
-                if self.configuration.protocol:
-                    print str(datetime.now())[11:21], \
-                        "New alignment frame captured, x_shift: ", \
-                        x_shift / self.im_shift.pixel_angle, \
-                        ", y_shift: ", y_shift / self.im_shift.pixel_angle,\
-                        " (pixels), consistent shifts: ", \
-                        in_cluster, ", outliers: ", outliers
+                if self.configuration.protocol_level > 1:
+                    Miscellaneous.protocol("New alignment frame captured, x_shift: " +
+                        str(x_shift / self.im_shift.pixel_angle) +
+                        ", y_shift: " + str(y_shift / self.im_shift.pixel_angle) +
+                        " (pixels), # consistent shifts: " + str(in_cluster) + ", # outliers: " +
+                        str(outliers))
             except RuntimeError as e:
-                if self.configuration.protocol:
-                    print str(datetime.now())[11:21], str(e)
+                if self.configuration.protocol_level > 0:
+                    Miscellaneous.protocol("Exception in auto-alignment: " + str(e))
                 raise RuntimeError(str(e))
             global_shift = sqrt(x_shift**2+y_shift**2)
             relative_alignment_error = global_shift/self.shift_angle
@@ -185,12 +184,10 @@ class Alignment:
                                                         self.flip_x,
                                                         -1. * self.flip_y,
                                                         x_shift, y_shift)
-            if self.configuration.protocol:
-                print str(datetime.now())[11:21], \
-                    "Rotated to RA/DE: RA_shift: ", \
-                    ra_shift / self.im_shift.pixel_angle, \
-                    ", DE_shift: ", de_shift / self.im_shift.pixel_angle,\
-                    " (pixels)"
+            if self.configuration.protocol_level > 2:
+                Miscellaneous.protocol("Alignment shift rotated to RA/DE: RA: " +
+                    str(ra_shift / self.im_shift.pixel_angle) +
+                    ", DE: " + str(de_shift / self.im_shift.pixel_angle) + " (pixels)")
             # The shift is computed as "current frame - reference". Add
             # coordinate shifts to current mount position to get mount
             # setting where landmark is located as on reference frame.
@@ -205,10 +202,6 @@ class Alignment:
 
         # Update ephemeris of moon and sun
         self.me.update(current_time)
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], \
-                "Computing new alignment, moon position: RA: ", \
-                degrees(self.me.ra), ", DE: ", degrees(self.me.de)
 
         # Correction = telescope position minus updated ephemeris position of
         # landmark
@@ -216,11 +209,19 @@ class Alignment:
                                             self.ra_offset_landmark)
         self.de_correction = de_landmark - (self.me.de +
                                             self.de_offset_landmark)
-        if self.configuration.protocol:
-            print "RA(landmark): ", degrees(ra_landmark), ", DE(landmark): ", \
-                degrees(de_landmark), ", RA correction ('): ", \
-                degrees(self.ra_correction) * 60., ", DE correction ('): ", \
-                degrees(self.de_correction) * 60.
+
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("Computing new alignment, current RA correction ('): " +
+                                   str(degrees(self.ra_correction) * 60.) +
+                                   ", current DE correction ('): "+
+                                   str(degrees(self.de_correction) * 60.))
+
+        if self.configuration.protocol_level > 2:
+            Miscellaneous.protocol("More alignment info: moon center RA: " +
+                                    str(degrees(self.me.ra)) + ", moon center DE: " +
+                                    str(degrees(self.me.de)) + ", landmark RA: " +
+                                    str(degrees(ra_landmark)) + ", landmark DE: " +
+                                    str(degrees(de_landmark)) + " (all in degrees)")
 
         # Store a new alignment point
         alignment_point = {}
@@ -300,8 +301,8 @@ class Alignment:
                     Miscellaneous.protocol("Frame captured for autoalignment, x_shift: " +
                                            str(x_shift / self.im_shift.pixel_angle) +
                                            ", y_shift: " + str(y_shift / self.im_shift.pixel_angle)+
-                                           " (pixels), consistent shifts: " + str(in_cluster) +
-                                           ", outliers: " + str(outliers))
+                                           " (pixels), # consistent shifts: " + str(in_cluster) +
+                                           ", # outliers: " + str(outliers))
             xy_shifts.append([x_shift, y_shift])
         # Subtract second position from first and third position
         shift_vector_0_measured = [xy_shifts[0][0] - xy_shifts[1][0],
