@@ -21,6 +21,7 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from math import sin, cos
+from datetime import datetime
 
 from show_input_error import ShowInputError
 
@@ -30,6 +31,10 @@ class Miscellaneous():
     This class provides static methods for various auxiliary purposes.
     
     """
+
+    @staticmethod
+    def protocol(string):
+        print str(datetime.now())[11:21], string
 
     @staticmethod
     def testfloat(string, lower_bound, upper_bound):

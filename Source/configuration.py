@@ -104,7 +104,7 @@ class Configuration:
             self.conf.set('Tile Visualization', 'label shift', '0.8')
 
             self.conf.add_section('Workflow')
-            self.conf.set('Workflow', 'protocol', 'True')
+            self.conf.set('Workflow', 'protocol level', '2')
             self.conf.set('Workflow', 'protocol to file', 'True')
             self.conf.set('Workflow', 'camera automation', 'False')
             self.conf.set('Workflow', 'limb first', 'False')
@@ -220,6 +220,13 @@ class Configuration:
             if version_read == "MoonPanoramaMaker 0.9.3":
                 # Update the version number.
                 self.conf.set('Hidden Parameters', 'version', self.version)
+                # The handling of session protocol changed.
+                wp = self.conf.getboolean('Workflow', 'protocol')
+                if wp:
+                    self.conf.set('Workflow', 'protocol level', '2')
+                else:
+                    self.conf.set('Workflow', 'protocol level', '0')
+                self.conf.remove_option('Workflow', 'protocol')
                 # Add the "Alignment" section which was introduced with version 0.9.5.
                 self.conf.add_section('Alignment')
                 self.conf.set('Alignment', 'min autoalign interval', '200.')
@@ -233,14 +240,20 @@ class Configuration:
                 for cam in camlist:
                     self.conf.set('Camera ' + cam, 'repetition count', '1')
 
-    def set_protocol_flag(self):
+    def set_protocol_level(self):
         """
-        Read from the configuration object if a protocol is to be written or not.
+        Read from the configuration object the level of detail for the session protocol. The
+        follwoing levels are supported:
+        0:  No session protocol
+        1:  Minimal protocol, only high-level activities, e.g. alignments, video aquisitions,
+            no details
+        2:  Quantitative information on high-level activities
+        3:  Detailed information also on low-level activities (only for debugging)
         
         :return: -
         """
 
-        self.protocol = self.conf.getboolean('Workflow', 'protocol')
+        self.protocol_level = self.conf.getint('Workflow', 'protocol level')
 
     def get_camera_list(self):
         """

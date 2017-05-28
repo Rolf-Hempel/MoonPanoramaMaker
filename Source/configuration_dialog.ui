@@ -708,22 +708,22 @@
           </widget>
          </item>
          <item row="11" column="0">
-          <widget class="QLabel" name="protocol">
+          <widget class="QLabel" name="protocol_level">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
            </property>
            <property name="toolTip">
-            <string>Print out detailed session protocol</string>
+            <string>Select level of detail for session protocol (0=No protocol)</string>
            </property>
            <property name="text">
-            <string>Write session protocol</string>
+            <string>Session protocol level (0, 1, 2, 3)</string>
            </property>
           </widget>
          </item>
          <item row="11" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_protocol">
+          <widget class="QLineEdit" name="input_protocol_level">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
@@ -873,7 +873,7 @@
   <tabstop>new_camera</tabstop>
   <tabstop>delete_camera</tabstop>
   <tabstop>input_focal_length</tabstop>
-  <tabstop>input_protocol</tabstop>
+  <tabstop>input_protocol_level</tabstop>
   <tabstop>input_protocol_to_file</tabstop>
   <tabstop>input_limb_first</tabstop>
   <tabstop>input_camera_automation</tabstop>

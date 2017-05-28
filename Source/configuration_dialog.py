@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'configuration_dialog.ui'
 #
-# Created: Sun May 21 10:40:36 2017
+# Created: Sun May 28 09:01:05 2017
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -374,18 +374,18 @@ class Ui_ConfigurationDialog(object):
         self.input_protocol_to_file.setFont(font)
         self.input_protocol_to_file.setObjectName(_fromUtf8("input_protocol_to_file"))
         self.gridLayout.addWidget(self.input_protocol_to_file, 12, 2, 1, 4)
-        self.protocol = QtGui.QLabel(self.scrollAreaWidgetContents)
+        self.protocol_level = QtGui.QLabel(self.scrollAreaWidgetContents)
         font = QtGui.QFont()
         font.setPointSize(10)
-        self.protocol.setFont(font)
-        self.protocol.setObjectName(_fromUtf8("protocol"))
-        self.gridLayout.addWidget(self.protocol, 11, 0, 1, 1)
-        self.input_protocol = QtGui.QLineEdit(self.scrollAreaWidgetContents)
+        self.protocol_level.setFont(font)
+        self.protocol_level.setObjectName(_fromUtf8("protocol_level"))
+        self.gridLayout.addWidget(self.protocol_level, 11, 0, 1, 1)
+        self.input_protocol_level = QtGui.QLineEdit(self.scrollAreaWidgetContents)
         font = QtGui.QFont()
         font.setPointSize(10)
-        self.input_protocol.setFont(font)
-        self.input_protocol.setObjectName(_fromUtf8("input_protocol"))
-        self.gridLayout.addWidget(self.input_protocol, 11, 2, 1, 4)
+        self.input_protocol_level.setFont(font)
+        self.input_protocol_level.setObjectName(_fromUtf8("input_protocol_level"))
+        self.gridLayout.addWidget(self.input_protocol_level, 11, 2, 1, 4)
         self.guiding_interval = QtGui.QLabel(self.scrollAreaWidgetContents)
         font = QtGui.QFont()
         font.setPointSize(10)
@@ -466,8 +466,8 @@ class Ui_ConfigurationDialog(object):
         ConfigurationDialog.setTabOrder(self.edit_camera, self.new_camera)
         ConfigurationDialog.setTabOrder(self.new_camera, self.delete_camera)
         ConfigurationDialog.setTabOrder(self.delete_camera, self.input_focal_length)
-        ConfigurationDialog.setTabOrder(self.input_focal_length, self.input_protocol)
-        ConfigurationDialog.setTabOrder(self.input_protocol, self.input_protocol_to_file)
+        ConfigurationDialog.setTabOrder(self.input_focal_length, self.input_protocol_level)
+        ConfigurationDialog.setTabOrder(self.input_protocol_level, self.input_protocol_to_file)
         ConfigurationDialog.setTabOrder(self.input_protocol_to_file, self.input_limb_first)
         ConfigurationDialog.setTabOrder(self.input_limb_first, self.input_camera_automation)
         ConfigurationDialog.setTabOrder(self.input_camera_automation, self.input_camera_trigger_delay)
@@ -539,8 +539,8 @@ class Ui_ConfigurationDialog(object):
         self.telescope_lookup_precision.setText(_translate("ConfigurationDialog", "Telescope position lookup precision (\")", None))
         self.protocol_to_file.setToolTip(_translate("ConfigurationDialog", "Append session protocol to file \"MoonPanoramaMaker.log\" in home directory", None))
         self.protocol_to_file.setText(_translate("ConfigurationDialog", "Write protocol to file (True / False)", None))
-        self.protocol.setToolTip(_translate("ConfigurationDialog", "Print out detailed session protocol", None))
-        self.protocol.setText(_translate("ConfigurationDialog", "Write session protocol", None))
+        self.protocol_level.setToolTip(_translate("ConfigurationDialog", "Select level of detail for session protocol (0=No protocol)", None))
+        self.protocol_level.setText(_translate("ConfigurationDialog", "Session protocol level (0, 1, 2, 3)", None))
         self.guiding_interval.setToolTip(_translate("ConfigurationDialog", "Duration of guiding pulses during video exposure, e.g. 0.2. Must be between 0. and 3.", None))
         self.guiding_interval.setText(_translate("ConfigurationDialog", "Guide pulse duration (s)", None))
         self.max_autoalign_interval.setText(_translate("ConfigurationDialog", "Maximum auto-alignment interval (s)", None))

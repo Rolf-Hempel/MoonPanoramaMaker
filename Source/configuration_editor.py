@@ -71,7 +71,7 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
 
         self.input_focal_length.setText(self.c.conf.get("Telescope", "focal length"))
 
-        self.input_protocol.setText(self.c.conf.get("Workflow", "protocol"))
+        self.input_protocol_level.setText(self.c.conf.get("Workflow", "protocol level"))
         self.input_protocol_to_file.setText(self.c.conf.get("Workflow", "protocol to file"))
         self.input_limb_first.setText(self.c.conf.get("Workflow", "limb first"))
         self.input_camera_automation.setText(self.c.conf.get("Workflow", "camera automation"))
@@ -111,7 +111,7 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
 
         self.input_focal_length.textChanged.connect(self.focal_length_write)
 
-        self.input_protocol.textChanged.connect(self.protocol_write)
+        self.input_protocol_level.textChanged.connect(self.protocol_level_write)
         self.input_protocol_to_file.textChanged.connect(self.protocol_to_file_write)
         self.input_limb_first.textChanged.connect(self.limb_first_write)
         self.input_camera_automation.textChanged.connect(self.camera_automation_write)
@@ -255,7 +255,7 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
 
         self.configuration_changed = True
 
-    def protocol_write(self):
+    def protocol_level_write(self):
         """
         If the parameter has been changed, set the configuration_changed flag to True.
 
@@ -472,11 +472,11 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
                 Miscellaneous.show_input_error("Focal length", "4670.")
                 return
 
-            input_string = str(self.input_protocol.text())
-            if Miscellaneous.testbool(input_string) is not None:
-                self.c.conf.set("Workflow", "protocol", str(self.input_protocol.text()))
+            input_string = str(self.input_protocol_level.text())
+            if Miscellaneous.testint(input_string, 0, 3) is not None:
+                self.c.conf.set("Workflow", "protocol level", str(self.input_protocol_level.text()))
             else:
-                Miscellaneous.show_input_error("Write session protocol", "True")
+                Miscellaneous.show_input_error("Session protocol level", "2")
                 return
 
             input_string = str(self.input_protocol_to_file.text())

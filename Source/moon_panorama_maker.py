@@ -22,7 +22,6 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
 import time
-from datetime import datetime
 from math import degrees
 
 from PyQt4 import QtCore, QtGui
@@ -30,6 +29,7 @@ from PyQt4 import QtCore, QtGui
 from compute_drift_rate import ComputeDriftRate
 from configuration import Configuration
 from configuration_editor import ConfigurationEditor
+from miscellaneous import Miscellaneous
 from qtgui import Ui_MainWindow
 from show_landmark import ShowLandmark
 from tile_constructor import TileConstructor
@@ -131,7 +131,7 @@ class StartQT4(QtGui.QMainWindow):
         x0 = int(self.configuration.conf.get('Hidden Parameters', 'main window x0'))
         y0 = int(self.configuration.conf.get('Hidden Parameters', 'main window y0'))
         self.setGeometry(x0, y0, width, height)
-        self.configuration.set_protocol_flag()
+        self.configuration.set_protocol_level()
 
         # Actions in the workflow thread are triggered by setting the corresponding flag in the gui
         # thread to True. Here, trigger redirecting stdout to a file if requested in configuration.
@@ -146,7 +146,7 @@ class StartQT4(QtGui.QMainWindow):
             # re-directing it to a file might have changed. Therefore, repeat the two above
             # initializations.
             if editor.configuration_changed:
-                self.configuration.set_protocol_flag()
+                self.configuration.set_protocol_level()
                 self.workflow.set_session_output_flag = True
 
         # Write the program version into the window title.
@@ -307,8 +307,8 @@ class StartQT4(QtGui.QMainWindow):
         # Invalidate the camera orientation.
         self.camera_rotated = False
         self.set_text_browser("Select a landmark from the list. ")
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], "Select a new landmark from the list."
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("The user selects a new landmark.")
         # Invoke "set_landmark" method of the alignment object. It offers the user a gui interface
         # for landmark selection. Based on the selection, the method computes the center offset.
         self.workflow.al.set_landmark()
@@ -656,8 +656,6 @@ class StartQT4(QtGui.QMainWindow):
         :return: -
         """
 
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], "Select focus area"
         # Write the user prompt to the text browser.
         self.set_text_browser("Move telescope to focus area. Confirm with 'enter', otherwise "
                               "press 'esc'.")
@@ -675,6 +673,8 @@ class StartQT4(QtGui.QMainWindow):
         :return: -
         """
 
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("The user has selected a new focus area")
         self.workflow.set_focus_area_flag = True
 
     def set_focus_area_finished(self):
@@ -700,8 +700,8 @@ class StartQT4(QtGui.QMainWindow):
         :return: -
         """
 
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], "Goto focus area"
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("Goto focus area")
         # If the telescope was aimed at a tile, reset its "active" status, update the status bar,
         # display a message and trigger the workflow thread to move the telescope.
         self.reset_active_tile()
@@ -729,8 +729,8 @@ class StartQT4(QtGui.QMainWindow):
         self.ui.move_to_selected_tile.setEnabled(False)
         # De-activate all keys while the operation is in progress.
         self.save_key_status()
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], "Start/continue recording"
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("Start/continue recording.")
         # If guiding was active (from last video recording), stop it now.
         if self.workflow.telescope.guiding_active:
             self.workflow.telescope.stop_guiding()
@@ -748,8 +748,8 @@ class StartQT4(QtGui.QMainWindow):
             self.ui.move_to_selected_tile.setEnabled(False)
             self.set_statusbar()
             self.set_text_browser("All tiles have been recorded.")
-            if self.configuration.protocol:
-                print str(datetime.now())[11:21], "All tiles have been recorded."
+            if self.configuration.protocol_level > 0:
+                Miscellaneous.protocol("All tiles have been recorded.")
             self.reset_key_status()
         # There is at least one tile left. Set "active_tile_number" and change its display in the
         # tile visualization window. Initialize the "camera_interrupted" flag. (The user may set
@@ -841,9 +841,9 @@ class StartQT4(QtGui.QMainWindow):
         # "active_tile_number" of the workflow object.
         self.tni = TileNumberInput(self.workflow.active_tile_number, self.workflow)
         self.tni.exec_()
-        if self.configuration.protocol:
-            print str(datetime.now())[
-                  11:21], "Tile number ", self.workflow.active_tile_number, " selected"
+        if self.configuration.protocol_level > 1:
+            Miscellaneous.protocol("Tile number " + str(self.workflow.active_tile_number) +
+                                   " was selected.")
         self.ui.move_to_selected_tile.setEnabled(True)
         # Clear the text browser.
         self.set_text_browser("")
@@ -883,9 +883,9 @@ class StartQT4(QtGui.QMainWindow):
 
         # The action is performed in class TileVisualization.
         self.tv.mark_unprocessed(self.selected_tile_numbers)
-        if self.configuration.protocol:
-            print str(datetime.now())[
-                  11:21], "Tile(s) " + self.selected_tile_numbers_string + " marked unprocessed."
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("Tile(s) " + self.selected_tile_numbers_string +
+                                   " are marked unprocessed.")
         # Since at least one tile is unprocessed now, reset the "all_tiles_recorded" flag.
         self.all_tiles_recorded = False
         self.set_text_browser("")
@@ -919,8 +919,8 @@ class StartQT4(QtGui.QMainWindow):
         # Reset the active tile number. Processing will start from the beginning.
         self.workflow.active_tile_number = -1
         self.set_text_browser("")
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], "All tiles are marked as unprocessed."
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("All tiles are marked as unprocessed.")
 
     def set_all_tiles_processed(self):
         """
@@ -949,8 +949,8 @@ class StartQT4(QtGui.QMainWindow):
         self.all_tiles_recorded = True
         self.workflow.active_tile_number = -1
         self.set_text_browser("All tiles are marked as processed.")
-        if self.configuration.protocol:
-            print str(datetime.now())[11:21], "All tiles are marked as processed."
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("All tiles are marked as processed.")
 
     def move_to_selected_tile(self):
         """
@@ -962,9 +962,9 @@ class StartQT4(QtGui.QMainWindow):
 
         # Get the tile object from the list kept by the TileConstructor object.
         self.selected_tile = self.tc.list_of_tiles_sorted[self.workflow.active_tile_number]
-        if self.configuration.protocol:
-            print str(datetime.now())[
-                  11:21], "Goto selected tile number ", self.workflow.active_tile_number
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("Goto selected tile number " +
+                                   str(self.workflow.active_tile_number))
         # Mark the tile active in the tile visualization window, refresh the status bar.
         self.tv.mark_active(self.workflow.active_tile_number)
         self.set_statusbar()
