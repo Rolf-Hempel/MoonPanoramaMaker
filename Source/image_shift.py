@@ -69,9 +69,11 @@ class ImageShift:
             "Camera", "tile overlap pixel"))
         # The still pictures produced by the camera are reduced both in x and y pixel directions
         # by "compression_factor". Set the compression factor such that the overlap between tiles
-        # is resolved in 40 pixels. In pictures of this resolution the telescope pointing can be
-        # determined precisely enough for auto-alignment.
-        self.compression_factor = self.ol_inner_min_pixel / 40
+        # is resolved in a given number of pixels (pixels_in_overlap_width). This resolution should
+        # be selected such that the telescope pointing can be determined precisely enough for
+        # auto-alignment.
+        self.compression_factor = self.ol_inner_min_pixel / \
+                                  self.configuration.pixels_in_overlap_width
         # Compute the angle corresponding to a single pixel in the focal plane.
         self.pixel_angle = atan(self.pixel_size / self.focal_length)
         # Compute the angle corresponding to the overlap between tiles.
@@ -103,11 +105,15 @@ class ImageShift:
         self.alignment_image_counter = 0
 
         # Create CLAHE and ORB objects.
-        self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        self.orb = cv2.ORB_create(WTA_K=3, nfeatures=50,
+        self.clahe = cv2.createCLAHE(clipLimit=self.configuration.clahe_clip_limit, tileGridSize=(
+                self.configuration.clahe_tile_grid_size, self.configuration.clahe_tile_grid_size))
+        self.orb = cv2.ORB_create(WTA_K=self.configuration.orb_wta_k,
+                                  nfeatures=self.configuration.orb_nfeatures,
                                   scoreType=cv2.ORB_HARRIS_SCORE,
-                                  edgeThreshold=30, patchSize=31,
-                                  scaleFactor=1.2, nlevels=8)
+                                  edgeThreshold=self.configuration.orb_edge_threshold,
+                                  patchSize=self.configuration.orb_patch_size,
+                                  scaleFactor=self.configuration.orb_scale_factor,
+                                  nlevels=self.configuration.orb_n_levels)
         # Create BFMatcher object
         self.bf = cv2.BFMatcher(cv2.NORM_HAMMING2, crossCheck=True)
 
@@ -218,8 +224,10 @@ class ImageShift:
             X_matrix[m][1] = self.shifted_image_kp[shifted_index].pt[1] - \
                              self.reference_image_kp[reference_index].pt[1]
 
-        # Use DBSCAN to find the cluster with consistent shifts. Set the cluster radius to 3 pixels.
-        db = DBSCAN(eps=3., min_samples=10).fit(X_matrix)
+        # Use DBSCAN to find the cluster with consistent shifts. Set the cluster radius and minimum
+        # sample size.
+        db = DBSCAN(eps=self.configuration.dbscan_cluster_radius,
+                    min_samples=self.configuration.dbscan_minimum_sample).fit(X_matrix)
         core_samples_mask = zeros_like(db.labels_, dtype=bool)
         core_samples_mask[db.core_sample_indices_] = True
         # The list "labels" defines the cluster number for each match. Only the first cluster
@@ -238,7 +246,7 @@ class ImageShift:
         outliers = count_nonzero(labels)
         # Compute number of matches in the cluster. If it is too low (<10), raise a RuntimeError.
         in_cluster = (len(labels) - outliers)
-        if in_cluster < 10:
+        if in_cluster < self.configuration.dbscan_minimum_in_cluster:
             raise RuntimeError(
                 "Image shift computation # " +
                 str(self.alignment_image_counter - 1) +

@@ -273,6 +273,10 @@ class Workflow(QtCore.QThread):
                         # Perform an auto-alignment. Return value gives size of correction relative
                         # to width of overlap between tiles (between 0. and 1.).
                         relative_alignment_error = self.al.align(alignment_manual=False)
+                        # If enough alignment points are set, enable drift correction dialog button.
+                        if self.al.drift_dialog_enabled:
+                            self.gui.change_saved_key_status(self.gui.ui.configure_drift_correction,
+                                                             True)
                         # If error too large, reduce time between auto-alignments (within bounds
                         # given by parameters "min_autoalign_interval" and "max_autoalign_interval".
                         if relative_alignment_error > self.gui.max_alignment_error:

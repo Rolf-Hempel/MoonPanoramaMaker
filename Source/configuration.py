@@ -51,10 +51,41 @@ class Configuration:
         self.alignment_debug = False
         self.ephemeris_debug = False
 
-        # Set a parameter which cannot be changed by the user (minimum length of time interval
-        # for drift computation (10 minutes).
+        # Set parameter which cannot be changed by the user.
 
-        self.minimum_drift_seconds = 600.
+        # Minimum length of time interval for drift computation:
+        self.minimum_drift_seconds = 600.   # 10 minutes
+
+        # Resolution (in pixels) of overlap width in still pictures for shift determination:
+        self.pixels_in_overlap_width = 40   # 40 pixels
+
+        # Parameters in CLAHE image normalization:
+        # Clip limit:
+        self.clahe_clip_limit = 2.
+        # Tile grid size:
+        self.clahe_tile_grid_size = 8
+
+        # Parameters for ORB keypoint detection:
+        # WTA_K parameter:
+        self.orb_wta_k = 3
+        # Number of features:
+        self.orb_nfeatures = 50
+        # Edge threshold:
+        self.orb_edge_threshold = 30
+        # Patch size:
+        self.orb_patch_size = 31
+        # Scale factor:
+        self.orb_scale_factor = 1.2
+        # Number of levels:
+        self.orb_n_levels = 8
+
+        # Parameters in shift cluster detection:
+        # Cluster radius in pixels:
+        self.dbscan_cluster_radius = 3.
+        # Minimum sample size:
+        self.dbscan_minimum_sample = 10
+        # Minimum of measurements in cluster:
+        self.dbscan_minimum_in_cluster = 10
 
         self.conf = ConfigParser.ConfigParser()
 

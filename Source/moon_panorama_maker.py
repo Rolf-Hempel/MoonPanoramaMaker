@@ -1009,6 +1009,21 @@ class StartQT4(QtGui.QMainWindow):
         # Set a flag indicating that the key status has been saved.
         self.key_status_saved = True
 
+    def change_saved_key_status(self, button, new_status):
+        """
+        During a long-running process the gui buttons are disabled by a call of "save_key_status".
+        This method is used if in such a situation the saved status of a button must be changed. At
+        the next call of "reset_key_status" this button will then be changed to this new status
+        insted to the one saved originally.
+        
+        :param button: button object in self.button_list
+        :param new_status: new saved status of this button. True if "isEnabled", otherwise False.
+        :return: -
+        """
+
+        button_index = self.button_list.index(button)
+        self.saved_key_status[button_index] = new_status
+
     def reset_key_status(self):
         """
         Reverse operation to save_key_status: Restore the status of all gui buttons and reset the
