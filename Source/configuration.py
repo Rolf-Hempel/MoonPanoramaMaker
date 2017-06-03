@@ -51,13 +51,19 @@ class Configuration:
         self.alignment_debug = False
         self.ephemeris_debug = False
 
-        # Set parameter which cannot be changed by the user.
+        # Set internal parameters which cannot be changed by the user.
 
         # Minimum length of time interval for drift computation:
         self.minimum_drift_seconds = 600.   # 10 minutes
 
         # Resolution (in pixels) of overlap width in still pictures for shift determination:
         self.pixels_in_overlap_width = 40   # 40 pixels
+
+        # Parameters used in auto-alignment:
+        # Factor by which the interval between auto-alignments is changed:
+        self.align_interval_change_factor = 1.5
+        # Criterion for very precise alignment:
+        self.align_very_precise_factor = 4.
 
         # Parameters in CLAHE image normalization:
         # Clip limit:

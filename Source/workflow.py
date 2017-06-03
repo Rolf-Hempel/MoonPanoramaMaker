@@ -284,8 +284,9 @@ class Workflow(QtCore.QThread):
                         # If error too large, reduce time between auto-alignments (within bounds
                         # given by parameters "min_autoalign_interval" and "max_autoalign_interval".
                         if relative_alignment_error > self.gui.max_alignment_error:
-                            self.gui.max_seconds_between_autoaligns = max(
-                                (self.gui.max_seconds_between_autoaligns / 1.5),
+                            self.gui.max_seconds_between_autoaligns = max((
+                            self.gui.max_seconds_between_autoaligns /
+                            self.gui.configuration.align_interval_change_factor),
                                 self.gui.min_autoalign_interval)
                             if self.gui.configuration.protocol_level > 0:
                                 Miscellaneous.protocol("Auto-alignment inaccurate: Error is " + str(
@@ -304,9 +305,11 @@ class Workflow(QtCore.QThread):
                             self.tile_indices_since_last_autoalign = []
                         # If the alignment error was very low, increase time between auto-alignments
                         # (within bounds).
-                        elif relative_alignment_error < self.gui.max_alignment_error/5.:
-                            self.gui.max_seconds_between_autoaligns = min(
-                                (self.gui.max_seconds_between_autoaligns * 1.5),
+                        elif relative_alignment_error < self.gui.max_alignment_error / \
+                                self.gui.configuration.align_very_precise_factor:
+                            self.gui.max_seconds_between_autoaligns = min((
+                            self.gui.max_seconds_between_autoaligns *
+                            self.gui.configuration.align_interval_change_factor),
                                 self.gui.max_autoalign_interval)
                             if self.gui.configuration.protocol_level > 0:
                                 Miscellaneous.protocol("Relative alignment error very small, "
