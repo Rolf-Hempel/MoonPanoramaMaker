@@ -198,6 +198,7 @@ class Workflow(QtCore.QThread):
             elif self.perform_alignment_flag:
                 self.perform_alignment_flag = False
                 if self.gui.configuration.protocol_level > 0:
+                    print ""
                     Miscellaneous.protocol("Performing manual alignment.")
                 self.al.align(alignment_manual=True)
                 # Trigger method "alignment_performed" in gui.
@@ -210,6 +211,7 @@ class Workflow(QtCore.QThread):
             elif self.perform_autoalignment_flag:
                 self.perform_autoalignment_flag = False
                 if self.gui.configuration.protocol_level > 0:
+                    print ""
                     Miscellaneous.protocol("Trying to initialize auto-alignment.")
                 # Try to initialize auto-alignment. Signal (caught in moon_panorama_maker in
                 # method "autoalignment_performed" carries info on success / failure as boolean.
@@ -256,6 +258,7 @@ class Workflow(QtCore.QThread):
                 self.goto_focus_area_flag = False
                 (ra_focus, de_focus) = (self.al.compute_telescope_coordinates_of_focus_area())
                 if self.gui.configuration.protocol_level > 0:
+                    print ""
                     Miscellaneous.protocol("Moving telescope to focus area.")
                 self.telescope.slew_to(ra_focus, de_focus)
 
@@ -267,6 +270,7 @@ class Workflow(QtCore.QThread):
                 if self.al.autoalign_initialized and self.al.seconds_since_last_alignment() > \
                         self.gui.max_seconds_between_autoaligns:
                     if self.gui.configuration.protocol_level > 0:
+                        print ""
                         Miscellaneous.protocol("Trying to perform auto-alignment.")
                     self.set_text_browser_signal.emit("Trying to perform auto-alignment.")
                     try:
@@ -284,10 +288,11 @@ class Workflow(QtCore.QThread):
                                 (self.gui.max_seconds_between_autoaligns / 1.5),
                                 self.gui.min_autoalign_interval)
                             if self.gui.configuration.protocol_level > 0:
-                                Miscellaneous.protocol("Auto-alignment inaccurate: Error is " +
-                                        str(relative_alignment_error/self.gui.max_alignment_error) +
-                                        " times of the maximum allowed, roll back to last " +
-                                        "alignment point.")
+                                Miscellaneous.protocol("Auto-alignment inaccurate: Error is " + str(
+                                    relative_alignment_error / self.gui.max_alignment_error) +
+                                    " times of the maximum allowed, roll back to last " +
+                                    "alignment point. New time between alignments: " + str(
+                                    self.gui.max_seconds_between_autoaligns) + " seconds.")
                             # Videos since last auto-alignment have to be repeated.
                             if len(self.tile_indices_since_last_autoalign) > 0:
                                 self.gui.tv.mark_unprocessed(self.tile_indices_since_last_autoalign)
@@ -303,6 +308,11 @@ class Workflow(QtCore.QThread):
                             self.gui.max_seconds_between_autoaligns = min(
                                 (self.gui.max_seconds_between_autoaligns * 1.5),
                                 self.gui.max_autoalign_interval)
+                            if self.gui.configuration.protocol_level > 0:
+                                Miscellaneous.protocol("Relative alignment error very small, "
+                                                       "new time between alignments: " +
+                                                       str(self.gui.max_seconds_between_autoaligns)
+                                                       + " seconds.")
                         if self.gui.configuration.protocol_level > 0:
                             Miscellaneous.protocol("Auto-alignment successful")
                     # Auto-alignment was not successful, continue in moon_panorama_maker with
@@ -320,6 +330,7 @@ class Workflow(QtCore.QThread):
                 self.set_text_browser_signal.emit(
                     "Moving telescope to tile " + str(self.active_tile_number) + ", please wait.")
                 if self.gui.configuration.protocol_level > 0:
+                    print ""
                     Miscellaneous.protocol("Moving telescope to tile " +
                                            str(self.active_tile_number))
                 if self.gui.configuration.protocol_level > 2:
