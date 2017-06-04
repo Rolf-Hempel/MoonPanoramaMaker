@@ -52,14 +52,22 @@ class LandmarkSelection:
 
         # Dictionary with selenographic [longitude, latitude] for each available landmark.
         self.landmarks = {
-            'Aristarchus': [-47.49, 23.73],
-            'Copernicus': [-20.08, 9.62],
             'Hansen': [72.54, 14.04],
-            'Krafft': [-72.72, 16.56],
             'Langrenus': [61.04, -8.86],
             'Proclus': [46.8, 16.1],
-            'Moon Center': [0., 0.],
+            'Roemer': [36.41, 25.43],
+            'Posidonius-A': [29.52, 31.69],
             'Theophilus': [26.25, -11.48],
+            'Eudoxus': [16.23, 44.27],
+            'Aristillus': [1.21, 33.88],
+            'Moon Center': [0., 0.],
+            'Alpetragius': [-4.51, -16.05],
+            'Tycho': [-11.22, -43.30],
+            'Eratosthenes': [-11.32, 14.47],
+            'Copernicus': [-20.08, 9.62],
+            'Kepler': [-38.01, 8.12],
+            'Aristarchus': [-47.49, 23.73],
+            'Krafft': [-72.72, 16.56],
             'Ulugh Beigh': [-81.96, 32.67]
         }
         self.me = me
