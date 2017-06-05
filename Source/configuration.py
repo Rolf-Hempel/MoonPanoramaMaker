@@ -49,7 +49,7 @@ class Configuration:
         # and to set ephemeris computations to a fixed date and time.
         self.camera_debug = True
         self.alignment_debug = False
-        self.ephemeris_debug = False
+        self.ephemeris_debug = True
 
         # Set internal parameters which cannot be changed by the user.
 

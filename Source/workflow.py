@@ -302,10 +302,16 @@ class Workflow(QtCore.QThread):
                             # When the gui method "find_next_unprocessed_tile" will look for the
                             # next unprocessed tile, it will start with this one.
                             self.repeat_from_here = self.tile_indices_since_last_autoalign[0]
+                        else:
+                            # Auto-alignment is accurate enough. Reset list of tiles since last
+                            # successful alignment.
                             self.tile_indices_since_last_autoalign = []
+                            if self.gui.configuration.protocol_level > 0:
+                                Miscellaneous.protocol("Auto-alignment accurate: Error is " + str(
+                                    relative_alignment_error / self.gui.max_alignment_error) + ".")
                         # If the alignment error was very low, increase time between auto-alignments
                         # (within bounds).
-                        elif relative_alignment_error < self.gui.max_alignment_error / \
+                        if relative_alignment_error < self.gui.max_alignment_error / \
                                 self.gui.configuration.align_very_precise_factor:
                             self.gui.max_seconds_between_autoaligns = min((
                             self.gui.max_seconds_between_autoaligns *

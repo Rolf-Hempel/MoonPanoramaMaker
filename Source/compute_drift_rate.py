@@ -137,6 +137,10 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
         if self.configuration.protocol_level > 2:
             Miscellaneous.protocol("Drift computation: Toggle default button for first drift index")
         self.al.default_first_drift = not self.al.default_first_drift
+        if self.ui.defaultFirstRadioButton.isChecked():
+            self.ui.spinBoxFirstIndex.setValue(1)
+            self.al.first_index = 0
+            self.first_index_changed()
 
     def toggle_default_last_radio_button(self):
         """
@@ -148,6 +152,10 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
         if self.configuration.protocol_level > 2:
             Miscellaneous.protocol("Drift computation: Toggle default button for last drift index")
         self.al.default_last_drift = not self.al.default_last_drift
+        if self.ui.defaultLastRadioButton.isChecked():
+            self.al.last_index = len(self.al.alignment_points) - 1
+            self.ui.spinBoxLastIndex.setValue(self.al.last_index + 1)
+            self.last_index_changed()
 
     def toggle_no_radio_button(self):
         """
