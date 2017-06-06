@@ -465,6 +465,9 @@ class StartQT4(QtGui.QMainWindow):
         self.set_text_browser("Slewing telescope to alignment point, please wait.")
         self.reset_active_tile()
         self.set_statusbar()
+        print ""
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("Preparing for auto-alignment.")
         self.workflow.slew_to_alignment_point_flag = True
 
     def autoalignment_point_reached(self):

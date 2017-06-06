@@ -99,7 +99,7 @@ class ImageShift:
                 break
             except:
                 if self.configuration.protocol_level > 1:
-                    Miscellaneous.protocol("In imageShift: mkdir failed, retrying...")
+                    Miscellaneous.protocol("Warning: In imageShift, mkdir failed, retrying...")
 
         # The counter is used to number the alignment images captured during auto-alignment.
         self.alignment_image_counter = 0

@@ -291,7 +291,7 @@ class Workflow(QtCore.QThread):
                             if self.gui.configuration.protocol_level > 0:
                                 Miscellaneous.protocol("Auto-alignment inaccurate: Error is " + str(
                                     relative_alignment_error / self.gui.max_alignment_error) +
-                                    " times of the maximum allowed, roll back to last " +
+                                    " times the maximum allowed, roll back to last " +
                                     "alignment point. New time between alignments: " + str(
                                     self.gui.max_seconds_between_autoaligns) + " seconds.")
                             # Videos since last auto-alignment have to be repeated.
@@ -308,7 +308,8 @@ class Workflow(QtCore.QThread):
                             self.tile_indices_since_last_autoalign = []
                             if self.gui.configuration.protocol_level > 0:
                                 Miscellaneous.protocol("Auto-alignment accurate: Error is " + str(
-                                    relative_alignment_error / self.gui.max_alignment_error) + ".")
+                                    relative_alignment_error / self.gui.max_alignment_error) +
+                                    " times the maximum allowed.")
                         # If the alignment error was very low, increase time between auto-alignments
                         # (within bounds).
                         if relative_alignment_error < self.gui.max_alignment_error / \
