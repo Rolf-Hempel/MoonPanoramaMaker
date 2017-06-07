@@ -111,7 +111,7 @@ class LandmarkSelection:
             # Get selenographic longitude and latitude of landmark.
             long = radians(self.landmarks[landmark][0])
             lat = radians(self.landmarks[landmark][1])
-            if self.configuration.protocol_level > 1:
+            if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol("New Landmark selected: " + landmark +
                     ", selenographic longitude: " + str(degrees(long)) + ", latitude: " +
                     str(degrees(lat)))

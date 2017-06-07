@@ -125,12 +125,6 @@ class Workflow(QtCore.QThread):
                 else:
                     # print >> sys.stderr, "redirecting output to stdout"
                     sys.stdout = self.stdout_saved
-                if self.gui.configuration.protocol_level > 0:
-                    Miscellaneous.protocol("(Re-)starting the workflow."
-                        "\n----------------------------------------------------\n" +
-                        str(datetime.now())[:10] + " " + self.gui.configuration.version + "\n" +
-                        "----------------------------------------------------")
-
             # If camera automation is on, check if the camera is already connected. If not,
             # create a Camera object and connect the camera.
             elif self.camera_initialization_flag:
@@ -162,13 +156,22 @@ class Workflow(QtCore.QThread):
                 pos_angle = self.me.pos_angle_pole
                 if self.gui.configuration.protocol:
                     if self.gui.configuration.protocol_level > 0:
-                        Miscellaneous.protocol("MoonPanoramaMaker (re)started, moon center RA: " +
-                                               str(degrees(self.me.ra)) + ", DE: " +
-                                                str(degrees(self.me.de)) + " (degrees), " +
-                                               "diameter: " + str(degrees(m_diameter)*60.) +
-                                                " ('),  phase_angle:" + str(degrees(phase_angle)) +
-                                                ", pos_angle: " + str(degrees(pos_angle)) +
-                                               " (degrees)")
+                        print ""
+                        Miscellaneous.protocol("MoonPanoramaMaker (re)started"
+                            "\n           ----------------------------------------------------\n" +
+                            "           " + str(datetime.now())[:10] + " " +
+                            self.gui.configuration.version + "\n" +
+                            "           ----------------------------------------------------")
+                        Miscellaneous.protocol("Moon center RA: " +
+                                        str(round(degrees(self.me.ra), 5)) + ", DE: " +
+                                        str(round(degrees(self.me.de), 5)) + " (degrees), " +
+                                        "diameter: " + str(round(degrees(m_diameter)*60., 3)) +
+                                        " ('), phase_angle: " + str(round(degrees(phase_angle), 2)) +
+                                        ", pos_angle: " + str(round(degrees(pos_angle), 2)) +
+                                        " (degrees)")
+                        Miscellaneous.protocol("Moon speed (arc min./hour), RA: " +
+                                    str(round(degrees(self.me.rate_ra) * 216000., 3)) + ", DE: " +
+                                    str(round(degrees(self.me.rate_de) * 216000., 3)))
 
                 # Start the camera_ready method in main gui. Send ephemeris info with signal.
                 # Gui will construct the tiles and start the tile visualization window.
@@ -290,7 +293,7 @@ class Workflow(QtCore.QThread):
                                 self.gui.min_autoalign_interval)
                             if self.gui.configuration.protocol_level > 0:
                                 Miscellaneous.protocol("Auto-alignment inaccurate: Error is " + str(
-                                    relative_alignment_error / self.gui.max_alignment_error) +
+                                    round(relative_alignment_error / self.gui.max_alignment_error, 2)) +
                                     " times the maximum allowed, roll back to last " +
                                     "alignment point. New time between alignments: " + str(
                                     self.gui.max_seconds_between_autoaligns) + " seconds.")
@@ -308,7 +311,7 @@ class Workflow(QtCore.QThread):
                             self.tile_indices_since_last_autoalign = []
                             if self.gui.configuration.protocol_level > 0:
                                 Miscellaneous.protocol("Auto-alignment accurate: Error is " + str(
-                                    relative_alignment_error / self.gui.max_alignment_error) +
+                                    round(relative_alignment_error / self.gui.max_alignment_error, 2)) +
                                     " times the maximum allowed.")
                         # If the alignment error was very low, increase time between auto-alignments
                         # (within bounds).
@@ -345,9 +348,9 @@ class Workflow(QtCore.QThread):
                                            str(self.active_tile_number))
                 if self.gui.configuration.protocol_level > 2:
                     Miscellaneous.protocol("RA offset ('): " +
-                                           str(degrees(self.gui.next_tile['delta_ra_center'])*60.) +
-                                           ", DE offset ('): " +
-                                           str(degrees(self.gui.next_tile['delta_de_center'])*60.))
+                                str(round(degrees(self.gui.next_tile['delta_ra_center'])*60., 3)) +
+                                ", DE offset ('): " +
+                                str(round(degrees(self.gui.next_tile['delta_de_center'])*60., 3)))
                 (ra, de) = self.al.tile_to_telescope_coordinates(self.gui.next_tile)
                 self.telescope.slew_to(ra, de)
                 self.set_statusbar_signal.emit()

@@ -162,9 +162,9 @@ class OperateTelescope(threading.Thread):
                 # Slew the telescope to a given (RA, DE) position.
                 if instruction['name'] == "slew to":
                     if self.configuration.protocol_level > 1:
-                        Miscellaneous.protocol("Slewing telescope to: RA: " + str(instruction[
-                                                'rect'] * 15.) + ", DE: " + str(instruction[
-                                                'decl']) + " degrees")
+                        Miscellaneous.protocol("Slewing telescope to: RA: " + str(round(instruction[
+                                            'rect'] * 15., 5)) + ", DE: " + str(round(instruction[
+                                            'decl'], 5)) + " degrees")
                     # Instruct the ASCOM driver to execute the SlewToCoordinates instruction.
                     # Please note that coordinates are in hours (RA) and degrees (DE).
                     self.tel.SlewToCoordinates(instruction['rect'], instruction['decl'])
@@ -190,8 +190,10 @@ class OperateTelescope(threading.Thread):
                     # Signal that the instruction is finished.
                     instruction['finished'] = True
                     if self.configuration.protocol_level > 2:
-                        Miscellaneous.protocol("Position looked-up: RA: " + str(rect * 15.) +
-                            ", DE: " + str(decl) + " (degrees), iterations: " + str(iter_count))
+                        Miscellaneous.protocol("Position looked-up: RA: " +
+                                               str(round(rect * 15., 5)) +
+                                               ", DE: " + str(round(decl, 5)) +
+                                               " (degrees), iterations: " + str(iter_count))
 
                 # Find out which ASCOM directions correspond to directions in the sky.
                 elif instruction['name'] == "calibrate":
@@ -444,8 +446,8 @@ class Telescope:
         # Write the corrections to the protocol file.
         if self.configuration.protocol_level > 2:
             Miscellaneous.protocol("New coordinate read-out correction computed (deg.): RA: " +
-                                   str(degrees(self.readout_correction_ra)) + ", DE: " +
-                                   str(degrees(self.readout_correction_de)) + " (degrees)")
+                                   str(round(degrees(self.readout_correction_ra), 5)) + ", DE: " +
+                                   str(round(degrees(self.readout_correction_de), 5)) + " (degrees)")
 
     def lookup_tel_position_uncorrected(self):
         """
@@ -492,9 +494,9 @@ class Telescope:
         start_guiding_instruction['rate_ra'] = rate_ra
         start_guiding_instruction['rate_de'] = rate_de
         if self.configuration.protocol_level > 2:
-            Miscellaneous.protocol("Start guiding, Rate(RA): " + str(degrees(
-                start_guiding_instruction['rate_ra']) * 216000.) + ", Rate(DE): " + str(degrees(
-                start_guiding_instruction['rate_de']) * 216000.) + " (arc min. / hour)")
+            Miscellaneous.protocol("Start guiding, Rate(RA): " + str(round(degrees(
+                start_guiding_instruction['rate_ra']) * 216000., 3)) + ", Rate(DE): " + str(round(
+                degrees(start_guiding_instruction['rate_de']) * 216000., 3)) + " (arc min. / hour)")
         # Insert the instruction into the queue.
         self.optel.instructions.insert(0, start_guiding_instruction)
         # Set the "guiding_active" flag to True.

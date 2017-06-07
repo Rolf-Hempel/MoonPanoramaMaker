@@ -110,9 +110,9 @@ class Alignment:
             (self.ra_offset_landmark, self.de_offset_landmark) = offsets
             if self.configuration.protocol_level > 1:
                 Miscellaneous.protocol("Landmark offset from center RA ('): " +
-                    str(degrees(self.ra_offset_landmark) * 60.) +
-                    ", landmark offset from center DE ('): " +
-                    str(degrees(self.de_offset_landmark) * 60.))
+                    str(round(degrees(self.ra_offset_landmark) * 60., 3)) +
+                    ", DE ('): " +
+                    str(round(degrees(self.de_offset_landmark) * 60., 3)))
             self.is_landmark_offset_set = True
         else:
             self.is_landmark_offset_set = False
@@ -161,8 +161,8 @@ class Alignment:
                     self.im_shift.shift_vs_reference()
                 if self.configuration.protocol_level > 1:
                     Miscellaneous.protocol("New alignment frame captured, x_shift: " +
-                        str(x_shift / self.im_shift.pixel_angle) +
-                        ", y_shift: " + str(y_shift / self.im_shift.pixel_angle) +
+                        str(round(x_shift / self.im_shift.pixel_angle, 1)) +
+                        ", y_shift: " + str(round(y_shift / self.im_shift.pixel_angle, 1)) +
                         " (pixels), # consistent shifts: " + str(in_cluster) + ", # outliers: " +
                         str(outliers))
             except RuntimeError as e:
@@ -186,8 +186,8 @@ class Alignment:
                                                         x_shift, y_shift)
             if self.configuration.protocol_level > 2:
                 Miscellaneous.protocol("Alignment shift rotated to RA/DE: RA: " +
-                    str(ra_shift / self.im_shift.pixel_angle) +
-                    ", DE: " + str(de_shift / self.im_shift.pixel_angle) + " (pixels)")
+                    str(round(ra_shift / self.im_shift.pixel_angle, 1)) +
+                    ", DE: " + str(round(de_shift / self.im_shift.pixel_angle, 1)) + " (pixels)")
             # The shift is computed as "current frame - reference". Add
             # coordinate shifts to current mount position to get mount
             # setting where landmark is located as on reference frame.
@@ -212,16 +212,16 @@ class Alignment:
 
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol("Computing new alignment, current RA correction ('): " +
-                                   str(degrees(self.ra_correction) * 60.) +
+                                   str(round(degrees(self.ra_correction) * 60., 3)) +
                                    ", current DE correction ('): "+
-                                   str(degrees(self.de_correction) * 60.))
+                                   str(round(degrees(self.de_correction) * 60., 3)))
 
         if self.configuration.protocol_level > 2:
             Miscellaneous.protocol("More alignment info: moon center RA: " +
-                                    str(degrees(self.me.ra)) + ", moon center DE: " +
-                                    str(degrees(self.me.de)) + ", landmark RA: " +
-                                    str(degrees(ra_landmark)) + ", landmark DE: " +
-                                    str(degrees(de_landmark)) + " (all in degrees)")
+                                    str(round(degrees(self.me.ra), 5)) + ", moon center DE: " +
+                                    str(round(degrees(self.me.de), 5)) + ", landmark RA: " +
+                                    str(round(degrees(ra_landmark), 5)) + ", landmark DE: " +
+                                    str(round(degrees(de_landmark), 5)) + " (all in degrees)")
 
         # Store a new alignment point
         alignment_point = {}
@@ -299,10 +299,10 @@ class Alignment:
             if self.configuration.protocol:
                 if self.configuration.protocol_level > 2:
                     Miscellaneous.protocol("Frame captured for autoalignment, x_shift: " +
-                                           str(x_shift / self.im_shift.pixel_angle) +
-                                           ", y_shift: " + str(y_shift / self.im_shift.pixel_angle)+
-                                           " (pixels), # consistent shifts: " + str(in_cluster) +
-                                           ", # outliers: " + str(outliers))
+                                str(round(x_shift / self.im_shift.pixel_angle, 1)) +
+                                ", y_shift: " + str(round(y_shift / self.im_shift.pixel_angle, 1))+
+                                " (pixels), # consistent shifts: " + str(in_cluster) +
+                                ", # outliers: " + str(outliers))
             xy_shifts.append([x_shift, y_shift])
         # Subtract second position from first and third position
         shift_vector_0_measured = [xy_shifts[0][0] - xy_shifts[1][0],
@@ -328,12 +328,14 @@ class Alignment:
         if error > self.max_autoalign_error:
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol("Autoalign initialization failed, error in x: " +
-                    str(error_x * 100.) + ", in y: " + str(error_y * 100.) + " (percent)")
+                    str(round(error_x * 100., 1)) + ", in y: " + str(round(error_y * 100., 1)) +
+                                       " (percent)")
             raise RuntimeError
         else:
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol("Autoalign successful, error in x: " +
-                    str(error_x * 100.) + ", in y: " + str(error_y * 100.) + " (percent)")
+                    str(round(error_x * 100., 1)) + ", in y: " + str(round(error_y * 100., 1)) +
+                                       " (percent)")
         self.autoalign_initialized = True
         # Return the relative error as compared with tile overlap width.
         return error
@@ -365,9 +367,9 @@ class Alignment:
                  'de_correction']) / time_diff)
         if self.configuration.protocol_level > 1:
             Miscellaneous.protocol("Drift rate based on alignment points " + str(self.first_index) +
-                                   " and " + str(self.last_index) + ": Drift in Ra = " +
-                                   str(degrees(self.drift_ra) * 216000.) + ", drift in De = " +
-                                   str(degrees(self.drift_de) * 216000.) + " (in arc min/hour)")
+                            " and " + str(self.last_index) + ": Drift in Ra = " +
+                            str(round(degrees(self.drift_ra) * 216000., 3)) + ", drift in De = " +
+                            str(round(degrees(self.drift_de) * 216000., 3)) + " (in arc min/hour)")
         # Set flag to true to indicate that a valid drift rate has been determined.
         self.is_drift_set = True
 
@@ -445,10 +447,11 @@ class Alignment:
         telescope_de = de + correction[1]
         if self.configuration.protocol_level > 2:
             Miscellaneous.protocol("Translating equatorial to telescope coordinates, " \
-                                   "correction in RA: " + str(degrees(correction[0])) +
-                                   ", in DE: " + str(degrees(correction[1])) + ", Telescope RA: " +
-                                   str(degrees(telescope_ra)) + ", Telescope DE: " +
-                                   str(degrees(telescope_de)) + " (all in degrees)")
+                                   "correction in RA: " + str(round(degrees(correction[0]), 5)) +
+                                   ", in DE: " + str(round(degrees(correction[1]), 5)) +
+                                   ", Telescope RA: " +
+                                   str(round(degrees(telescope_ra), 5)) + ", Telescope DE: " +
+                                   str(round(degrees(telescope_de), 5)) + " (all in degrees)")
         return (telescope_ra, telescope_de)
 
     def telescope_to_ephemeris_coordinates(self, ra, de):
@@ -480,10 +483,12 @@ class Alignment:
         self.me.update(datetime.now())
         if self.configuration.protocol_level > 2:
             Miscellaneous.protocol("Translating center offset to equatorial coordinates, " \
-                                    "center offsets: RA: " + str(degrees(delta_ra)) +
-                                    ", DE: " + str(degrees(delta_de)) +
-                                    ", moon position (center): RA: " + str(degrees(self.me.ra)) +
-                                    ", DE: " + str(degrees(self.me.de)) + " (all in degrees)")
+                                    "center offsets: RA: " + str(round(degrees(delta_ra), 5)) +
+                                    ", DE: " + str(round(degrees(delta_de), 5)) +
+                                    ", moon position (center): RA: " +
+                                    str(round(degrees(self.me.ra), 5)) +
+                                    ", DE: " + str(round(degrees(self.me.de), 5)) +
+                                    " (all in degrees)")
         # Add the offset to moon center coordinates.
         ra = self.me.ra + delta_ra
         de = self.me.de + delta_de

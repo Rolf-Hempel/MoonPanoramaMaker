@@ -308,8 +308,6 @@ class StartQT4(QtGui.QMainWindow):
         # Invalidate the camera orientation.
         self.camera_rotated = False
         self.set_text_browser("Select a landmark from the list. ")
-        if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("The user selects a new landmark.")
         # Invoke "set_landmark" method of the alignment object. It offers the user a gui interface
         # for landmark selection. Based on the selection, the method computes the center offset.
         self.workflow.al.set_landmark()
@@ -554,6 +552,7 @@ class StartQT4(QtGui.QMainWindow):
         :return: -
         """
 
+        self.reset_key_status()
         # Enable manual alignment, disable auto-alignment.
         self.ui.alignment.setEnabled(True)
         self.autoalign_enabled = False
