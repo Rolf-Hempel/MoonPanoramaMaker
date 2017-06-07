@@ -334,8 +334,7 @@ class Workflow(QtCore.QThread):
                     except RuntimeError as e:
                         self.autoalignment_reset_signal.emit()
                         if self.gui.configuration.protocol_level > 0:
-                            Miscellaneous.protocol("Auto-alignment failed, revert to manual mode." +
-                                                   " Error message: " + str(e))
+                            Miscellaneous.protocol("Auto-alignment failed, revert to manual mode.")
                         # No video acquisition because of missing alignment.
                         continue
 
