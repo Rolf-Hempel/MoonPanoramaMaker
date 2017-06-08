@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'configuration_dialog.ui'
 #
-# Created: Sun May 28 09:01:05 2017
+# Created: Thu Jun 08 22:01:35 2017
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -543,9 +543,12 @@ class Ui_ConfigurationDialog(object):
         self.protocol_level.setText(_translate("ConfigurationDialog", "Session protocol level (0, 1, 2, 3)", None))
         self.guiding_interval.setToolTip(_translate("ConfigurationDialog", "Duration of guiding pulses during video exposure, e.g. 0.2. Must be between 0. and 3.", None))
         self.guiding_interval.setText(_translate("ConfigurationDialog", "Guide pulse duration (s)", None))
+        self.max_autoalign_interval.setToolTip(_translate("ConfigurationDialog", "Maximum time between auto-alignments (s). Must be between 30. and 3600.", None))
         self.max_autoalign_interval.setText(_translate("ConfigurationDialog", "Maximum auto-alignment interval (s)", None))
+        self.min_autoalign_interval.setToolTip(_translate("ConfigurationDialog", "Minimum time between auto-alignments (s). Must be between 20. and 1800.", None))
         self.min_autoalign_interval.setText(_translate("ConfigurationDialog", "Minimum auto-alignment interval (s)", None))
         self.ALIGNMENT.setText(_translate("ConfigurationDialog", "ALIGNMENT", None))
+        self.max_alignment_error.setToolTip(_translate("ConfigurationDialog", "Maximum allowed auto-alignment error (% of overlap width). Must be between 10. and 60.", None))
         self.max_alignment_error.setText(_translate("ConfigurationDialog", "Max alignment error (%)", None))
         self.buttonBox.setToolTip(_translate("ConfigurationDialog", "Save all parameters to configuration file or discard all changes", None))
 

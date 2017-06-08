@@ -315,8 +315,14 @@ class Alignment:
         self.flip_x = np.sign(shift_vector_0_measured[0])
         self.flip_y = np.sign(shift_vector_2_measured[1])
         if self.configuration.protocol_level > 2:
-            Miscellaneous.protocol("Autoalign, mirroring detected in x: " + str(self.flip_x) +
-                                   ", in y: " + str(self.flip_y))
+            if self.flip_x < 0:
+                Miscellaneous.protocol("Autoalign, image flipped horizontally.")
+            else:
+                Miscellaneous.protocol("Autoalign, image not flipped horizontally.")
+            if self.flip_y < 0:
+                Miscellaneous.protocol("Autoalign, image flipped vertically.")
+            else:
+                Miscellaneous.protocol("Autoalign, image not flipped vertically.")
         # Determine how much the measured shifts deviate from the expected shifts in the focal
         # plane. If the difference is too large, auto-alignment initialization is interpreted as
         # not successful.

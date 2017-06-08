@@ -357,6 +357,9 @@ class StartQT4(QtGui.QMainWindow):
         self.reset_active_tile()
         # Update status bar to show that telescope is not aimed at any tile.
         self.set_statusbar()
+        print ""
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("Preparing for alignment.")
         # Trigger telescope slewing in workflow thread.
         self.workflow.slew_to_alignment_point_flag = True
 

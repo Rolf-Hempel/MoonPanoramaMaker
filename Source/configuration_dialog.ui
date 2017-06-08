@@ -762,6 +762,9 @@
              <pointsize>10</pointsize>
             </font>
            </property>
+           <property name="toolTip">
+            <string>Maximum time between auto-alignments (s). Must be between 30. and 3600.</string>
+           </property>
            <property name="text">
             <string>Maximum auto-alignment interval (s)</string>
            </property>
@@ -773,6 +776,9 @@
             <font>
              <pointsize>10</pointsize>
             </font>
+           </property>
+           <property name="toolTip">
+            <string>Minimum time between auto-alignments (s). Must be between 20. and 1800.</string>
            </property>
            <property name="text">
             <string>Minimum auto-alignment interval (s)</string>
@@ -832,6 +838,9 @@
             <font>
              <pointsize>10</pointsize>
             </font>
+           </property>
+           <property name="toolTip">
+            <string>Maximum allowed auto-alignment error (% of overlap width). Must be between 10. and 60.</string>
            </property>
            <property name="text">
             <string>Max alignment error (%)</string>
