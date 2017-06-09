@@ -261,7 +261,7 @@ class Alignment:
         if self.configuration.protocol_level > 1:
             Miscellaneous.protocol("Alignment reference frame captured.")
 
-        # The shift_angle is the overlap width between panorama tiles.
+        # The shift_angle is the overlap width between panorama tiles (in radians).
         self.shift_angle = self.im_shift.ol_angle
         # Three positions in the sky are defined: right shift in x direction, zero shift, and
         # downward shift in y direction. (x,y) are the pixel coordinates in the still images
@@ -331,15 +331,23 @@ class Alignment:
         error_y = abs(
             abs(shift_vector_2_measured[1]) - self.shift_angle) / self.shift_angle
         error = max(error_x, error_y)
+        focal_length_x = abs(
+            shift_vector_0_measured[0]) / self.shift_angle * self.im_shift.focal_length
+        focal_length_y = abs(
+            shift_vector_2_measured[1]) / self.shift_angle * self.im_shift.focal_length
+        if self.configuration.protocol_level > 1:
+            Miscellaneous.protocol(
+                "Focal length measured in x direction:  " + str(round(focal_length_x, 1)) +
+                ", in y direction: "+ str(round(focal_length_y, 1)))
         if error > self.max_autoalign_error:
             if self.configuration.protocol_level > 0:
-                Miscellaneous.protocol("Autoalign initialization failed, error in x: " +
+                Miscellaneous.protocol("Autoalign initialization failed, focal length error in x: " +
                     str(round(error_x * 100., 1)) + ", in y: " + str(round(error_y * 100., 1)) +
                                        " (percent)")
             raise RuntimeError
         else:
             if self.configuration.protocol_level > 0:
-                Miscellaneous.protocol("Autoalign successful, error in x: " +
+                Miscellaneous.protocol("Autoalign successful, focal length error in x: " +
                     str(round(error_x * 100., 1)) + ", in y: " + str(round(error_y * 100., 1)) +
                                        " (percent)")
         self.autoalign_initialized = True
