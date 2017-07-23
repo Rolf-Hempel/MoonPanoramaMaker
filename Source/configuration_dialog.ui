@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>879</width>
-    <height>901</height>
+    <height>933</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,12 +43,113 @@
         <x>0</x>
         <y>0</y>
         <width>857</width>
-        <height>848</height>
+        <height>880</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <layout class="QGridLayout" name="gridLayout">
+         <item row="27" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_polling_interval">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="18" column="0">
+          <widget class="QLabel" name="fig_size_horizontal">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Horizontal dimension of tile visualization window in inches. Must be between 0. and 25.</string>
+           </property>
+           <property name="text">
+            <string>Figure size horizontal (inch)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="17" column="0">
+          <widget class="QLabel" name="tile_visualization">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Tile Visualization</string>
+           </property>
+          </widget>
+         </item>
+         <item row="14" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_limb_first">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item row="15" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_camera_automation">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item row="15" column="0">
+          <widget class="QLabel" name="camera_automation">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>True, if FireCapture should be triggered automatically, False otherwise</string>
+           </property>
+           <property name="text">
+            <string>Camera automation (True / False)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="27" column="0">
+          <widget class="QLabel" name="polling_interval">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Time interval between processing of two external device instructions, e.g. 0.1. Must be between 0. and 1.</string>
+           </property>
+           <property name="text">
+            <string>Polling interval</string>
+           </property>
+          </widget>
+         </item>
          <item row="4" column="0">
           <widget class="QLabel" name="timezone">
            <property name="font">
@@ -94,7 +195,7 @@
            </property>
           </widget>
          </item>
-         <item row="23" column="0">
+         <item row="24" column="0">
           <widget class="QLabel" name="hub">
            <property name="font">
             <font>
@@ -139,7 +240,7 @@
            </property>
           </widget>
          </item>
-         <item row="22" column="0">
+         <item row="23" column="0">
           <widget class="QLabel" name="chooser">
            <property name="font">
             <font>
@@ -154,7 +255,7 @@
            </property>
           </widget>
          </item>
-         <item row="20" column="0">
+         <item row="21" column="0">
           <widget class="QLabel" name="label_shift">
            <property name="font">
             <font>
@@ -184,7 +285,7 @@
            </property>
           </widget>
          </item>
-         <item row="18" column="0">
+         <item row="19" column="0">
           <widget class="QLabel" name="fig_size_vertical">
            <property name="font">
             <font>
@@ -199,7 +300,7 @@
            </property>
           </widget>
          </item>
-         <item row="19" column="0">
+         <item row="20" column="0">
           <widget class="QLabel" name="label_font_size">
            <property name="font">
             <font>
@@ -214,28 +315,7 @@
            </property>
           </widget>
          </item>
-         <item row="17" column="0">
-          <widget class="QLabel" name="fig_size_horizontal">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Horizontal dimension of tile visualization window in inches. Must be between 0. and 25.</string>
-           </property>
-           <property name="text">
-            <string>Figure size horizontal (inch)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="21" column="0">
+         <item row="22" column="0">
           <widget class="QLabel" name="ASCOM">
            <property name="font">
             <font>
@@ -277,7 +357,7 @@
            </property>
           </widget>
          </item>
-         <item row="15" column="0">
+         <item row="16" column="0">
           <widget class="QLabel" name="camera_trigger_delay">
            <property name="font">
             <font>
@@ -307,7 +387,7 @@
            </property>
           </widget>
          </item>
-         <item row="25" column="0">
+         <item row="26" column="0">
           <widget class="QLabel" name="wait_interval">
            <property name="font">
             <font>
@@ -478,7 +558,7 @@
            </property>
           </widget>
          </item>
-         <item row="17" column="2" colspan="4">
+         <item row="18" column="2" colspan="4">
           <widget class="QLineEdit" name="input_fig_size_horizontal">
            <property name="font">
             <font>
@@ -487,7 +567,7 @@
            </property>
           </widget>
          </item>
-         <item row="18" column="2" colspan="4">
+         <item row="19" column="2" colspan="4">
           <widget class="QLineEdit" name="input_fig_size_vertical">
            <property name="font">
             <font>
@@ -496,7 +576,7 @@
            </property>
           </widget>
          </item>
-         <item row="19" column="2" colspan="4">
+         <item row="20" column="2" colspan="4">
           <widget class="QLineEdit" name="input_label_font_size">
            <property name="font">
             <font>
@@ -505,7 +585,7 @@
            </property>
           </widget>
          </item>
-         <item row="20" column="2" colspan="4">
+         <item row="21" column="2" colspan="4">
           <widget class="QLineEdit" name="input_label_shift">
            <property name="font">
             <font>
@@ -514,7 +594,7 @@
            </property>
           </widget>
          </item>
-         <item row="22" column="2" colspan="4">
+         <item row="23" column="2" colspan="4">
           <widget class="QLineEdit" name="input_chooser">
            <property name="font">
             <font>
@@ -523,7 +603,7 @@
            </property>
           </widget>
          </item>
-         <item row="23" column="2" colspan="4">
+         <item row="24" column="2" colspan="4">
           <widget class="QLineEdit" name="input_hub">
            <property name="font">
             <font>
@@ -532,7 +612,7 @@
            </property>
           </widget>
          </item>
-         <item row="25" column="2" colspan="4">
+         <item row="26" column="2" colspan="4">
           <widget class="QLineEdit" name="input_wait_interval">
            <property name="font">
             <font>
@@ -555,7 +635,7 @@
            </property>
           </widget>
          </item>
-         <item row="13" column="0">
+         <item row="14" column="0">
           <widget class="QLabel" name="limb_first">
            <property name="font">
             <font>
@@ -570,87 +650,7 @@
            </property>
           </widget>
          </item>
-         <item row="16" column="0">
-          <widget class="QLabel" name="tile_visualization">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Tile Visualization</string>
-           </property>
-          </widget>
-         </item>
-         <item row="13" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_limb_first">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="14" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_camera_automation">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="14" column="0">
-          <widget class="QLabel" name="camera_automation">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>True, if FireCapture should be triggered automatically, False otherwise</string>
-           </property>
-           <property name="text">
-            <string>Camera automation (True / False)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="26" column="0">
-          <widget class="QLabel" name="polling_interval">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Time interval between processing of two external device instructions, e.g. 0.1. Must be between 0. and 1.</string>
-           </property>
-           <property name="text">
-            <string>Polling interval</string>
-           </property>
-          </widget>
-         </item>
-         <item row="26" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_polling_interval">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item row="15" column="2" colspan="4">
+         <item row="16" column="2" colspan="4">
           <widget class="QLineEdit" name="input_camera_trigger_delay">
            <property name="font">
             <font>
@@ -659,7 +659,7 @@
            </property>
           </widget>
          </item>
-         <item row="27" column="0">
+         <item row="28" column="0">
           <widget class="QLabel" name="telescope_lookup_precision">
            <property name="font">
             <font>
@@ -674,7 +674,7 @@
            </property>
           </widget>
          </item>
-         <item row="27" column="2" colspan="4">
+         <item row="28" column="2" colspan="4">
           <widget class="QLineEdit" name="input_telescope_lookup_precision">
            <property name="font">
             <font>
@@ -731,7 +731,7 @@
            </property>
           </widget>
          </item>
-         <item row="24" column="0">
+         <item row="25" column="0">
           <widget class="QLabel" name="guiding_interval">
            <property name="font">
             <font>
@@ -746,7 +746,7 @@
            </property>
           </widget>
          </item>
-         <item row="24" column="2" colspan="4">
+         <item row="25" column="2" colspan="4">
           <widget class="QLineEdit" name="input_guiding_interval">
            <property name="font">
             <font>
@@ -755,7 +755,7 @@
            </property>
           </widget>
          </item>
-         <item row="31" column="0">
+         <item row="32" column="0">
           <widget class="QLabel" name="max_autoalign_interval">
            <property name="font">
             <font>
@@ -770,7 +770,7 @@
            </property>
           </widget>
          </item>
-         <item row="30" column="0">
+         <item row="31" column="0">
           <widget class="QLabel" name="min_autoalign_interval">
            <property name="font">
             <font>
@@ -785,7 +785,7 @@
            </property>
           </widget>
          </item>
-         <item row="30" column="2" colspan="4">
+         <item row="31" column="2" colspan="4">
           <widget class="QLineEdit" name="input_min_autoalign_interval">
            <property name="minimumSize">
             <size>
@@ -800,7 +800,7 @@
            </property>
           </widget>
          </item>
-         <item row="29" column="0">
+         <item row="30" column="0">
           <widget class="QLabel" name="ALIGNMENT">
            <property name="font">
             <font>
@@ -814,7 +814,7 @@
            </property>
           </widget>
          </item>
-         <item row="31" column="2" colspan="4">
+         <item row="32" column="2" colspan="4">
           <widget class="QLineEdit" name="input_max_autoalign_interval">
            <property name="font">
             <font>
@@ -823,7 +823,7 @@
            </property>
           </widget>
          </item>
-         <item row="32" column="2" colspan="4">
+         <item row="33" column="2" colspan="4">
           <widget class="QLineEdit" name="input_max_alignment_error">
            <property name="font">
             <font>
@@ -832,7 +832,7 @@
            </property>
           </widget>
          </item>
-         <item row="32" column="0">
+         <item row="33" column="0">
           <widget class="QLabel" name="max_alignment_error">
            <property name="font">
             <font>
@@ -844,6 +844,27 @@
            </property>
            <property name="text">
             <string>Max alignment error (%)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="13" column="0">
+          <widget class="QLabel" name="foxus_on_star">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Focus on a star (True / False)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="13" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_focus_on_star">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
            </property>
           </widget>
          </item>
@@ -884,6 +905,7 @@
   <tabstop>input_focal_length</tabstop>
   <tabstop>input_protocol_level</tabstop>
   <tabstop>input_protocol_to_file</tabstop>
+  <tabstop>input_focus_on_star</tabstop>
   <tabstop>input_limb_first</tabstop>
   <tabstop>input_camera_automation</tabstop>
   <tabstop>input_camera_trigger_delay</tabstop>

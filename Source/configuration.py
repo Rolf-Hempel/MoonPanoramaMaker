@@ -144,6 +144,7 @@ class Configuration:
             self.conf.set('Workflow', 'protocol level', '2')
             self.conf.set('Workflow', 'protocol to file', 'True')
             self.conf.set('Workflow', 'camera automation', 'False')
+            self.conf.set('Workflow', 'focus on star', 'False')
             self.conf.set('Workflow', 'limb first', 'False')
             self.conf.set('Workflow', 'camera trigger delay', '3.')
             self.conf.set('Workflow', 'min autoalign interval', '240.')
@@ -267,6 +268,8 @@ class Configuration:
                 else:
                     self.conf.set('Workflow', 'protocol level', '0')
                 self.conf.remove_option('Workflow', 'protocol')
+                # Add the parameter "focus on star" which was introduced with version 0.9.5.
+                self.conf.set('Workflow', 'focus on star', 'False')
                 # Add the "Alignment" section which was introduced with version 0.9.5.
                 self.conf.add_section('Alignment')
                 self.conf.set('Alignment', 'min autoalign interval', '200.')

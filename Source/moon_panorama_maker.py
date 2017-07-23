@@ -104,6 +104,8 @@ class StartQT4(QtGui.QMainWindow):
 
         # Read in or (if no config file is found) create all configuration parameters.
         self.configuration = Configuration()
+        # Set the button labels for focus area / focus star according to the configuration.
+        self.set_focus_button_labels()
 
         # Start the workflow thread. It is executed asynchronously to keep the gui from freezing
         # during long-running tasks.
@@ -142,11 +144,12 @@ class StartQT4(QtGui.QMainWindow):
         if not self.configuration.configuration_read:
             editor = ConfigurationEditor(self.configuration)
             editor.exec_()
-            # If the user made changes to the configuration, choices of writing a protocol and of
-            # re-directing it to a file might have changed. Therefore, repeat the two above
-            # initializations.
+            # If the user made changes to the configuration, choices of writing a protocol,
+            # of focussing on a star or surface area, and of re-directing it to a file might have
+            # changed. Therefore, repeat the two above initializations.
             if editor.configuration_changed:
                 self.configuration.set_protocol_level()
+                self.set_focus_button_labels()
                 self.workflow.set_session_output_flag = True
 
         # Write the program version into the window title.
@@ -183,6 +186,7 @@ class StartQT4(QtGui.QMainWindow):
         #     ", config initialized: ", self.configuration_initialized
         if editor.configuration_changed:
             self.configuration.set_protocol_level()
+            self.set_focus_button_labels()
             self.workflow.set_session_output_flag = True
             self.do_restart()
 
@@ -663,8 +667,12 @@ class StartQT4(QtGui.QMainWindow):
         """
 
         # Write the user prompt to the text browser.
-        self.set_text_browser("Move telescope to focus area. Confirm with 'enter', otherwise "
-                              "press 'esc'.")
+        if self.configuration.conf.getboolean("Workflow", "focus on star"):
+            self.set_text_browser("Move telescope to focus star. Confirm with 'enter', otherwise "
+                                  "press 'esc'.")
+        else:
+            self.set_text_browser("Move telescope to focus area. Confirm with 'enter', otherwise "
+                                  "press 'esc'.")
         # If the telescope was aimed at a tile, reset its "active" status, update the status bar,
         # and set the context for the "Enter" key.
         self.reset_active_tile()
@@ -680,7 +688,10 @@ class StartQT4(QtGui.QMainWindow):
         """
 
         if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("The user has selected a new focus area")
+            if self.configuration.conf.getboolean("Workflow", "focus on star"):
+                Miscellaneous.protocol("The user has selected a new focus star")
+            else:
+                Miscellaneous.protocol("The user has selected a new focus area")
         self.workflow.set_focus_area_flag = True
 
     def set_focus_area_finished(self):
@@ -712,9 +723,28 @@ class StartQT4(QtGui.QMainWindow):
         # display a message and trigger the workflow thread to move the telescope.
         self.reset_active_tile()
         self.set_statusbar()
-        self.set_text_browser("After focussing, continue video recording using the record "
+        self.set_text_browser("After focusing, continue video recording using the record "
                               "group buttons.")
         self.workflow.goto_focus_area_flag = True
+
+    def set_focus_button_labels(self):
+        """
+        The user can choose to focus on a star or on a surface feature. Set the button labels
+        accordingly.
+        
+        :return: -
+        """
+
+        if self.configuration.conf.getboolean("Workflow", "focus on star"):
+            self.ui.set_focus_area.setText('Select Focus Star - F')
+            self.ui.set_focus_area.setShortcut("f")
+            self.ui.goto_focus_area.setText('GoTo Focus Star - G')
+            self.ui.goto_focus_area.setShortcut("g")
+        else:
+            self.ui.set_focus_area.setText('Select Focus Area - F')
+            self.ui.set_focus_area.setShortcut("f")
+            self.ui.goto_focus_area.setText('GoTo Focus Area - G')
+            self.ui.goto_focus_area.setShortcut("g")
 
     def start_continue_recording(self):
         """
@@ -1228,7 +1258,10 @@ class StartQT4(QtGui.QMainWindow):
             status_text += ", camera rotated"
         # Tell if a focus area has been selected.
         if self.focus_area_set:
-            status_text += ", focus area selected"
+            if self.configuration.conf.getboolean("Workflow", "focus on star"):
+                status_text += ", focus star selected"
+            else:
+                status_text += ", focus area selected"
         # Tell at which tile the telescope is currently pointing.
         if self.workflow.active_tile_number >= 0:
             status_text += ", aimed at tile " + str(self.workflow.active_tile_number)

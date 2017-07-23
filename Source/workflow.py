@@ -252,7 +252,10 @@ class Workflow(QtCore.QThread):
                 self.set_focus_area_flag = False
                 self.al.set_focus_area()
                 if self.gui.configuration.protocol_level > 1:
-                    Miscellaneous.protocol("Location of focus area saved.")
+                    if self.gui.configuration.conf.getboolean("Workflow", "focus on star"):
+                        Miscellaneous.protocol("Location of focus star saved.")
+                    else:
+                        Miscellaneous.protocol("Location of focus area saved.")
                 # Start method "set_focus_area_finished" in gui.
                 self.focus_area_set_signal.emit()
 
@@ -262,7 +265,10 @@ class Workflow(QtCore.QThread):
                 (ra_focus, de_focus) = (self.al.compute_telescope_coordinates_of_focus_area())
                 if self.gui.configuration.protocol_level > 0:
                     print ""
-                    Miscellaneous.protocol("Moving telescope to focus area.")
+                    if self.gui.configuration.conf.getboolean("Workflow", "focus on star"):
+                        Miscellaneous.protocol("Moving telescope to focus star.")
+                    else:
+                        Miscellaneous.protocol("Moving telescope to focus area.")
                 self.telescope.slew_to(ra_focus, de_focus)
 
             # This is the most complicated activity of this thread. It is triggered in three
@@ -382,7 +388,7 @@ class Workflow(QtCore.QThread):
                     # Pressing it will continue workflow.
                     self.gui.gui_context = "start_continue_recording"
                     self.set_text_browser_signal.emit("Start video. After the video is finished, "
-                                                      "confirm with 'enter'.")
+                        "confirm with 'enter'. Press 'Esc' to interrupt recording workflow.")
 
             # Triggered by method "move_to_selected_tile" in moon_panorama_maker.
             elif self.move_to_selected_tile_flag:

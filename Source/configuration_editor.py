@@ -73,6 +73,7 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
 
         self.input_protocol_level.setText(self.c.conf.get("Workflow", "protocol level"))
         self.input_protocol_to_file.setText(self.c.conf.get("Workflow", "protocol to file"))
+        self.input_focus_on_star.setText(self.c.conf.get("Workflow", "focus on star"))
         self.input_limb_first.setText(self.c.conf.get("Workflow", "limb first"))
         self.input_camera_automation.setText(self.c.conf.get("Workflow", "camera automation"))
         self.input_camera_trigger_delay.setText(self.c.conf.get("Workflow", "camera trigger delay"))
@@ -113,6 +114,7 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
 
         self.input_protocol_level.textChanged.connect(self.protocol_level_write)
         self.input_protocol_to_file.textChanged.connect(self.protocol_to_file_write)
+        self.input_focus_on_star.textChanged.connect(self.focus_on_star_write)
         self.input_limb_first.textChanged.connect(self.limb_first_write)
         self.input_camera_automation.textChanged.connect(self.camera_automation_write)
         self.input_camera_trigger_delay.textChanged.connect(self.camera_trigger_delay_write)
@@ -265,6 +267,15 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
         self.configuration_changed = True
 
     def protocol_to_file_write(self):
+        """
+        If the parameter has been changed, set the configuration_changed flag to True.
+
+        :return: -
+        """
+
+        self.configuration_changed = True
+
+    def focus_on_star_write(self):
         """
         If the parameter has been changed, set the configuration_changed flag to True.
 
@@ -485,6 +496,14 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
                                 str(self.input_protocol_to_file.text()))
             else:
                 Miscellaneous.show_input_error("Write protocol to file", "True")
+                return
+
+            input_string = str(self.input_focus_on_star.text())
+            if Miscellaneous.testbool(input_string) is not None:
+                self.c.conf.set("Workflow", "focus on star",
+                                str(self.input_focus_on_star.text()))
+            else:
+                Miscellaneous.show_input_error("Focus on star", "False")
                 return
 
             input_string = str(self.input_limb_first.text())

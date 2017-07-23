@@ -385,6 +385,11 @@ class Alignment:
         the focus. This method stores the current location, so the telescope can be moved to it
         later to update the focus setting.
         
+        The user may opt to focus on a star rather than on a moon feature (by setting the
+        "focus on star" configuration parameter). In this case the focus position does not move
+        with the moon among the stars. Therefore, rather than computing the center offset in this
+        case the RA,DE coordinates are used directly.
+        
         :return: -
         """
 
@@ -395,13 +400,14 @@ class Alignment:
         # Look up the current position of the telescope mount.
         (ra_focus, de_focus) = self.tel.lookup_tel_position()
         # Translate telescope position into true (RA,DE) coordinates
-        (ra_ephem_focus, de_ephem_focus) = (
+        (self.true_ra_focus, self.true_de_focus) = (
             self.telescope_to_ephemeris_coordinates(ra_focus, de_focus))
-        # Compute current moon position and displacement of telescope position relative to moon
-        # center.
-        self.me.update(datetime.now())
-        self.ra_offset_focus_area = ra_ephem_focus - self.me.ra
-        self.de_offset_focus_area = de_ephem_focus - self.me.de
+        if not self.configuration.conf.getboolean("Workflow", "focus on star"):
+            # Compute current moon position and displacement of telescope position relative to moon
+            # center.
+            self.me.update(datetime.now())
+            self.ra_offset_focus_area = self.true_ra_focus - self.me.ra
+            self.de_offset_focus_area = self.true_de_focus - self.me.de
 
     def compute_coordinate_correction(self):
         """
@@ -513,13 +519,17 @@ class Alignment:
 
     def compute_telescope_coordinates_of_focus_area(self):
         """
-        Compute the current position of the focus area in the equatorial mount coordinate system.
+        Compute the current position of the focus area / focus star in the equatorial mount
+        coordinate system.
         
-        :return: Equatorial telescope mount coordinates (RA, DE) of the focus area.
+        :return: Equatorial telescope mount coordinates (RA, DE) of the focus area or focus star.
         """
 
-        return self.center_offset_to_telescope_coordinates(
-            self.ra_offset_focus_area, self.de_offset_focus_area)
+        if self.configuration.conf.getboolean("Workflow", "focus on star"):
+            return self.ephemeris_to_telescope_coordinates(self.true_ra_focus, self.true_de_focus)
+        else:
+            return self.center_offset_to_telescope_coordinates(self.ra_offset_focus_area,
+                                                               self.de_offset_focus_area)
 
     def tile_to_telescope_coordinates(self, tile):
         """
