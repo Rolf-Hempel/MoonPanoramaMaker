@@ -653,8 +653,12 @@ class StartQT4(QtGui.QMainWindow):
         self.camera_rotated = True
         # Update the status bar and display message.
         self.set_statusbar()
-        self.set_text_browser("Start video recording using the record group buttons, "
-                              "or select the focus area.")
+        if self.configuration.conf.getboolean("Workflow", "focus on star"):
+            self.set_text_browser("Start video recording using the record group buttons, "
+                                  "or select the focus star.")
+        else:
+            self.set_text_browser("Start video recording using the record group buttons, "
+                                  "or select the focus area.")
 
     def set_focus_area(self):
         """

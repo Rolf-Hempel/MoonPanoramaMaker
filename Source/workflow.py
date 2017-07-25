@@ -253,9 +253,15 @@ class Workflow(QtCore.QThread):
                 self.al.set_focus_area()
                 if self.gui.configuration.protocol_level > 1:
                     if self.gui.configuration.conf.getboolean("Workflow", "focus on star"):
-                        Miscellaneous.protocol("Location of focus star saved.")
+                        Miscellaneous.protocol("Location of focus star saved, RA: " + str(
+                            round(degrees(self.al.true_ra_focus), 5)) + ", DE: " + str(
+                            round(degrees(self.al.true_de_focus), 5)) + " (all in degrees)")
                     else:
-                        Miscellaneous.protocol("Location of focus area saved.")
+                        Miscellaneous.protocol(
+                            "Location of focus area saved, offset from center RA ('): " + str(
+                                round(degrees(self.al.ra_offset_focus_area) * 60.,
+                                      3)) + ", DE ('): " + str(
+                                round(degrees(self.al.de_offset_focus_area) * 60., 3)))
                 # Start method "set_focus_area_finished" in gui.
                 self.focus_area_set_signal.emit()
 
