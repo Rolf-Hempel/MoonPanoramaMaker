@@ -106,6 +106,8 @@ class MoonEphem:
         # (26 Oct. 2015, 21:55 CET)
         if self.debug:
             dt = datetime.datetime(2015, 10, 26, 21, 55, 0)
+            # Alternative date, used for first tests of auto-alignment:
+            # dt = datetime.datetime(2017, 8, 15, 3, 30, 0)
             self.location_time.date = self.local_time_to_utc(dt)
         else:
             self.location_time.date = self.local_time_to_utc(date_time)
@@ -235,7 +237,7 @@ if __name__ == "__main__":
     for i in range(30):
         date_time = datetime.datetime(2015, 10, 1 + i, 21, 55, 00)
         # date_time = datetime.datetime(2011, 6, 1 + i, 2, 0, 0)
-        me = MoonEphem(c, date_time)
+        me = MoonEphem(c, date_time, debug=False)
         me.compute_libration()
         end_time = date_time + datetime.timedelta(seconds=10)
 

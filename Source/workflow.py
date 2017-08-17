@@ -288,66 +288,83 @@ class Workflow(QtCore.QThread):
                         print ""
                         Miscellaneous.protocol("Trying to perform auto-alignment.")
                     self.set_text_browser_signal.emit("Trying to perform auto-alignment.")
-                    try:
-                        # Perform an auto-alignment. Return value gives size of correction relative
-                        # to width of overlap between tiles (between 0. and 1.).
-                        relative_alignment_error = self.al.align(alignment_manual=False)
-                        # If enough alignment points are set, enable drift correction dialog button.
-                        if self.al.drift_dialog_enabled:
-                            self.gui.change_saved_key_status(self.gui.ui.configure_drift_correction,
-                                                             True)
-                        # If error too large, reduce time between auto-alignments (within bounds
-                        # given by parameters "min_autoalign_interval" and "max_autoalign_interval".
-                        if relative_alignment_error > self.gui.max_alignment_error:
-                            self.gui.max_seconds_between_autoaligns = max((
-                            self.gui.max_seconds_between_autoaligns /
-                            self.gui.configuration.align_interval_change_factor),
-                                self.gui.min_autoalign_interval)
+                    # For test puuposes only! Repeat alignments several times. In production mode
+                    # set repetition count to 1 (in configuration).
+                    auto_alignment_disabled = False
+                    for repetition_index in range(self.gui.configuration.align_repetition_count):
+                        try:
+                            # Perform an auto-alignment. Return value gives size of correction
+                            # relative to width of overlap between tiles (between 0. and 1.).
+                            relative_alignment_error = self.al.align(alignment_manual=False)
+                            # If enough alignment points are set, enable drift correction dialog
+                            # button.
+                            if self.al.drift_dialog_enabled:
+                                self.gui.change_saved_key_status(
+                                    self.gui.ui.configure_drift_correction, True)
+                            # If error too large, reduce time between auto-alignments (within bounds
+                            # given by parameters "min_autoalign_interval" and
+                            # "max_autoalign_interval".
+                            if relative_alignment_error > self.gui.max_alignment_error:
+                                self.gui.max_seconds_between_autoaligns = max((
+                                    self.gui.max_seconds_between_autoaligns /
+                                    self.gui.configuration.align_interval_change_factor),
+                                    self.gui.min_autoalign_interval)
+                                if self.gui.configuration.protocol_level > 0:
+                                    Miscellaneous.protocol(
+                                        "Auto-alignment inaccurate: Error is " + str(round(
+                                            relative_alignment_error / self.gui.max_alignment_error,
+                                            2)) + " times the maximum allowed, roll back to last "
+                                                  "" + "alignment point. New time between "
+                                                       "alignments: " + str(
+                                            self.gui.max_seconds_between_autoaligns) + " seconds.")
+                                # Videos since last auto-alignment have to be repeated.
+                                if len(self.tile_indices_since_last_autoalign) > 0:
+                                    self.gui.tv.mark_unprocessed(
+                                        self.tile_indices_since_last_autoalign)
+                                    # Reset list of tiles since last auto-align (a fresh
+                                    # auto-align has been just performed). Save the first index of
+                                    # the invalidated tiles. When the gui method
+                                    # "find_next_unprocessed_tile" will look for the
+                                    # next unprocessed tile, it will start with this one.
+                                    self.repeat_from_here = self.tile_indices_since_last_autoalign[
+                                        0]
+                                else:
+                                    self.repeat_from_here = -1
+                            else:
+                                # Auto-alignment is accurate enough. Reset list of tiles since last
+                                # successful alignment.
+                                self.tile_indices_since_last_autoalign = []
+                                if self.gui.configuration.protocol_level > 0:
+                                    Miscellaneous.protocol(
+                                        "Auto-alignment accurate: Error is " + str(round(
+                                            relative_alignment_error / self.gui.max_alignment_error,
+                                            2)) + " times the maximum allowed.")
+                            # If the alignment error was very low, increase time between
+                            # auto-alignments (within bounds).
+                            if relative_alignment_error < self.gui.max_alignment_error / \
+                                    self.gui.configuration.align_very_precise_factor:
+                                self.gui.max_seconds_between_autoaligns = min((
+                                    self.gui.max_seconds_between_autoaligns *
+                                    self.gui.configuration.align_interval_change_factor),
+                                    self.gui.max_autoalign_interval)
+                                if self.gui.configuration.protocol_level > 0:
+                                    Miscellaneous.protocol("Relative alignment error very small, "
+                                                           "new time between alignments: " + str(
+                                        self.gui.max_seconds_between_autoaligns) + " seconds.")
                             if self.gui.configuration.protocol_level > 0:
-                                Miscellaneous.protocol("Auto-alignment inaccurate: Error is " + str(
-                                    round(relative_alignment_error / self.gui.max_alignment_error, 2)) +
-                                    " times the maximum allowed, roll back to last " +
-                                    "alignment point. New time between alignments: " + str(
-                                    self.gui.max_seconds_between_autoaligns) + " seconds.")
-                            # Videos since last auto-alignment have to be repeated.
-                            if len(self.tile_indices_since_last_autoalign) > 0:
-                                self.gui.tv.mark_unprocessed(self.tile_indices_since_last_autoalign)
-                            # Reset list of tiles since last auto-align (a fresh auto-align has
-                            # been just performed). Save the first index of the invalidated tiles.
-                            # When the gui method "find_next_unprocessed_tile" will look for the
-                            # next unprocessed tile, it will start with this one.
-                            self.repeat_from_here = self.tile_indices_since_last_autoalign[0]
-                        else:
-                            # Auto-alignment is accurate enough. Reset list of tiles since last
-                            # successful alignment.
-                            self.tile_indices_since_last_autoalign = []
+                                Miscellaneous.protocol("Auto-alignment successful")
+                        # Auto-alignment was not successful, continue in moon_panorama_maker with
+                        # method "wait_for_autoalignment_off" (reset auto-alignment, including gui
+                        # button, enable manual alignment button, and prompt user to continue
+                        # manually.)
+                        except RuntimeError as e:
+                            self.autoalignment_reset_signal.emit()
                             if self.gui.configuration.protocol_level > 0:
-                                Miscellaneous.protocol("Auto-alignment accurate: Error is " + str(
-                                    round(relative_alignment_error / self.gui.max_alignment_error, 2)) +
-                                    " times the maximum allowed.")
-                        # If the alignment error was very low, increase time between auto-alignments
-                        # (within bounds).
-                        if relative_alignment_error < self.gui.max_alignment_error / \
-                                self.gui.configuration.align_very_precise_factor:
-                            self.gui.max_seconds_between_autoaligns = min((
-                            self.gui.max_seconds_between_autoaligns *
-                            self.gui.configuration.align_interval_change_factor),
-                                self.gui.max_autoalign_interval)
-                            if self.gui.configuration.protocol_level > 0:
-                                Miscellaneous.protocol("Relative alignment error very small, "
-                                                       "new time between alignments: " +
-                                                       str(self.gui.max_seconds_between_autoaligns)
-                                                       + " seconds.")
-                        if self.gui.configuration.protocol_level > 0:
-                            Miscellaneous.protocol("Auto-alignment successful")
-                    # Auto-alignment was not successful, continue in moon_panorama_maker with
-                    # method "wait_for_autoalignment_off" (reset auto-alignment, including gui
-                    # button, enable manual alignment button, and prompt user to continue manually.)
-                    except RuntimeError as e:
-                        self.autoalignment_reset_signal.emit()
-                        if self.gui.configuration.protocol_level > 0:
-                            Miscellaneous.protocol("Auto-alignment failed, revert to manual mode.")
-                        # No video acquisition because of missing alignment.
+                                Miscellaneous.protocol("Auto-alignment failed, revert to manual mode.")
+                            # No video acquisition because of missing alignment.
+                            auto_alignment_disabled = True
+                            break
+                    if auto_alignment_disabled:
                         continue
 
                 # Alignment is up-to-date, move telescoppe to active tile for video acquisition.

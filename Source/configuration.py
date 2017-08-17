@@ -45,9 +45,19 @@ class Configuration:
         # The version number is displayed on the MPM main gui title line.
         self.version = "MoonPanoramaMaker 0.9.5"
 
-        # Switch on debug modes used to emulate camera, visualize auto-alignment features/offsets
-        # and to set ephemeris computations to a fixed date and time.
-        self.camera_debug = True
+        # Switch on debug modes used to emulate camera (or, more precisely, the socket client which
+        # connects to FireCapture), visualize auto-alignment features/offsets and to set ephemeris
+        # computations to a fixed date and time.
+        #
+        # Since the alignment_debug option uses a MatPlotLib window which interferes with the tile
+        # configuration window of MoonPanoramaMaker, this debug option can only be used in unit
+        # testing.
+        #
+        # Another parameter used merely for debugging is "align_repetition_count" in the alignment
+        # section below. With it auto-alignments can be repeated in direct succession. This way
+        # errors in the auto-alignment operation can be distinguished from other alignment errors
+        # that build up in between alignments.
+        self.camera_debug = False
         self.alignment_debug = False
         self.ephemeris_debug = False
 
@@ -60,10 +70,20 @@ class Configuration:
         self.pixels_in_overlap_width = 40   # 40 pixels
 
         # Parameters used in auto-alignment:
+        # In auto-alignment initialization the telescope mount is moved to two locations near
+        # the alignment landmark position. The image shifts are measured using camera still images
+        # and compared with the expected shifts, based on the mount displacements. These
+        # measurements are used to determine whether or not the camera is oriented upright /
+        # upside-down or if it is mirror-inverted. if the absolute value of the shifts deviates
+        # from the expected value by more than the given fraction, auto-alignment is deemed
+        # unsuccessful.
+        self.align_max_autoalign_error = 0.3
         # Factor by which the interval between auto-alignments is changed:
         self.align_interval_change_factor = 1.5
         # Criterion for very precise alignment:
         self.align_very_precise_factor = 4.
+        # Number of times the alignment operation is to be repeated in a row at each alignment.
+        self.align_repetition_count = 3
 
         # Parameters in CLAHE image normalization:
         # Clip limit:
@@ -73,11 +93,11 @@ class Configuration:
 
         # Parameters for ORB keypoint detection:
         # WTA_K parameter:
-        self.orb_wta_k = 3
+        self.orb_wta_k = 4              # originally: 3, optimized: 4
         # Number of features:
         self.orb_nfeatures = 50
         # Edge threshold:
-        self.orb_edge_threshold = 30
+        self.orb_edge_threshold = 0     # originally: 30, optimized: 0
         # Patch size:
         self.orb_patch_size = 31
         # Scale factor:
@@ -89,9 +109,9 @@ class Configuration:
         # Cluster radius in pixels:
         self.dbscan_cluster_radius = 3.
         # Minimum sample size:
-        self.dbscan_minimum_sample = 10
+        self.dbscan_minimum_sample = 5      # originally: 10, optimized: 5
         # Minimum of measurements in cluster:
-        self.dbscan_minimum_in_cluster = 10
+        self.dbscan_minimum_in_cluster = 5  # originally: 10, optimized: 5
 
         self.conf = ConfigParser.ConfigParser()
 
@@ -147,10 +167,6 @@ class Configuration:
             self.conf.set('Workflow', 'focus on star', 'False')
             self.conf.set('Workflow', 'limb first', 'False')
             self.conf.set('Workflow', 'camera trigger delay', '3.')
-            self.conf.set('Workflow', 'min autoalign interval', '240.')
-            self.conf.set('Workflow', 'max autoalign interval', '900.')
-            self.conf.set('Workflow', 'min alignment error', '0.2')
-            self.conf.set('Workflow', 'max alignment error', '0.4')
 
             self.conf.add_section('ASCOM')
             self.conf.set('ASCOM', 'chooser', 'ASCOM.Utilities.Chooser')
@@ -161,9 +177,9 @@ class Configuration:
             self.conf.set('ASCOM', 'telescope lookup precision', '0.5')
 
             self.conf.add_section('Alignment')
-            self.conf.set('Alignment', 'min autoalign interval', '200.')
-            self.conf.set('Alignment', 'max autoalign interval', '900.')
-            self.conf.set('Alignment', 'max alignment error', '40.')
+            self.conf.set('Alignment', 'min autoalign interval', '50.')
+            self.conf.set('Alignment', 'max autoalign interval', '600.')
+            self.conf.set('Alignment', 'max alignment error', '50.')
 
             self.conf.add_section('Camera ZWO ASI120MM-S')
             self.conf.set('Camera ZWO ASI120MM-S', 'name', 'ZWO ASI120MM-S')
@@ -272,9 +288,9 @@ class Configuration:
                 self.conf.set('Workflow', 'focus on star', 'False')
                 # Add the "Alignment" section which was introduced with version 0.9.5.
                 self.conf.add_section('Alignment')
-                self.conf.set('Alignment', 'min autoalign interval', '200.')
-                self.conf.set('Alignment', 'max autoalign interval', '900.')
-                self.conf.set('Alignment', 'max alignment error', '40.')
+                self.conf.set('Alignment', 'min autoalign interval', '50.')
+                self.conf.set('Alignment', 'max autoalign interval', '600.')
+                self.conf.set('Alignment', 'max alignment error', '50.')
                 # Set the repetition count parameter for each camera. This camera parameter was
                 # introduced with version 0.9.5., too. The parameter is in section "Camera" as well
                 # as in all parameter sets of supported camera models.

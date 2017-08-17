@@ -72,13 +72,6 @@ class Alignment:
         # which later alignments will be compared.
         self.autoalign_initialized = False
         self.aligment_reference_captured = False
-        # In auto-alignment initialization the telescope mount is moved to two locations near
-        # the alignment landmark position. The image shifts are measured using camera still images
-        # and compared with the expected shifts, based on the mount displacements. These
-        # measurements are used to determine whether or not the camera is oriented upright /
-        # upside-down or if it is mirror-inverted. if the absolute value of the shifts deviates
-        # from the expected value by more tnan 30%, auto-alignment is deemed unsuccessful.
-        self.max_autoalign_error = 0.3
 
         # Initialize drift correction
         self.drift_disabled = False
@@ -255,9 +248,16 @@ class Alignment:
 
         self.autoalign_initialized = False
 
-        # Capture an alignment reference frame
-        self.im_shift = ImageShift(self.configuration, camera_socket,
-                                   debug=self.debug)
+        try:
+            # Capture an alignment reference frame
+            self.im_shift = ImageShift(self.configuration, camera_socket,
+                                       debug=self.debug)
+        except RuntimeError as e:
+            if self.configuration.protocol_level > 0:
+                Miscellaneous.protocol(
+                    "Autoalign initialization failed in capturing alignment reference frame.")
+            raise RuntimeError
+
         if self.configuration.protocol_level > 1:
             Miscellaneous.protocol("Alignment reference frame captured.")
 
@@ -304,11 +304,13 @@ class Alignment:
                                 " (pixels), # consistent shifts: " + str(in_cluster) +
                                 ", # outliers: " + str(outliers))
             xy_shifts.append([x_shift, y_shift])
-        # Subtract second position from first and third position
-        shift_vector_0_measured = [xy_shifts[0][0] - xy_shifts[1][0],
-                                   xy_shifts[0][1] - xy_shifts[1][1]]
-        shift_vector_2_measured = [xy_shifts[2][0] - xy_shifts[1][0],
-                                   xy_shifts[2][1] - xy_shifts[1][1]]
+        # Subtract second position from first and third position and reverse the vector. Reason for
+        # the reversal: The shift has been applied to the mount pointing. The shift measured in the
+        # image is the opposite of the mount shift.
+        shift_vector_0_measured = [xy_shifts[1][0] - xy_shifts[0][0],
+                                   xy_shifts[1][1] - xy_shifts[0][1]]
+        shift_vector_2_measured = [xy_shifts[1][0] - xy_shifts[2][0],
+                                   xy_shifts[1][1] - xy_shifts[2][1]]
 
         # Compare measured shifts in x and y with the expected directions to find out if images
         # are mirror-inverted in x or y.
@@ -339,7 +341,7 @@ class Alignment:
             Miscellaneous.protocol(
                 "Focal length measured in x direction:  " + str(round(focal_length_x, 1)) +
                 ", in y direction: "+ str(round(focal_length_y, 1)))
-        if error > self.max_autoalign_error:
+        if error > self.configuration.align_max_autoalign_error:
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol("Autoalign initialization failed, focal length error in x: " +
                     str(round(error_x * 100., 1)) + ", in y: " + str(round(error_y * 100., 1)) +

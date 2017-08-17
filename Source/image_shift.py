@@ -93,13 +93,18 @@ class ImageShift:
             pass
         # Create directory for still images. In Windows this operation sometimes fails. Therefore,
         # retry until the operation is successful.
+        success = False
         for retry in range(100):
             try:
                 os.mkdir(self.image_dir)
+                success = True
                 break
             except:
                 if self.configuration.protocol_level > 1:
                     Miscellaneous.protocol("Warning: In imageShift, mkdir failed, retrying...")
+        # Raise a runtime error if all loop iterations were unsuccessful.
+        if not success:
+            raise RuntimeError
 
         # The counter is used to number the alignment images captured during auto-alignment.
         self.alignment_image_counter = 0
@@ -117,15 +122,21 @@ class ImageShift:
         # Create BFMatcher object
         self.bf = cv2.BFMatcher(cv2.NORM_HAMMING2, crossCheck=True)
 
-        # Capture the reference image which shows perfect alignment, apply compression.
-        (reference_image_array, width, height, dynamic) = \
-            self.camera_socket.acquire_still_image(self.compression_factor)
+        try:
+            # Capture the reference image which shows perfect alignment, apply compression.
+            (reference_image_array, width, height, dynamic) = \
+                self.camera_socket.acquire_still_image(self.compression_factor)
+                # For debugging purposes: use stored image (already compressed) from observation run
+                # self.camera_socket.acquire_still_image(1)
 
-        # Normalize brightness and contrast, and determine keypoints and their descriptors.
-        (self.reference_image_array, self.reference_image,
-         self.reference_image_kp, self.reference_image_des) = \
-            self.normalize_and_analyze_image(reference_image_array,
-                                             "alignment_reference_image.pgm")
+
+            # Normalize brightness and contrast, and determine keypoints and their descriptors.
+            (self.reference_image_array, self.reference_image,
+             self.reference_image_kp, self.reference_image_des) = \
+                self.normalize_and_analyze_image(reference_image_array,
+                                                 "alignment_reference_image.pgm")
+        except:
+            raise RuntimeError
 
         # Draw only keypoints location, not size and orientation
         if self.debug:
@@ -152,6 +163,10 @@ class ImageShift:
 
         # Optimize the contrast in the image.
         normalized_image_array = self.clahe.apply(image_array)
+
+        # Version for tests: use image (already normalized) stored at last session.
+        # normalized_image_array = image_array
+
         # Build the normalized image from the luminance channel.
         normalized_image = fromarray(normalized_image_array, 'L')
         # Write the normalized image to disk.
@@ -189,18 +204,29 @@ class ImageShift:
         filename_appendix = "alignment_image-" + "{0:0>3}".format(
             self.alignment_image_counter) + ".pgm"
 
-        # Acquire a still image and apply compression.
-        (shifted_image_array, width, height, dynamic) = \
-            self.camera_socket.acquire_still_image(self.compression_factor)
-        # Normalize and analyze the image.
-        (self.shifted_image_array, self.shifted_image, self.shifted_image_kp,
-         self.shifted_image_des) = \
-            self.normalize_and_analyze_image(shifted_image_array,
-                                             filename_appendix)
+        try:
+            # Acquire a still image and apply compression.
+            (shifted_image_array, width, height, dynamic) = self.camera_socket.acquire_still_image(
+                self.compression_factor)
+                # For debugging (see above): self.camera_socket.acquire_still_image(1)
+        except:
+            raise RuntimeError("Acquisition of still image failed.")
 
+        try:
+            # Normalize and analyze the image.
+            (self.shifted_image_array, self.shifted_image, self.shifted_image_kp,
+             self.shifted_image_des) = \
+                self.normalize_and_analyze_image(shifted_image_array,
+                                                 filename_appendix)
+        except:
+            raise RuntimeError("Still image normalization failed.")
+
+        try:
         # Match descriptors.
-        matches = self.bf.match(self.reference_image_des,
-                                self.shifted_image_des)
+            matches = self.bf.match(self.reference_image_des,
+                                    self.shifted_image_des)
+        except:
+            raise RuntimeError("Descriptor matching failed.")
 
         # Sort them in the order of their distance.
         matches = sorted(matches, key=lambda x: x.distance)
@@ -224,15 +250,18 @@ class ImageShift:
             X_matrix[m][1] = self.shifted_image_kp[shifted_index].pt[1] - \
                              self.reference_image_kp[reference_index].pt[1]
 
-        # Use DBSCAN to find the cluster with consistent shifts. Set the cluster radius and minimum
-        # sample size.
-        db = DBSCAN(eps=self.configuration.dbscan_cluster_radius,
-                    min_samples=self.configuration.dbscan_minimum_sample).fit(X_matrix)
-        core_samples_mask = zeros_like(db.labels_, dtype=bool)
-        core_samples_mask[db.core_sample_indices_] = True
-        # The list "labels" defines the cluster number for each match. Only the first cluster
-        # (with number 0) will be used.
-        labels = db.labels_
+        try:
+            # Use DBSCAN to find the cluster with consistent shifts. Set the cluster radius and minimum
+            # sample size.
+            db = DBSCAN(eps=self.configuration.dbscan_cluster_radius,
+                        min_samples=self.configuration.dbscan_minimum_sample).fit(X_matrix)
+            core_samples_mask = zeros_like(db.labels_, dtype=bool)
+            core_samples_mask[db.core_sample_indices_] = True
+            # The list "labels" defines the cluster number for each match. Only the first cluster
+            # (with number 0) will be used.
+            labels = db.labels_
+        except:
+            raise RuntimeError("Shift clustering failed.")
 
         # Compute the average shift for all matches within the cluster.
         x_shift = 0.
@@ -241,6 +270,10 @@ class ImageShift:
             if labels[m] == 0:
                 x_shift += X_matrix[m][0]
                 y_shift += X_matrix[m][1]
+                # For debugging: print detailed shift values for cluster members and outliers.
+                # print "in Cluster: x=", X_matrix[m][0], ", y=", X_matrix[m][1]
+            # else:
+            #     print "out of Cluster: x=", X_matrix[m][0], ", y=", X_matrix[m][1]
         self.alignment_image_counter += 1
         # Count the matches outside the cluster (i.e. with label!=0).
         outliers = count_nonzero(labels)
@@ -269,7 +302,7 @@ if __name__ == "__main__":
     port = 9820
     mysocket = SocketClientDebug(host, port)
     print "Client: socket connected"
-    iso = ImageShift(configuration, mysocket, debug=False)
+    iso = ImageShift(configuration, mysocket, debug=configuration.alignment_debug)
     try:
         shift_x, shift_y, in_cluster, outliers = iso.shift_vs_reference()
         print "shift in x: ", shift_x, ", shift in y: ", shift_y
