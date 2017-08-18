@@ -66,9 +66,6 @@ class Camera(QtCore.QThread):
         # Avoid too much compute power consumption due to idle looping
         self.lookup_polling_interval = (
         self.configuration.conf.getfloat("ASCOM", "polling interval"))
-        # Enable consecutive acquisition of more than one video (e.g. for exposures with different
-        # filters.
-        self.repetition_count = self.configuration.conf.getint("Camera", "repetition count")
         # The "triggered" flag is set to True in "workflow" to start an exposure.
         self.triggered = False
         # The "active" flag is looked up in "workflow" to find out if a video is being acquired.
@@ -106,7 +103,14 @@ class Camera(QtCore.QThread):
                 self.triggered = False
                 self.active = True
                 # Acquire "repetition_count" videos by triggering FireCapture through the socket.
-                for video_number in range(self.repetition_count):
+                # Setting a repetition count > 1 allows the consecutive acquisition of more than
+                # one video (e.g. for exposures with different filters.
+                repetition_count = self.configuration.conf.getint("Camera", "repetition count")
+                for video_number in range(repetition_count):
+                    if video_number > 0:
+                        # If more than one video per tile is to be recorded, insert a short wait
+                        # time. Otherwise FireCapture might get stuck.
+                        time.sleep(self.configuration.camera_time_between_multiple_exposures)
                     if self.configuration.protocol_level > 0:
                         Miscellaneous.protocol("Camera: Send trigger to FireCapture, tile: " +
                             str(self.active_tile_number) + ", repetition number: " +

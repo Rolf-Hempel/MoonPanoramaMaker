@@ -403,15 +403,16 @@ class Workflow(QtCore.QThread):
                     # If meanwhile the Esc key has been pressed, do not ask for pressing it again.
                     # Otherwise tell the user that he/she can interrupt by pressing 'Exc'.
                     if not self.escape_pressed_flag:
-                        self.set_text_browser_signal.emit("Video started automatically. "
+                        self.set_text_browser_signal.emit("Video(s) started automatically. "
                                                           "Press 'Esc' to interrupt loop after "
-                                                          "current video.")
+                                                          "video(s) for current tile.")
                 else:
                     # Manual exposure: Set the context in moon_panorama_maker for Enter key.
                     # Pressing it will continue workflow.
                     self.gui.gui_context = "start_continue_recording"
-                    self.set_text_browser_signal.emit("Start video. After the video is finished, "
-                        "confirm with 'enter'. Press 'Esc' to interrupt recording workflow.")
+                    self.set_text_browser_signal.emit("Start video(s). After all videos for this "
+                        " tile are finished, confirm with 'enter'. Press 'Esc' to interrupt the "
+                        " recording workflow.")
 
             # Triggered by method "move_to_selected_tile" in moon_panorama_maker.
             elif self.move_to_selected_tile_flag:

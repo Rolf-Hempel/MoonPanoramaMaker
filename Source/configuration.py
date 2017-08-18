@@ -63,6 +63,10 @@ class Configuration:
 
         # Set internal parameters which cannot be changed by the user.
 
+        # If multiple exposures of a tile are to be made in succession, insert a short wait time
+        # in between exposures. Otherwise FireCapture might get stuck.
+        self.camera_time_between_multiple_exposures = 1.
+
         # Minimum length of time interval for drift computation:
         self.minimum_drift_seconds = 600.   # 10 minutes
 
