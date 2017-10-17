@@ -225,7 +225,8 @@ class StartQT4(QtGui.QMainWindow):
         :return: -
         """
 
-        # Just in case: reset the autoalignment button.
+        # Just in case: disable autoalignment and reset the autoalignment button.
+        self.autoalign_enabled = False
         self.reset_autoalignment_button()
         self.disable_keys([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
 

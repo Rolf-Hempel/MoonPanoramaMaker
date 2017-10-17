@@ -57,9 +57,9 @@ class Configuration:
         # section below. With it auto-alignments can be repeated in direct succession. This way
         # errors in the auto-alignment operation can be distinguished from other alignment errors
         # that build up in between alignments.
-        self.camera_debug = False
+        self.camera_debug = True
         self.alignment_debug = False
-        self.ephemeris_debug = False
+        self.ephemeris_debug = True
 
         # Set internal parameters which cannot be changed by the user.
 
@@ -87,7 +87,7 @@ class Configuration:
         # Criterion for very precise alignment:
         self.align_very_precise_factor = 4.
         # Number of times the alignment operation is to be repeated in a row at each alignment.
-        self.align_repetition_count = 3
+        self.align_repetition_count = 1
 
         # Parameters in CLAHE image normalization:
         # Clip limit:

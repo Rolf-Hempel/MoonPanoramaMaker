@@ -123,12 +123,16 @@ class ImageShift:
         self.bf = cv2.BFMatcher(cv2.NORM_HAMMING2, crossCheck=True)
 
         try:
-            # Capture the reference image which shows perfect alignment, apply compression.
-            (reference_image_array, width, height, dynamic) = \
-                self.camera_socket.acquire_still_image(self.compression_factor)
+            if self.configuration.camera_debug:
                 # For debugging purposes: use stored image (already compressed) from observation run
-                # self.camera_socket.acquire_still_image(1)
-
+                # Begin with first stored image for every autoalignment initialization.
+                self.camera_socket.image_counter = 0
+                (reference_image_array, width, height, dynamic) = \
+                    self.camera_socket.acquire_still_image(1)
+            else:
+                # Capture the reference image which shows perfect alignment, apply compression.
+                (reference_image_array, width, height, dynamic) = \
+                    self.camera_socket.acquire_still_image(self.compression_factor)
 
             # Normalize brightness and contrast, and determine keypoints and their descriptors.
             (self.reference_image_array, self.reference_image,
@@ -205,10 +209,15 @@ class ImageShift:
             self.alignment_image_counter) + ".pgm"
 
         try:
-            # Acquire a still image and apply compression.
-            (shifted_image_array, width, height, dynamic) = self.camera_socket.acquire_still_image(
-                self.compression_factor)
-                # For debugging (see above): self.camera_socket.acquire_still_image(1)
+            if self.configuration.camera_debug:
+                # For debugging purposes: use stored image (already compressed) from observation run
+                (shifted_image_array, width, height, dynamic) = \
+                    self.camera_socket.acquire_still_image(1)
+            else:
+                # Acquire a still image, apply compression.
+                (shifted_image_array, width, height, dynamic) = \
+                    self.camera_socket.acquire_still_image(self.compression_factor)
+
         except:
             raise RuntimeError("Acquisition of still image failed.")
 
