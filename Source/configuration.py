@@ -57,9 +57,9 @@ class Configuration:
         # section below. With it auto-alignments can be repeated in direct succession. This way
         # errors in the auto-alignment operation can be distinguished from other alignment errors
         # that build up in between alignments.
-        self.camera_debug = True
+        self.camera_debug = False
         self.alignment_debug = False
-        self.ephemeris_debug = True
+        self.ephemeris_debug = False
 
         # Set internal parameters which cannot be changed by the user.
 

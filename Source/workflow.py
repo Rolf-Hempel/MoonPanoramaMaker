@@ -325,12 +325,13 @@ class Workflow(QtCore.QThread):
                                         self.gui.tv.mark_unprocessed(
                                             self.tile_indices_since_last_autoalign)
                                         # Reset list of tiles since last auto-align (a fresh
-                                        # auto-align has been just performed). Save the first index of
+                                        # auto-align has been just performed). Save the lowest index of
                                         # the invalidated tiles. When the gui method
                                         # "find_next_unprocessed_tile" will look for the
                                         # next unprocessed tile, it will start with this one.
-                                        self.repeat_from_here = self.tile_indices_since_last_autoalign[
-                                            0]
+                                        self.repeat_from_here = min(self.tile_indices_since_last_autoalign)
+                                        # Reset list of tiles to be repeated.
+                                        self.tile_indices_since_last_autoalign = []
                                     else:
                                         self.repeat_from_here = -1
                                 else:

@@ -225,10 +225,14 @@ class StartQT4(QtGui.QMainWindow):
         :return: -
         """
 
-        # Just in case: disable autoalignment and reset the autoalignment button.
-        self.autoalign_enabled = False
-        self.reset_autoalignment_button()
-        self.disable_keys([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+        # Just in case: reset autoalignment.
+        self.reset_autoalignment()
+        self.disable_keys(
+            [self.ui.alignment, self.ui.configure_drift_correction, self.ui.rotate_camera,
+             self.ui.set_focus_area, self.ui.goto_focus_area, self.ui.start_continue_recording,
+             self.ui.select_tile, self.ui.move_to_selected_tile, self.ui.set_tile_unprocessed,
+             self.ui.set_all_tiles_unprocessed, self.ui.set_all_tiles_processed,
+             self.ui.show_landmark, self.ui.autoalignment])
 
         self.camera_automation = (
             self.configuration.conf.getboolean("Workflow", "camera automation"))
@@ -308,8 +312,6 @@ class StartQT4(QtGui.QMainWindow):
         :return: -
         """
 
-        # De-activate keys further down in the observation process.
-        self.disable_keys([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
         # Invalidate the camera orientation.
         self.camera_rotated = False
         self.set_text_browser("Select a landmark from the list. ")
@@ -317,9 +319,11 @@ class StartQT4(QtGui.QMainWindow):
         # for landmark selection. Based on the selection, the method computes the center offset.
         self.workflow.al.set_landmark()
         if self.workflow.al.is_landmark_offset_set:
-            # Enable the "Show Landmark" and "Alignment" buttons.
+            # Enable the "Show Landmark" button.
             self.ui.show_landmark.setEnabled(True)
-            self.ui.alignment.setEnabled(True)
+            # If not in autoalignment mode: enable the button for manual alignment.
+            if not self.workflow.al.autoalign_initialized:
+                self.ui.alignment.setEnabled(True)
             # Proceed with slewing the telescope to the approximate alignment point in the sky.
             self.wait_for_alignment()
 
@@ -371,12 +375,12 @@ class StartQT4(QtGui.QMainWindow):
     def alignment_point_reached(self):
         """
         The workflow thread has sent the "alignment_point_reached_signal". Prompt the user to center
-        to center the landmark in the camera live view.
+        the landmark in the camera live view.
         
         :return: -
         """
 
-        self.reset_key_status()
+        # self.reset_key_status()
         # The telescope was aligned before, only small corrections are expected.
         if self.workflow.al.is_aligned:
             self.set_text_browser("Center landmark in camera live view (with arrow keys or "
@@ -406,6 +410,7 @@ class StartQT4(QtGui.QMainWindow):
         :return: -
         """
 
+        self.reset_key_status()
         # Activate the "Correct for Drift" gui button if enough alignment points are available.
         if self.workflow.al.drift_dialog_enabled:
             self.ui.configure_drift_correction.setEnabled(True)
@@ -419,10 +424,12 @@ class StartQT4(QtGui.QMainWindow):
         else:
             self.perform_camera_rotation()
 
-    def reset_autoalignment_button(self):
+    def reset_autoalignment(self):
         """
         When the auto-alignment button is toggled back and forth, it changes color and text. This
-        auxiliary method resets the button to its original (not triggered) state.
+        auxiliary method resets the button to its original (not triggered) state and reconnects it
+        with the method which is invoked to start autoalignment. Finally, flags which indicate
+        autoalignment to be active are reset to their original state.
         
         :return: -
         """
@@ -431,6 +438,12 @@ class StartQT4(QtGui.QMainWindow):
         self.ui.autoalignment.setFont(QtGui.QFont("MS Shell Dlg 2", weight=QtGui.QFont.Normal))
         self.ui.autoalignment.setText('Auto-Alignment on - B')
         self.ui.autoalignment.setShortcut("b")
+        # Reconnect the auto-alignment button with autoalignment initialization.
+        self.ui.autoalignment.clicked.connect(self.prompt_autoalignment)
+        # Reset alignment mode to manual.
+        self.autoalign_enabled = False
+        # Mark autoalignment as not initialized.
+        self.workflow.al.autoalign_initialized = False
 
     def prompt_autoalignment(self):
         """
@@ -487,7 +500,7 @@ class StartQT4(QtGui.QMainWindow):
         :return: -
         """
 
-        self.reset_key_status()
+        # self.reset_key_status()
         # Prompt the user to center the landmark and to confirm with pressing "Enter".
         self.set_text_browser("Center landmark in camera live view (with arrow keys or "
                               "telescope hand controller). Confirm with 'enter'.")
@@ -502,7 +515,7 @@ class StartQT4(QtGui.QMainWindow):
         """
 
         self.set_text_browser("Initializing auto-alignment, please wait")
-        self.save_key_status()
+        # self.save_key_status()
         self.workflow.perform_autoalignment_flag = True
 
     def autoalignment_performed(self, success):
@@ -563,11 +576,7 @@ class StartQT4(QtGui.QMainWindow):
         self.reset_key_status()
         # Enable manual alignment, disable auto-alignment.
         self.ui.alignment.setEnabled(True)
-        self.autoalign_enabled = False
-        self.workflow.al.autoalign_initialized = False
-        # Reset the auto-alignment button.
-        self.ui.autoalignment.clicked.connect(self.prompt_autoalignment)
-        self.reset_autoalignment_button()
+        self.reset_autoalignment()
         # Control is given back to the user. Update the status bar.
         self.set_text_browser("Auto-alignment disabled, "
                               "continue video recording using the record group buttons.")
@@ -609,10 +618,13 @@ class StartQT4(QtGui.QMainWindow):
 
         # Switch back to manual alignment, if auto-alignment was active
         self.ui.alignment.setEnabled(True)
-        self.autoalign_enabled = False
-        self.reset_autoalignment_button()
+        self.reset_autoalignment()
         # Disable keys further down in observation workflow.
-        self.disable_keys([6, 7, 8, 9, 10, 11, 12, 13, 15])
+        self.disable_keys(
+            [self.ui.set_focus_area, self.ui.goto_focus_area, self.ui.start_continue_recording,
+             self.ui.select_tile, self.ui.move_to_selected_tile, self.ui.set_tile_unprocessed,
+             self.ui.set_all_tiles_unprocessed, self.ui.set_all_tiles_processed,
+             self.ui.autoalignment])
         # Display info for the user, and trigger workflow thread to move the telescope to the
         # center point of the sunlit moon limb.
         self.set_text_browser("Slewing telescope to Moon limb, please wait.")
@@ -640,18 +652,17 @@ class StartQT4(QtGui.QMainWindow):
         :return: -
         """
 
+        self.camera_rotated = True
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("Camera rotation finished")
         # Activate gui buttons. Auto-alignment is possible only when camera_automation is active.
+        self.enable_keys([self.ui.set_focus_area, self.ui.start_continue_recording,
+                          self.ui.select_tile, self.ui.set_tile_unprocessed,
+                          self.ui.set_all_tiles_unprocessed, self.ui.set_all_tiles_processed])
         self.ui.autoalignment.setEnabled(self.camera_automation)
-        self.ui.set_focus_area.setEnabled(True)
-        self.ui.start_continue_recording.setEnabled(True)
-        self.ui.select_tile.setEnabled(True)
-        self.ui.set_tile_unprocessed.setEnabled(True)
-        self.ui.set_all_tiles_unprocessed.setEnabled(True)
-        self.ui.set_all_tiles_processed.setEnabled(True)
         # When the camera orientation has changed, all tiles are marked "unprocessed"
         self.tv.mark_all_unprocessed()
         self.workflow.active_tile_number = -1
-        self.camera_rotated = True
         # Update the status bar and display message.
         self.set_statusbar()
         if self.configuration.conf.getboolean("Workflow", "focus on star"):
@@ -1076,17 +1087,27 @@ class StartQT4(QtGui.QMainWindow):
             map(lambda x, y: x.setEnabled(y), self.button_list, self.saved_key_status)
             self.key_status_saved = False
 
-    def disable_keys(self, index_list):
+    def disable_keys(self, button_list):
         """
-        Disable a specific list of gui buttons (as defined by their indices in the global
-        button_list).
+        Disable a specific list of gui buttons.
         
-        :param index_list: list with selected indices of gui buttons in button_list
+        :param button_list: list with selected gui buttons
         :return: -
         """
 
-        for index in index_list:
-            self.button_list[index].setEnabled(False)
+        for item in button_list:
+            item.setEnabled(False)
+
+    def enable_keys(self, button_list):
+        """
+        Enable a specific list of gui buttons.
+
+        :param button_list: list with selected gui buttons
+        :return: -
+        """
+
+        for item in button_list:
+            item.setEnabled(True)
 
     def signal_from_camera(self):
         """
