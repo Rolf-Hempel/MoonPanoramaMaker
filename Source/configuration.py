@@ -50,7 +50,7 @@ class Configuration:
         #
         # Debug mode for camera emulation: In the socket client, the interface to FireCapture is
         # emulated. FireCapture does not need to be started. No videos are captured, though.
-        self.camera_debug = True
+        self.camera_debug = False
         # If camera is emulated, insert a delay (in seconds) before sending the acknowledgement
         # message (to emulate exposure time).
         self.camera_delay = 2.
@@ -70,9 +70,9 @@ class Configuration:
         #
         # Debug mode for ephemeris computations: Perform ephemeris computations for a fixed date and
         # time, thus switching off temporal changes of feature positions.
-        self.ephemeris_debug = True
-        # Set the fixed date and time [year, month, day, hour, minute, second] in terms of the
-        # selected time zone.
+        self.ephemeris_debug = False
+        # If ephemeris_debug is set to True, set the fixed date and time in terms of the selected
+        # time zone [year, month, day, hour, minute, second].
         self.ephemeris_fixed_datetime = [2017, 10, 15, 5, 30, 0]
         ############################################################################################
 
