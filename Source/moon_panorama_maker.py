@@ -577,7 +577,9 @@ class StartQT4(QtGui.QMainWindow):
         # Enable manual alignment, disable auto-alignment.
         self.ui.alignment.setEnabled(True)
         self.reset_autoalignment()
-        # Control is given back to the user. Update the status bar.
+        # Control is given back to the user. Write protocol message and update the status bar.
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("Auto-alignment has been disabled.")
         self.set_text_browser("Auto-alignment disabled, "
                               "continue video recording using the record group buttons.")
         self.set_statusbar()

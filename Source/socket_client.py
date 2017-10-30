@@ -225,6 +225,8 @@ class SocketClientDebug:
         :return: message (string) received (faked) of length recv_count
         """
 
+        # Insert a delay to emulate the time needed to record the video.
+        time.sleep(self.camera_delay)
         return "a" * recv_count
 
     def acquire_video(self, file_name_appendix):
@@ -235,6 +237,8 @@ class SocketClientDebug:
         :return: character "a" as acknowledgement
         """
 
+        # Insert a delay to emulate the time needed to record the video.
+        time.sleep(self.camera_delay)
         return "a"
 
     def acquire_still_image(self, compression_factor):

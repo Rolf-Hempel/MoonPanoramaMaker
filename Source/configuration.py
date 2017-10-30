@@ -57,12 +57,12 @@ class Configuration:
         # section below. With it auto-alignments can be repeated in direct succession. This way
         # errors in the auto-alignment operation can be distinguished from other alignment errors
         # that build up in between alignments.
-        self.camera_debug = False
+        self.camera_debug = True
         # If camera_debug = True, insert a delay (in seconds) before sending the acknowledgement
         # message (to emulate exposure time).
         self.camera_delay = 2.
         self.alignment_debug = False
-        self.ephemeris_debug = False
+        self.ephemeris_debug = True
 
         # Set internal parameters which cannot be changed by the user.
 
