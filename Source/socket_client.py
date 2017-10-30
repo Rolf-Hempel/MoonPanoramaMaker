@@ -185,7 +185,7 @@ class SocketClientDebug:
     from the camera.
     """
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, delay):
         """
         Initialization: set the name of the local directory from which the still images are to be
         read. Since there will be no socket communication, parameters host and port are not used.
@@ -194,6 +194,8 @@ class SocketClientDebug:
         
         :param host: host id for the socket connection (ignored)
         :param port: port id on which the socket server is listening (ignored)
+        :param delay: delay (seconds) before acknowledgement message is sent
+                      (to emulate video exposure time)
         """
 
         self.image_directory = "alignment_test_images"
@@ -201,6 +203,8 @@ class SocketClientDebug:
         self.image_counter = 0
         # Create list of images stored in the image_directory.
         self.image_file_list = listdir(self.image_directory)
+        # Set the delay for exposure time emulation.
+        self.camera_delay = delay
 
     def mysend(self, text):
         """
@@ -279,7 +283,7 @@ if __name__ == "__main__":
     host = 'localhost'
     port = 9820
     # mysocket = SocketClient(host, port)
-    mysocket = SocketClientDebug(host, port)
+    mysocket = SocketClientDebug(host, port, 1.)
     print "Client: socket connected"
     time.sleep(1.)
     try:

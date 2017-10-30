@@ -80,7 +80,7 @@ class Camera(QtCore.QThread):
         # For debugging purposes, the connection to FireCapture can be replaced with a mockup class
         # which reads still images from files. These can be used to test the autoaligh mechanism.
         if debug:
-            self.mysocket = SocketClientDebug(self.host, self.port)
+            self.mysocket = SocketClientDebug(self.host, self.port, self.configuration.camera_delay)
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol("Camera in debug mode, still camera emulated.")
         else:

@@ -590,7 +590,7 @@ if __name__ == "__main__":
     port = 9820
 
     if c.camera_debug:
-        mysocket = SocketClientDebug(host, port)
+        mysocket = SocketClientDebug(host, port, 1.)
     else:
         try:
             mysocket = SocketClient(host, port)
