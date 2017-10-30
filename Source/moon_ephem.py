@@ -103,11 +103,11 @@ class MoonEphem:
         """
 
         # Translate time stamp into UTC. In debug mode compute the moon position for a fixed time
-        # (26 Oct. 2015, 21:55 CET)
+        # (as defined in configuration.py).
         if self.debug:
-            # dt = datetime.datetime(2015, 10, 26, 21, 55, 0)
             # Alternative date, used for first tests of auto-alignment:
-            dt = datetime.datetime(2017, 10, 15, 5, 30, 0)
+            t = self.configuration.ephemeris_fixed_datetime
+            dt = datetime.datetime(t[0], t[1], t[2], t[3], t[4], t[5])
             self.location_time.date = self.local_time_to_utc(dt)
         else:
             self.location_time.date = self.local_time_to_utc(date_time)

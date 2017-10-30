@@ -45,24 +45,36 @@ class Configuration:
         # The version number is displayed on the MPM main gui title line.
         self.version = "MoonPanoramaMaker 0.9.5"
 
-        # Switch on debug modes used to emulate camera (or, more precisely, the socket client which
-        # connects to FireCapture), visualize auto-alignment features/offsets and to set ephemeris
-        # computations to a fixed date and time.
+        ############################################################################################
+        # Switch on/off debug modes:
         #
-        # Since the alignment_debug option uses a MatPlotLib window which interferes with the tile
-        # configuration window of MoonPanoramaMaker, this debug option can only be used in unit
-        # testing.
-        #
-        # Another parameter used merely for debugging is "align_repetition_count" in the alignment
-        # section below. With it auto-alignments can be repeated in direct succession. This way
-        # errors in the auto-alignment operation can be distinguished from other alignment errors
-        # that build up in between alignments.
+        # Debug mode for camera emulation: In the socket client, the interface to FireCapture is
+        # emulated. FireCapture does not need to be started. No videos are captured, though.
         self.camera_debug = True
-        # If camera_debug = True, insert a delay (in seconds) before sending the acknowledgement
+        # If camera is emulated, insert a delay (in seconds) before sending the acknowledgement
         # message (to emulate exposure time).
         self.camera_delay = 2.
+        #
+        # Debug mode for auto-alignment visualization:
         self.alignment_debug = False
+        # Please note: Since the alignment_debug option uses a MatPlotLib window which interferes
+        # with the tile configuration window of MoonPanoramaMaker, this debug option can only be
+        # used in unit testing (i.e. using the main program in module image_shift).
+        #
+        # Another parameter used for alignment debugging is "align_repetition_count". If set to a
+        # value > 1, several auto-alignment operations are repeated in direct succession. This way
+        # errors in the auto-alignment operation can be distinguished from other alignment errors
+        # that build up in between alignments. This debugging feature is independent of the
+        # alignment_debug flag and is used with the full MoonPanoramaMaker software.
+        self.align_repetition_count = 1
+        #
+        # Debug mode for ephemeris computations: Perform ephemeris computations for a fixed date and
+        # time, thus switching off temporal changes of feature positions.
         self.ephemeris_debug = True
+        # Set the fixed date and time [year, month, day, hour, minute, second] in terms of the
+        # selected time zone.
+        self.ephemeris_fixed_datetime = [2017, 10, 15, 5, 30, 0]
+        ############################################################################################
 
         # Set internal parameters which cannot be changed by the user.
 
@@ -89,8 +101,6 @@ class Configuration:
         self.align_interval_change_factor = 1.5
         # Criterion for very precise alignment:
         self.align_very_precise_factor = 4.
-        # Number of times the alignment operation is to be repeated in a row at each alignment.
-        self.align_repetition_count = 1
 
         # Parameters in CLAHE image normalization:
         # Clip limit:

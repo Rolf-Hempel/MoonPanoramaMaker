@@ -312,8 +312,6 @@ class StartQT4(QtGui.QMainWindow):
         :return: -
         """
 
-        # Invalidate the camera orientation.
-        self.camera_rotated = False
         self.set_text_browser("Select a landmark from the list. ")
         # Invoke "set_landmark" method of the alignment object. It offers the user a gui interface
         # for landmark selection. Based on the selection, the method computes the center offset.
