@@ -23,6 +23,7 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 import datetime
 import os
 import shutil
+import time
 from math import atan
 
 import cv2
@@ -94,7 +95,7 @@ class ImageShift:
         # Create directory for still images. In Windows this operation sometimes fails. Therefore,
         # retry until the operation is successful.
         success = False
-        for retry in range(100):
+        for retry in range(200):
             try:
                 os.mkdir(self.image_dir)
                 success = True
@@ -102,6 +103,7 @@ class ImageShift:
             except:
                 if self.configuration.protocol_level > 1:
                     Miscellaneous.protocol("Warning: In imageShift, mkdir failed, retrying...")
+                time.sleep(0.1)
         # Raise a runtime error if all loop iterations were unsuccessful.
         if not success:
             raise RuntimeError

@@ -1,6 +1,6 @@
 [General]
 Program name = MoonPanoramaMaker
-Program version = 0.9.3
+Program version = 0.9.5
 Windows 2000 = 0
 Windows XP = 0
 Windows Server 2003 = 0
@@ -14,9 +14,9 @@ SFA = 1
 DFA = 1
 Comp = 1
 [Graphics]
-Wizard image = C:\Users\rolf\Documents\Python\MoonPanoramaMaker\Documentation\Illustrations\2016-03-13_19-25MEZ_Mond.jpg
+Wizard image = D:\SW-Development\Python\MoonPanoramaMaker\Documentation\Illustrations\2016-03-13_19-25MEZ_Mond.jpg
 Header image = C:\Program Files (x86)\solicus\InstallForge\Images\Header_4.bmp
-Install-icon image = C:\Users\rolf\Documents\Python\MoonPanoramaMaker\Documentation\Illustrations\MoonPanoramaMaker.ico
+Install-icon image = D:\SW-Development\Python\MoonPanoramaMaker\Documentation\Illustrations\MoonPanoramaMaker.ico
 Show Label = 1
 Windows style = 1
 XpStyle = 1
@@ -51,7 +51,7 @@ Time = 2
 PlaySound = 0
 Allow = 0
 [Build]
-File = C:\Users\rolf\Documents\Python\MoonPanoramaMaker\Windows_Installer\MoonPanoramaMaker_V0.9.3_Windows-Installer.exe
+File = D:\SW-Development\Python\MoonPanoramaMaker\Windows_Installer\MoonPanoramaMaker_V0.9.5_Windows-Installer.exe
 [Updater]
 Allow = 0
 1 = <appname>
@@ -67,21 +67,21 @@ Execdlls = 0
 [Languages]
 2
 [Files/Dirs]
-C:\Users\rolf\Documents\Python\MoonPanoramaMaker\InstallForge\build\
-n/a
-[Folder]
-C:\Users\rolf\Documents\Python\MoonPanoramaMaker\InstallForge\dist\
-n/a
-[Folder]
-C:\Users\rolf\Documents\Python\MoonPanoramaMaker\InstallForge\MoonPanoramaMaker\
-n/a
-[Folder]
-C:\Users\rolf\Documents\Python\MoonPanoramaMaker\Documentation\Illustrations\MoonPanoramaMaker.ico
+D:\SW-Development\Python\MoonPanoramaMaker\Documentation\MoonPanoramaMaker_User-Guide.pdf
+1.4 MB
+pdf
+D:\SW-Development\Python\MoonPanoramaMaker\Documentation\Illustrations\MoonPanoramaMaker.ico
 1.2 MB
 ico
-C:\Users\rolf\Documents\Python\MoonPanoramaMaker\Documentation\MoonPanoramaMaker_User-Guide.pdf
-1.3 MB
-pdf
+D:\SW-Development\Python\MoonPanoramaMaker\InstallForge\build\
+n/a
+[Folder]
+D:\SW-Development\Python\MoonPanoramaMaker\InstallForge\dist\
+n/a
+[Folder]
+D:\SW-Development\Python\MoonPanoramaMaker\InstallForge\MoonPanoramaMaker\
+n/a
+[Folder]
 [Licence_Begin]
 [Licence_End]
 [Registry]
