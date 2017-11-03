@@ -130,8 +130,6 @@ class Configuration:
         # Minimum of measurements in cluster:
         self.dbscan_minimum_in_cluster = 5  # originally: 10, optimized: 5
 
-        self.conf = ConfigParser.ConfigParser()
-
         # Initialize the protocol flag
         self.protocol = True
 
@@ -141,17 +139,25 @@ class Configuration:
         self.config_filename = home + "\\.MoonPanoramaMaker.ini"
         self.protocol_filename = home + "\\MoonPanoramaMaker.log"
 
-        # If an existing config file is found, read it in and set the flag.
-        if os.path.isfile(self.config_filename):
+        self.config_file_exists = os.path.isfile(self.config_filename)
+        self.config_up_to_date = False
+        # If an existing config file is found, read it in.
+        if self.config_file_exists:
+            self.conf = ConfigParser.ConfigParser()
             self.conf.read(self.config_filename)
-            # Check if the file is for the current MPM version, otherwise update it
-            self.check_for_compatibility()
-            self.configuration_read = True
-        else:
+            # Check if the file is for the current MPM version, otherwise try to update it.
+            # If not successful, do not use the old config file.
+            self.config_up_to_date = self.check_for_compatibility()
+            if self.config_up_to_date:
+                # The configuration was read from the parameter file or made compatible.
+                self.configuration_read = True
+
+        if not self.config_file_exists or not self.config_up_to_date:
             # Code to set standard config info. The "Hidden Parameters" are not displayed in the
             # configuration gui. Most of them are for placing gui windows where they had been at
             # the previous session.
             self.configuration_read = False
+            self.conf = ConfigParser.ConfigParser()
             self.conf.add_section('Hidden Parameters')
             self.conf.set('Hidden Parameters', 'version', self.version)
             self.conf.set('Hidden Parameters', 'main window x0', '350')
@@ -284,37 +290,44 @@ class Configuration:
         version. At program termination the new parameter set will be written, so next time the
         parameters will be consistent.
         
-        :return: -
+        :return: True, if the data read from the file could be made compatible with the current
+                  version. Otherwise return False.
         """
 
+        file_is_compatible = False
         version_read = self.conf.get('Hidden Parameters', 'version')
-        if version_read != self.version:
+        if version_read == self.version:
+            # Configuration file matches current format. Nothing to be done.
+            file_is_compatible = True
+        elif version_read == "MoonPanoramaMaker 0.9.3":
             # The update support starts for version 0.9.3. Before that one, not many users had
-            # installed MoonPanoramaMaker.
-            if version_read == "MoonPanoramaMaker 0.9.3":
-                # Update the version number.
-                self.conf.set('Hidden Parameters', 'version', self.version)
-                # The handling of session protocol changed.
-                wp = self.conf.getboolean('Workflow', 'protocol')
-                if wp:
-                    self.conf.set('Workflow', 'protocol level', '2')
-                else:
-                    self.conf.set('Workflow', 'protocol level', '0')
-                self.conf.remove_option('Workflow', 'protocol')
-                # Add the parameter "focus on star" which was introduced with version 0.9.5.
-                self.conf.set('Workflow', 'focus on star', 'False')
-                # Add the "Alignment" section which was introduced with version 0.9.5.
-                self.conf.add_section('Alignment')
-                self.conf.set('Alignment', 'min autoalign interval', '50.')
-                self.conf.set('Alignment', 'max autoalign interval', '600.')
-                self.conf.set('Alignment', 'max alignment error', '50.')
-                # Set the repetition count parameter for each camera. This camera parameter was
-                # introduced with version 0.9.5., too. The parameter is in section "Camera" as well
-                # as in all parameter sets of supported camera models.
-                self.conf.set('Camera', 'repetition count', '1')
-                camlist = self.get_camera_list()
-                for cam in camlist:
-                    self.conf.set('Camera ' + cam, 'repetition count', '1')
+            # installed MoonPanoramaMaker. Update the version number.
+            self.conf.set('Hidden Parameters', 'version', self.version)
+            # The handling of session protocol changed.
+            wp = self.conf.getboolean('Workflow', 'protocol')
+            if wp:
+                self.conf.set('Workflow', 'protocol level', '2')
+            else:
+                self.conf.set('Workflow', 'protocol level', '0')
+            self.conf.remove_option('Workflow', 'protocol')
+            # Add the parameter "focus on star" which was introduced with version 0.9.5.
+            self.conf.set('Workflow', 'focus on star', 'False')
+            # Add the "Alignment" section which was introduced with version 0.9.5.
+            self.conf.add_section('Alignment')
+            self.conf.set('Alignment', 'min autoalign interval', '50.')
+            self.conf.set('Alignment', 'max autoalign interval', '600.')
+            self.conf.set('Alignment', 'max alignment error', '50.')
+            # Set the repetition count parameter for each camera. This camera parameter was
+            # introduced with version 0.9.5., too. The parameter is in section "Camera" as well
+            # as in all parameter sets of supported camera models.
+            self.conf.set('Camera', 'repetition count', '1')
+            camlist = self.get_camera_list()
+            for cam in camlist:
+                self.conf.set('Camera ' + cam, 'repetition count', '1')
+        else:
+            # Parameter file cannot be made compatible.
+            file_is_compatible = False
+        return file_is_compatible
 
     def set_protocol_level(self):
         """
