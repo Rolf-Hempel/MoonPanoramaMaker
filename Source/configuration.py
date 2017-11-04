@@ -200,8 +200,8 @@ class Configuration:
             self.conf.set('ASCOM', 'telescope lookup precision', '0.5')
 
             self.conf.add_section('Alignment')
-            self.conf.set('Alignment', 'min autoalign interval', '50.')
-            self.conf.set('Alignment', 'max autoalign interval', '600.')
+            self.conf.set('Alignment', 'min autoalign interval', '30.')
+            self.conf.set('Alignment', 'max autoalign interval', '300.')
             self.conf.set('Alignment', 'max alignment error', '50.')
 
             self.conf.add_section('Camera ZWO ASI120MM-S')
@@ -314,8 +314,8 @@ class Configuration:
             self.conf.set('Workflow', 'focus on star', 'False')
             # Add the "Alignment" section which was introduced with version 0.9.5.
             self.conf.add_section('Alignment')
-            self.conf.set('Alignment', 'min autoalign interval', '50.')
-            self.conf.set('Alignment', 'max autoalign interval', '600.')
+            self.conf.set('Alignment', 'min autoalign interval', '30.')
+            self.conf.set('Alignment', 'max autoalign interval', '300.')
             self.conf.set('Alignment', 'max alignment error', '50.')
             # Set the repetition count parameter for each camera. This camera parameter was
             # introduced with version 0.9.5., too. The parameter is in section "Camera" as well
@@ -402,6 +402,7 @@ if __name__ == "__main__":
     editor.show()
     app.exec_()
 
+    print "Current version: ", c.version
     longitude = c.conf.getfloat("Geographical Position", "longitude")
     print "longitude: ", longitude
 
