@@ -22,10 +22,14 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 import socket
 import time
+import warnings
 from os import listdir
+from struct import unpack
 
-import Image
+import PIL.Image as Image
+import matplotlib.pyplot as plt
 import numpy as np
+from skimage import img_as_ubyte
 
 
 class SocketClient:
@@ -34,14 +38,14 @@ class SocketClient:
     video and still image acquisition through FireCapture. For video acquisition the blocking method
     acquire_video is provided. Non-blocking video acquisition may be coded by using the lower-level
     send and receive methods directly.
-     
+
     """
 
     def __init__(self, host, port):
         """
         Initialization: create a socket connection to the socket server in the MoonPanoramaMaker
         plugin in FireCapture.
-        
+
         :param host: host id for the socket connection
         :param port: port id on which the socket server is listening
         """
@@ -53,28 +57,28 @@ class SocketClient:
         """
         Send a string over the socket connection. If a failure occurs, a RuntimeError exception is
         raised.
-        
+
         :param msg: message to be sent (string)
         :return: number of bytes sent
         """
 
-        sent = self.sock.send(msg)
+        sent = self.sock.send(msg.encode())
         if sent == 0:
             raise RuntimeError("Send: socket connection broken")
 
     def myreceive(self, recv_count):
         """
-        Receive a message (string) through the socket connection. If the socket connection is
+        Receive a message (byte) through the socket connection. If the socket connection is
         interrupted during the operation, a RuntimeException is raised. Please note that this
         method blocks if less bytes than recv_count are to be received.
-        
+
         :param recv_count: number of bytes to be received
-        :return: message (string) received
+        :return: message (bytes) received
         """
 
         # Recieve the first chunk of data.
         data = self.sock.recv(recv_count)
-        if data == '':
+        if len(data) == 0:
             raise RuntimeError("Recv: socket connection broken")
         # if data == 0:
         #     return None
@@ -83,33 +87,35 @@ class SocketClient:
         # Append more chunks until the expected number of characters are received.
         while total_rx < recv_count:
             data = self.sock.recv(recv_count - total_rx)
-            if data == '':
+            if len(data) == 0:
                 raise RuntimeError("Recv: socket connection broken")
             # if data == 0:
             #     return None
             total_rx += len(data)
             rcvd = rcvd + data
 
-        # The expected number of characters have been received.
+        # The expected number of bytes have been received.
         return rcvd
 
     def myreceive_int(self, length):
         """
         Receive an integer value through the socket.
-        
-        :param length: length of the integer to be received (in bytes, usually 4, can be shorter)
+
+        :param length: length of the integer to be received (in bytes, either 1, 2, 4, or 8)
         :return: the value (int) of the integer received
         """
 
-        # Receive the message. Its length is the number of bytes of the expected integer.
-        message = self.myreceive(length)
-        # Translate each character into an int value.
-        values = map(ord, message)
-        value = 0
-        # Accumulate the total value of the integer and return it.
-        for i in range(length):
-            value += values[i] * 256 ** (length - 1 - i)
-        return value
+        # Communication over the net is big-endian.
+        if length == 4:
+            return unpack('!l', self.myreceive(4))[0]
+        elif length == 2:
+            return unpack('!h', self.myreceive(2))[0]
+        elif length == 1:
+            return unpack('!b', self.myreceive(1))[0]
+        elif length == 8:
+            return unpack('!q', self.myreceive(8))[0]
+        else:
+            raise Exception("Error in myreceive_int: unsupported int length " + str(length))
 
     def acquire_video(self, file_name_appendix):
         """
@@ -117,23 +123,25 @@ class SocketClient:
         character string File_name_appendix is used to encode detailed info (e.g. MPM tile numbers)
         into the names of the video files. It is appended to the file name by FireCapture. The
         string must be 9 characters long and can be anything except "terminate" or "still_pic".
-        
+
         :param file_name_appendix: character string to be appended to the filename by FireCapture
         :return: character returned by FireCapture as acknowledgement
         """
 
         self.mysend(file_name_appendix)
-        ack = self.sock.recv(1)
+        ack = self.sock.recv(1).decode()
         return ack
 
-    def acquire_still_image(self, compression_factor):
+    def acquire_still_image(self, compression_factor, reduce_to_8bit=True):
         """
         Trigger the acquisition of a monochrome still picture by FireCapture. The dynamic range of
         the image can be either 8 or 16 bit. The full-scale camera image is reduced in size both
         in x and y by parameter "compression_factor" (max. 2 digits). The size reduction is done on
         the FireCapture side to reduce network traffic.
-        
+
         :param compression_factor: factor by which pixel counts are to be reduced in both x and y
+        :param reduce_to_8bit: if True, reduce image_array to 8bit values even if the image was
+        received as 16bit. If False, return image_array at full dynamic range.
         :return: tuple with four items: the image_array (numpy style), the width and height of the
         image in pixels, and the dynamic depth of the image (1 for 8bit, 2 for 16bit).
         """
@@ -145,23 +153,19 @@ class SocketClient:
         width = self.myreceive_int(4)
         height = self.myreceive_int(4)
         dynamic = self.myreceive_int(4)
-        # Receive the image as a character string and convert it into int values.
-        values = map(ord, self.myreceive(width * height * dynamic))
-        # Initialize a numpy array for the image.
-        image_array = np.empty((height, width), dtype=np.uint8)
-        pos = 0
-        # For 8bit image: just transfer the pixel values to the numpy array.
+        # Receive the image as a byte string and convert it into int values.
+        bytebuffer = self.myreceive(width * height * dynamic)
         if dynamic == 1:
-            for j in range(height):
-                for i in range(width):
-                    image_array[j, i] = values[pos]
-                    pos += 1
-        # For 16 bit image: combine two consecutive values into the pixel value.
+            image_array = np.frombuffer(bytebuffer, dtype=np.uint8).reshape((height, width))
         elif dynamic == 2:
-            for j in range(height):
-                for i in range(width):
-                    image_array[j, i] = (values[pos] << 8) + values[pos + 1]
-                    pos += 2
+            if reduce_to_8bit:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    image_array = img_as_ubyte(
+                        np.frombuffer(bytebuffer, dtype=np.dtype('<u2')).reshape((height, width)))
+            else:
+                image_array = np.frombuffer(bytebuffer, dtype=np.dtype('<u2')).reshape(
+                    (height, width))
         else:
             return None
         return (image_array, width, height, dynamic)
@@ -169,7 +173,7 @@ class SocketClient:
     def close(self):
         """
         Close the socket connection.
-        
+
         :return: -
         """
 
@@ -191,7 +195,7 @@ class SocketClientDebug:
         read. Since there will be no socket communication, parameters host and port are not used.
         Instead of using the camera to capture still images, images are read from a local
         subdirectory.
-        
+
         :param host: host id for the socket connection (ignored)
         :param port: port id on which the socket server is listening (ignored)
         :param delay: delay (seconds) before acknowledgement message is sent
@@ -209,7 +213,7 @@ class SocketClientDebug:
     def mysend(self, text):
         """
         Dummy method: do not do anything.
-        
+
         :param text: text of the message (ignored)
         :return: -
         """
@@ -220,7 +224,7 @@ class SocketClientDebug:
         """
         Dummy method: no receive operation is performed. A faked message of the expected length is
         returned.
-        
+
         :param recv_count: number of bytes to be received
         :return: message (string) received (faked) of length recv_count
         """
@@ -232,7 +236,7 @@ class SocketClientDebug:
     def acquire_video(self, file_name_appendix):
         """
         Dummy method: no video acquisition is triggered. Just return the acknowledgement character.
-        
+
         :param file_name_appendix: character string to be appended to the filename (ignored)
         :return: character "a" as acknowledgement
         """
@@ -247,7 +251,7 @@ class SocketClientDebug:
         be reduced in size by specifying a "comression_factor" > 1. Make sure not to call this
         method more often than there are images in the directory. Otherwise a RuntimeExecption is
         raised.
-        
+
         :param compression_factor: factor by which pixel counts are to be reduced in both x and y
         :return: tuple with four items: the image_array (numpy style), the width and height of the
         image in pixels, and the dynamic depth of the image (1 for 8bit).
@@ -276,7 +280,7 @@ class SocketClientDebug:
     def close(self):
         """
         Dummy method for closing the socket.
-        
+
         :return: -
         """
 
@@ -288,24 +292,24 @@ if __name__ == "__main__":
     port = 9820
     # mysocket = SocketClient(host, port)
     mysocket = SocketClientDebug(host, port, 1.)
-    print "Client: socket connected"
+    print("Client: socket connected")
     time.sleep(1.)
     try:
         # Acquire Video
-        print "Client: Acquire video file"
-        print "Client: acknowledgement from Server = ", mysocket.acquire_video("_tile_001")
+        print("Client: Acquire video file")
+        print("Client: acknowledgement from Server = ", mysocket.acquire_video("_tile_001"))
         time.sleep(2.)
         # Acquire still picture:
-        print "Client: Acquire still picture"
+        print("Client: Acquire still picture")
         compression_factor = 1
         (image_array, width, height, dynamic) = mysocket.acquire_still_image(compression_factor)
-        print "Client: acknowledgement from Server = ", width, ", ", height, ", dynamic: ", dynamic
+        print("Client: acknowledgement from Server = ", width, ", ", height, ", dynamic: ", dynamic)
         time.sleep(2.)
-        img = Image.fromarray(image_array, 'L')
-        img.show()
+        plt.imshow(image_array)
+        plt.show()
     except Exception as e:
-        print "Client, ", str(e)
+        print("Client, ", str(e))
     mysocket.mysend("terminate")
-    print "Client: termination message sent"
+    print("Client: termination message sent")
     mysocket.close()
     time.sleep(1.)
