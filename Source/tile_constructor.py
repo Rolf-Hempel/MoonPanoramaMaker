@@ -204,32 +204,32 @@ if __name__ == "__main__":
 
     tc = TileConstructor(configuration, de_center, m_diameter, phase_angle, pos_angle)
 
-    print "Construction of tiles:"
+    print("Construction of tiles:")
     for i in range(len(tc.lists_of_tiles)):
         row_of_tiles = tc.lists_of_tiles[i]
-        print " "
-        print "row number i:", i
+        print(" ")
+        print("row number i:", i)
         for j in range(len(row_of_tiles)):
             tile = row_of_tiles[j]
-            print ("tile no.: ", j, ", x_left: ", tile['x_left'], ", x_right: ", tile['x_right'],
-                   ", y_top: ", tile['y_top'], ", y_bottom: ", tile['y_bottom'])
+            print(("tile no.: ", j, ", x_left: ", tile['x_left'], ", x_right: ", tile['x_right'],
+                   ", y_top: ", tile['y_top'], ", y_bottom: ", tile['y_bottom']))
 
-    print " "
-    print "Sorted list of ", len(tc.list_of_tiles_sorted), " tiles:"
+    print(" ")
+    print("Sorted list of ", len(tc.list_of_tiles_sorted), " tiles:")
     tile_no = 0
     for tile in tc.list_of_tiles_sorted:
-        print ("Tile no: ", tile_no, ", Row index: ", tile['row_index'], ", Column index: ",
+        print(("Tile no: ", tile_no, ", Row index: ", tile['row_index'], ", Column index: ",
                tile['column_index'], ", (x,y): ", tile['x_center'], tile['y_center'],
-               ", (dRA,dDe): ", degrees(tile['delta_ra_center']), degrees(tile['delta_de_center']))
+               ", (dRA,dDe): ", degrees(tile['delta_ra_center']), degrees(tile['delta_de_center'])))
         tile_no += 1
 
     tile_no = 0
     for tile in tc.list_of_tiles_sorted:
         ra_center = 23.4861097 + degrees(tile['delta_ra_center'])
         de_center = 6.736112 + degrees(tile['delta_de_center'])
-        print "Tile no: ", tile_no, ", (RA,DE Center): ", ra_center, de_center
+        print("Tile no: ", tile_no, ", (RA,DE Center): ", ra_center, de_center)
         tile_no += 1
 
-    print " "
-    print (
-    "Limb center coordinates: d_RA: ", tc.delta_ra_limb_center, ", d_DE: ", tc.delta_de_limb_center)
+    print(" ")
+    print((
+    "Limb center coordinates: d_RA: ", tc.delta_ra_limb_center, ", d_DE: ", tc.delta_de_limb_center))

@@ -595,7 +595,7 @@ if __name__ == "__main__":
         try:
             mysocket = SocketClient(host, port)
         except:
-            print "Camera: Connection to FireCapture failed, expect exception"
+            print("Camera: Connection to FireCapture failed, expect exception")
             exit()
 
     # date_time = '2015/05/18 15:20:30'
@@ -608,41 +608,41 @@ if __name__ == "__main__":
     al = Alignment(c, tel, me, debug=c.alignment_debug)
     al.set_landmark()
 
-    print "ra_offset_landmark (s): ", 240 * degrees(al.ra_offset_landmark)
-    print "de_offset_landmark ('): ", 60 * degrees(al.de_offset_landmark)
+    print("ra_offset_landmark (s): ", 240 * degrees(al.ra_offset_landmark))
+    print("de_offset_landmark ('): ", 60 * degrees(al.de_offset_landmark))
 
     (ra_landmark, de_landmark) = al.compute_telescope_coordinates_of_landmark()
     tel.slew_to(ra_landmark, de_landmark)
 
-    answer = input("Center Landmark in telescope, enter '1' when ready\n")
+    answer = eval(input("Center Landmark in telescope, enter '1' when ready\n"))
     if answer != 1:
         exit
     al.align(alignment_manual=True)
 
-    print datetime.now()
-    print "ra correction (s): ", 240 * degrees(al.ra_correction)
-    print "de correction ('): ", 60 * degrees(al.de_correction)
+    print(datetime.now())
+    print("ra correction (s): ", 240 * degrees(al.ra_correction))
+    print("de correction ('): ", 60 * degrees(al.de_correction))
 
     al.initialize_auto_align(mysocket)
 
     for alignment_count in range(2):
-        print " "
-        print "Perform an autoalignment"
+        print(" ")
+        print("Perform an autoalignment")
         al.align(alignment_manual=False)
 
-        print datetime.now()
-        print "ra correction (s): ", 240 * degrees(al.ra_correction)
-        print "de correction ('): ", 60 * degrees(al.de_correction)
+        print(datetime.now())
+        print("ra correction (s): ", 240 * degrees(al.ra_correction))
+        print("de correction ('): ", 60 * degrees(al.de_correction))
 
         if al.is_drift_set:
-            print "ra drift (s/sec): ", 240 * degrees(al.drift_ra)
-            print "de drift ('/sec): ", 60 * degrees(al.drift_de)
+            print("ra drift (s/sec): ", 240 * degrees(al.drift_ra))
+            print("de drift ('/sec): ", 60 * degrees(al.drift_de))
 
             for i in range(3):
                 time.sleep(60)
                 (ra_d, de_d) = al.compute_coordinate_correction()
-                print "Ra coord. correction (s): ", 240 * degrees(ra_d)
-                print "De coord. correction ('): ", 60 * degrees(de_d)
+                print("Ra coord. correction (s): ", 240 * degrees(ra_d))
+                print("De coord. correction ('): ", 60 * degrees(de_d))
     mysocket.close()
     tel.terminate()
     app.closeAllWindows()

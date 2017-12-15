@@ -34,7 +34,7 @@ class Miscellaneous():
 
     @staticmethod
     def protocol(string):
-        print str(datetime.now())[11:21], string
+        print(str(datetime.now())[11:21], string)
 
     @staticmethod
     def testfloat(string, lower_bound, upper_bound):
@@ -132,20 +132,20 @@ class Miscellaneous():
 if __name__ == "__main__":
     s = '    False   '
     result = Miscellaneous.testfloat(s, 0., 50.)
-    print "string = ", s, ", testfloat: ", result
+    print("string = ", s, ", testfloat: ", result)
     if result is None:
-        print "wrong input"
+        print("wrong input")
     else:
-        print "correct input"
+        print("correct input")
     result = Miscellaneous.testint(s, 0, 100)
-    print "string = ", s, ", testint: ", result
+    print("string = ", s, ", testint: ", result)
     if result is None:
-        print "wrong input"
+        print("wrong input")
     else:
-        print "correct input"
+        print("correct input")
     result = Miscellaneous.testbool(s)
-    print "string = ", s, ", testbool: ", result
+    print("string = ", s, ", testbool: ", result)
     if result is None:
-        print "wrong input"
+        print("wrong input")
     else:
-        print "correct input"
+        print("correct input")

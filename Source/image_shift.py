@@ -28,7 +28,7 @@ from math import atan
 
 import cv2
 import matplotlib.pyplot as plt
-from Image import fromarray
+from PIL.Image import fromarray
 from numpy import ndarray, zeros_like, count_nonzero
 from sklearn.cluster import DBSCAN
 
@@ -312,12 +312,12 @@ if __name__ == "__main__":
     host = 'localhost'
     port = 9820
     mysocket = SocketClientDebug(host, port, configuration.camera_delay)
-    print "Client: socket connected"
+    print("Client: socket connected")
     iso = ImageShift(configuration, mysocket, debug=configuration.alignment_debug)
     try:
         shift_x, shift_y, in_cluster, outliers = iso.shift_vs_reference()
-        print "shift in x: ", shift_x, ", shift in y: ", shift_y
-        print "Number of consistent measurements: ", in_cluster
-        print "Number of outliers: ", outliers
+        print("shift in x: ", shift_x, ", shift in y: ", shift_y)
+        print("Number of consistent measurements: ", in_cluster)
+        print("Number of outliers: ", outliers)
     except RuntimeError as e:
-        print e
+        print(e)

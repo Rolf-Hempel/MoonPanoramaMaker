@@ -55,7 +55,7 @@ class Workflow(QtCore.QThread):
     focus_area_set_signal = QtCore.pyqtSignal()
     set_statusbar_signal = QtCore.pyqtSignal()
     reset_key_status_signal = QtCore.pyqtSignal()
-    set_text_browser_signal = QtCore.pyqtSignal(QtCore.QString)
+    set_text_browser_signal = QtCore.pyqtSignal(str)
 
     def __init__(self, gui, parent=None):
         """
@@ -156,7 +156,7 @@ class Workflow(QtCore.QThread):
                 pos_angle = self.me.pos_angle_pole
                 if self.gui.configuration.protocol:
                     if self.gui.configuration.protocol_level > 0:
-                        print ""
+                        print("")
                         Miscellaneous.protocol("MoonPanoramaMaker (re)started"
                             "\n           ----------------------------------------------------\n" +
                             "           " + str(datetime.now())[:10] + " " +
@@ -201,7 +201,7 @@ class Workflow(QtCore.QThread):
             elif self.perform_alignment_flag:
                 self.perform_alignment_flag = False
                 if self.gui.configuration.protocol_level > 0:
-                    print ""
+                    print("")
                     Miscellaneous.protocol("Performing manual alignment.")
                 self.al.align(alignment_manual=True)
                 # Trigger method "alignment_performed" in gui.
@@ -214,7 +214,7 @@ class Workflow(QtCore.QThread):
             elif self.perform_autoalignment_flag:
                 self.perform_autoalignment_flag = False
                 if self.gui.configuration.protocol_level > 0:
-                    print ""
+                    print("")
                     Miscellaneous.protocol("Trying to initialize auto-alignment.")
                 # Try to initialize auto-alignment. Signal (caught in moon_panorama_maker in
                 # method "autoalignment_performed" carries info on success / failure as boolean.
@@ -270,7 +270,7 @@ class Workflow(QtCore.QThread):
                 self.goto_focus_area_flag = False
                 (ra_focus, de_focus) = (self.al.compute_telescope_coordinates_of_focus_area())
                 if self.gui.configuration.protocol_level > 0:
-                    print ""
+                    print("")
                     if self.gui.configuration.conf.getboolean("Workflow", "focus on star"):
                         Miscellaneous.protocol("Moving telescope to focus star.")
                     else:
@@ -285,7 +285,7 @@ class Workflow(QtCore.QThread):
                 if self.al.autoalign_initialized and self.al.seconds_since_last_alignment() > \
                         self.gui.max_seconds_between_autoaligns:
                     if self.gui.configuration.protocol_level > 0:
-                        print ""
+                        print("")
                         Miscellaneous.protocol("Trying to perform auto-alignment.")
                     self.set_text_browser_signal.emit("Trying to perform auto-alignment.")
                     # For test puuposes only! Repeat alignments several times. In production mode
@@ -375,7 +375,7 @@ class Workflow(QtCore.QThread):
                 self.set_text_browser_signal.emit(
                     "Moving telescope to tile " + str(self.active_tile_number) + ", please wait.")
                 if self.gui.configuration.protocol_level > 0:
-                    print ""
+                    print("")
                     Miscellaneous.protocol("Moving telescope to tile " +
                                            str(self.active_tile_number))
                 if self.gui.configuration.protocol_level > 2:
@@ -449,7 +449,7 @@ class Workflow(QtCore.QThread):
         # The "exiting" flag is set (by gui method "CloseEvent"). Terminate the telescope first.
         self.telescope.terminate()
         # If camera automation is active, set termination flag in camera and wait a short while.
-        if self.camera_automation:
+        if self.gui.camera_automation:
             self.camera.terminate = True
         time.sleep(self.run_loop_delay)
         try:

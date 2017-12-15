@@ -153,7 +153,7 @@ class StartQT4(QtGui.QMainWindow):
                 self.workflow.set_session_output_flag = True
 
         # Write the program version into the window title.
-        self.setWindowTitle(QtCore.QString(self.configuration.version))
+        self.setWindowTitle(self.configuration.version)
 
     def setChildrenFocusPolicy(self, policy):
         """
@@ -364,7 +364,7 @@ class StartQT4(QtGui.QMainWindow):
         self.reset_active_tile()
         # Update status bar to show that telescope is not aimed at any tile.
         self.set_statusbar()
-        print ""
+        print("")
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol("Preparing for alignment.")
         # Trigger telescope slewing in workflow thread.
@@ -482,7 +482,7 @@ class StartQT4(QtGui.QMainWindow):
         self.set_text_browser("Slewing telescope to alignment point, please wait.")
         self.reset_active_tile()
         self.set_statusbar()
-        print ""
+        print("")
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol("Preparing for auto-alignment.")
         self.workflow.slew_to_alignment_point_flag = True
@@ -827,7 +827,7 @@ class StartQT4(QtGui.QMainWindow):
         """
 
         # Initialize an index vector, starting with 0. Its length is the total number of tiles.
-        indices = range(len(self.tc.list_of_tiles_sorted))
+        indices = list(range(len(self.tc.list_of_tiles_sorted)))
 
         # After failure in auto-alignment, let the index vector start with index "repeat_from_here",
         # and wrap around.
@@ -1084,7 +1084,7 @@ class StartQT4(QtGui.QMainWindow):
         """
 
         if self.key_status_saved:
-            map(lambda x, y: x.setEnabled(y), self.button_list, self.saved_key_status)
+            list(map(lambda x, y: x.setEnabled(y), self.button_list, self.saved_key_status))
             self.key_status_saved = False
 
     def disable_keys(self, button_list):

@@ -20,7 +20,7 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import ConfigParser
+import configparser
 import os.path
 import sys
 
@@ -143,7 +143,7 @@ class Configuration:
         self.config_up_to_date = False
         # If an existing config file is found, read it in.
         if self.config_file_exists:
-            self.conf = ConfigParser.ConfigParser()
+            self.conf = configparser.ConfigParser()
             self.conf.read(self.config_filename)
             # Check if the file is for the current MPM version, otherwise try to update it.
             # If not successful, do not use the old config file.
@@ -157,7 +157,7 @@ class Configuration:
             # configuration gui. Most of them are for placing gui windows where they had been at
             # the previous session.
             self.configuration_read = False
-            self.conf = ConfigParser.ConfigParser()
+            self.conf = configparser.ConfigParser()
             self.conf.add_section('Hidden Parameters')
             self.conf.set('Hidden Parameters', 'version', self.version)
             self.conf.set('Hidden Parameters', 'main window x0', '350')
@@ -402,10 +402,10 @@ if __name__ == "__main__":
     editor.show()
     app.exec_()
 
-    print "Current version: ", c.version
+    print("Current version: ", c.version)
     longitude = c.conf.getfloat("Geographical Position", "longitude")
-    print "longitude: ", longitude
+    print("longitude: ", longitude)
 
     if not c.configuration_read or editor.configuration_changed:
-        print "configuration has changed, write back config file: "
+        print("configuration has changed, write back config file: ")
         c.write_config()

@@ -241,22 +241,22 @@ if __name__ == "__main__":
         me.compute_libration()
         end_time = date_time + datetime.timedelta(seconds=10)
 
-        print 'Time (UT): ', me.location_time.date
-        print 'Moon RA: %s, DE: %s, Diameter: %s' % (me.ra, me.de, ephem.degrees(me.diameter))
-        print 'Astrometric libration in Latitude: ', me.astrometric_lib_lat, ", in longitude: ", \
-            me.astrometric_lib_long
-        print "Topocentric libration in latitude: ", degrees(
-            me.topocentric_lib_lat), ", in longitude: ", degrees(me.topocentric_lib_long)
-        print "Position angle of North Pole: ", degrees(me.pos_rot_north)
-        print 'Selenographic Co-Longitude: ', me.colong
-        print 'Sunlit geographic longitudes between ', degrees(-me.colong), " and ", degrees(
-            -me.colong) + 180.
+        print('Time (UT): ', me.location_time.date)
+        print('Moon RA: %s, DE: %s, Diameter: %s' % (me.ra, me.de, ephem.degrees(me.diameter)))
+        print('Astrometric libration in Latitude: ', me.astrometric_lib_lat, ", in longitude: ", \
+            me.astrometric_lib_long)
+        print("Topocentric libration in latitude: ", degrees(
+            me.topocentric_lib_lat), ", in longitude: ", degrees(me.topocentric_lib_long))
+        print("Position angle of North Pole: ", degrees(me.pos_rot_north))
+        print('Selenographic Co-Longitude: ', me.colong)
+        print('Sunlit geographic longitudes between ', degrees(-me.colong), " and ", degrees(
+            -me.colong) + 180.)
         # print 'Sun RA: %s, DE: %s' % (me.sun_ra, me.sun_de)
-        print 'Elongation: %s' % (ephem.degrees(me.elongation))
-        print 'Phase angle: %s' % (ephem.degrees(me.phase_angle))
-        print 'Sun direction: %s' % (ephem.degrees(me.pos_angle_sun))
-        print (
-            'Pos. angle pole (bright limb to the right): %s' % (ephem.degrees(me.pos_angle_pole)))
+        print('Elongation: %s' % (ephem.degrees(me.elongation)))
+        print('Phase angle: %s' % (ephem.degrees(me.phase_angle)))
+        print('Sun direction: %s' % (ephem.degrees(me.pos_angle_sun)))
+        print((
+            'Pos. angle pole (bright limb to the right): %s' % (ephem.degrees(me.pos_angle_pole))))
 
         length = 10
         ra_start = me.ra
@@ -267,5 +267,5 @@ if __name__ == "__main__":
         de_end = me.de
         rate_ra = degrees((ra_end - ra_start) / (length) * 3600.) * 60.
         rate_de = degrees((de_end - de_start) / (length) * 3600.) * 60.  #
-        print "rate_ra: ", rate_ra, ", rate_de: ", rate_de
-        print ""
+        print("rate_ra: ", rate_ra, ", rate_de: ", rate_de)
+        print("")

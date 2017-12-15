@@ -109,36 +109,36 @@ class LandmarkSelection:
 
         try:
             # Get selenographic longitude and latitude of landmark.
-            long = radians(self.landmarks[landmark][0])
-            lat = radians(self.landmarks[landmark][1])
+            longitude = radians(self.landmarks[landmark][0])
+            latitude = radians(self.landmarks[landmark][1])
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol("New Landmark selected: " + landmark +
-                    ", selenographic longitude: " + str(degrees(long)) + ", latitude: " +
-                    str(degrees(lat)))
+                    ", selenographic longitude: " + str(degrees(longitude)) + ", latitude: " +
+                    str(degrees(latitude)))
             # Perform the coordinate transformation and return the offsets (in radians)
-            return self.coord_translation(long, lat)
+            return self.coord_translation(longitude, latitude)
         except:
             # This is an internal error and should not occur.
-            print >> sys.stderr, "Error in landmark_selection: unknown landmark"
+            print("Error in landmark_selection: unknown landmark", file=sys.stderr)
             return (0., 0.)
 
-    def coord_translation(self, long, lat):
+    def coord_translation(self, longitude, latitude):
         """
         Translate selenographic coordinates on the moon into true topocentric displacements in
         (RA, DE).
         
-        :param long: selenographic longitude of landmark
-        :param lat: selenographic latitude of landmark
+        :param longitude: selenographic longitude of landmark
+        :param latitude: selenographic latitude of landmark
         :return: offset (radians) in (RA, DE) of landmark relative to moon center
         """
 
         # Look at the user's guide for algorithmic details. (da_prime, dd_prime) are the
         # displacements (radians) on the moon's disk, oriented with lunar north up.
-        da_prime = -sin(long - self.me.topocentric_lib_long) * cos(
-            lat) * self.me.radius
-        y = -cos(long - self.me.topocentric_lib_long) * cos(
-            lat) * self.me.radius
-        z = sin(lat) * self.me.radius
+        da_prime = -sin(longitude - self.me.topocentric_lib_long) * cos(
+            latitude) * self.me.radius
+        y = -cos(longitude - self.me.topocentric_lib_long) * cos(
+            latitude) * self.me.radius
+        z = sin(latitude) * self.me.radius
         y_prime = y * cos(self.me.topocentric_lib_lat) - z * sin(
             self.me.topocentric_lib_lat)
         dd_prime = y * sin(self.me.topocentric_lib_lat) + z * cos(
@@ -162,22 +162,22 @@ if __name__ == "__main__":
     offsets = ls.select_landmark(date_time)
 
     if ls.landmark_selected:
-        print 'Time (UT): ', me.location_time.date
-        print 'Moon RA: %s, DE: %s, Diameter: %s' % (me.ra, me.de,
+        print('Time (UT): ', me.location_time.date)
+        print('Moon RA: %s, DE: %s, Diameter: %s' % (me.ra, me.de,
                                                      degrees(
-                                                         me.diameter))
-        print 'Libration in Latitude: ', degrees(me.topocentric_lib_lat)
-        print 'Libration in Longitude: ', degrees(me.topocentric_lib_long)
-        print 'Pos. angle North Pole: ', degrees(me.pos_rot_north)
-        print 'Selenographic Co-Longitude: ', me.colong
-        print 'Sun RA: %s, DE: %s' % (me.sun_ra, me.sun_de)
-        print 'Elongation: %s' % (degrees(me.elongation))
-        print 'Phase angle: %s' % (degrees(me.phase_angle))
-        print 'Sun direction: %s' % (degrees(me.pos_angle_sun))
-        print ('Pos. angle Pole (bright limb to the right): %s' %
-               (degrees(me.pos_angle_pole)))
-        print "Landmark: ", ls.selected_landmark, ", Offset RA ('): ", degrees(
-            offsets[0]) * 60., ", Offset DE ('): ", degrees(offsets[1]) * 60.
+                                                         me.diameter)))
+        print('Libration in Latitude: ', degrees(me.topocentric_lib_lat))
+        print('Libration in Longitude: ', degrees(me.topocentric_lib_long))
+        print('Pos. angle North Pole: ', degrees(me.pos_rot_north))
+        print('Selenographic Co-Longitude: ', me.colong)
+        print('Sun RA: %s, DE: %s' % (me.sun_ra, me.sun_de))
+        print('Elongation: %s' % (degrees(me.elongation)))
+        print('Phase angle: %s' % (degrees(me.phase_angle)))
+        print('Sun direction: %s' % (degrees(me.pos_angle_sun)))
+        print(('Pos. angle Pole (bright limb to the right): %s' %
+               (degrees(me.pos_angle_pole))))
+        print("Landmark: ", ls.selected_landmark, ", Offset RA ('): ", degrees(
+            offsets[0]) * 60., ", Offset DE ('): ", degrees(offsets[1]) * 60.)
     else:
-        print "No landmark selected, Offset RA (Rad): ", offsets[
-            0], ", Offset DE (Rad): ", offsets[1]
+        print("No landmark selected, Offset RA (Rad): ", offsets[
+            0], ", Offset DE (Rad): ", offsets[1])

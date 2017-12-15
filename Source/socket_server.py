@@ -46,7 +46,7 @@ class SocketServer:
         self.serversocket.bind((host, port))
         # Become a server socket
         self.serversocket.listen(1)
-        print "Server started"
+        print("Server started")
 
     def mysend(self, sock, msg):
         sent = sock.send(msg)
@@ -71,20 +71,20 @@ if __name__ == "__main__":
     while True:
         # accept connection from outside and create a clientsocket
         (clientsocket, address) = myserver.serversocket.accept()
-        print ""
-        print "Server: connection with client established"
+        print("")
+        print("Server: connection with client established")
 
         # now wait for message through via the clientsocket
         while True:
             try:
                 msg_read = myserver.myreceive(clientsocket)
             except Exception as e:
-                print "Server: ", str(e)
+                print("Server: ", str(e))
                 break
-            print "Server: msg received: ", msg_read
-            print "-------------------------------"
-            print "Take an exposure in FireCapture"
-            print "-------------------------------"
+            print("Server: msg received: ", msg_read)
+            print("-------------------------------")
+            print("Take an exposure in FireCapture")
+            print("-------------------------------")
 
             # Replace the sleep function with the camera exposure.
             time.sleep(4.)
@@ -92,8 +92,8 @@ if __name__ == "__main__":
             try:
                 myserver.mysend(clientsocket, "a")
             except Exception as e:
-                print "Server: ", str(e)
+                print("Server: ", str(e))
                 break
-            print "Server, ackn sent"
+            print("Server, ackn sent")
 
         time.sleep(2.)
