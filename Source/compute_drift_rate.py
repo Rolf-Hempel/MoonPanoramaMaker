@@ -339,7 +339,7 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
 #         self.alignment_points.append(al)
 #
 #         al = {}
-#         time1 = datetime(2015, 9, 1, 17, 03, 22)
+#         time1 = datetime(2015, 9, 1, 17, 3, 22)
 #         al['time_string'] = str(time1)[11:19]
 #         al['time_seconds'] = mktime(time1.timetuple())
 #         al['ra_correction'] = radians(50. / 60)
@@ -383,8 +383,8 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
 #                      self.alignment_points[self.first_index][
 #                          'de_correction']) /
 #                     time_diff)
-#         print "Drift in Ra: ", degrees(drift_ra) * 216000.
-#         print "Drift in De: ", degrees(drift_de) * 216000.
+#         print("Drift in Ra: ", degrees(drift_ra) * 216000.)
+#         print("Drift in De: ", degrees(drift_de) * 216000.)
 #         self.is_drift_set = True
 #
 #
