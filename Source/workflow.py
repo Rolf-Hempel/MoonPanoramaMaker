@@ -25,7 +25,7 @@ import time
 from datetime import datetime
 from math import degrees
 
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 
 from alignment import Alignment
 from camera import Camera

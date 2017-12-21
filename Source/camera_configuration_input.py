@@ -20,13 +20,13 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 
 from camera_dialog import Ui_CameraDialog
 from miscellaneous import Miscellaneous
 
 
-class CameraConfigurationInput(QtGui.QDialog, Ui_CameraDialog):
+class CameraConfigurationInput(QtWidgets.QDialog, Ui_CameraDialog):
     """
     Input the info stored for a specific camera model in the configuration object. The
     interaction with the user is through the camera_dialog.ui gui.
@@ -39,7 +39,7 @@ class CameraConfigurationInput(QtGui.QDialog, Ui_CameraDialog):
         :param configuration: object containing parameters set by the user
         """
 
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.setupUi(self)
         self.c = configuration
         # Get list of all camera models for which parameters are stored in the configuration object.

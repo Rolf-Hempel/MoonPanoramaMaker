@@ -22,13 +22,14 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 from math import degrees
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from drift_rate_dialog import Ui_DriftRateDialog
 from miscellaneous import Miscellaneous
+from matplotlibwidget import MatplotlibWidget
 
 
-class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
+class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
     """
     This class implements the logic behind the drift_rate_dialog gui which controls how the mount
     drift rate is to be determined. In particular, the rules for selecting the first and last
@@ -47,9 +48,12 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
         self.configuration = configuration
         self.al = al
         # Open the gui window.
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.ui = Ui_DriftRateDialog()
         self.ui.setupUi(self)
+        self.ui.mplwidget = MatplotlibWidget()
+        self.ui.mplwidget.setObjectName("matplotlibwidget")
+        self.ui.gridLayout_2.addWidget(self.ui.mplwidget, 11, 1, 1, 2)
 
         # Create a table with alignment point info
         self.ui.tableWidget.setRowCount(len(al.alignment_points))
@@ -68,7 +72,7 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
                 (al.alignment_points[i]['time_seconds'] - first_alignment_seconds) / 60.)
             # Look up the time string to be displayed in the table.
             time_string = al.alignment_points[i]['time_string']
-            item = QtGui.QTableWidgetItem(time_string)
+            item = QtWidgets.QTableWidgetItem(time_string)
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             item.setFlags(flags)
             # Put time info into the first table column.
@@ -77,7 +81,7 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
             ra_correction = 60. * degrees(al.alignment_points[i]['ra_correction'])
             self.ra_corrections.append(ra_correction)
             ra_correction_string = "{:10.2f}".format(ra_correction)
-            item = QtGui.QTableWidgetItem(ra_correction_string)
+            item = QtWidgets.QTableWidgetItem(ra_correction_string)
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             item.setFlags(flags)
             # Put the RA correction into the second table column.
@@ -85,7 +89,7 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
             de_correction = 60. * degrees(al.alignment_points[i]['de_correction'])
             self.de_corrections.append(de_correction)
             de_correction_string = "{:10.2f}".format(de_correction)
-            item = QtGui.QTableWidgetItem(de_correction_string)
+            item = QtWidgets.QTableWidgetItem(de_correction_string)
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             item.setFlags(flags)
             # Put the DE correction into the third table column.
@@ -392,7 +396,7 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
 #     c = Configuration()
 #     al = alignment()
 #
-#     app = QtGui.QApplication(sys.argv)
+#     app = QtWidgets.QApplication(sys.argv)
 #     myapp = ComputeDriftRate(c, al)
 #     myapp.show()
 #     sys.exit(app.exec_())

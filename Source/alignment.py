@@ -26,7 +26,7 @@ from datetime import datetime
 from math import degrees, sqrt
 
 import numpy as np
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 
 import configuration
 import moon_ephem
@@ -581,7 +581,7 @@ class Alignment:
 if __name__ == "__main__":
     from socket_client import SocketClient, SocketClientDebug
 
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     c = configuration.Configuration()
 
     tel = telescope.Telescope(c)
@@ -616,7 +616,7 @@ if __name__ == "__main__":
 
     answer = eval(input("Center Landmark in telescope, enter '1' when ready\n"))
     if answer != 1:
-        exit
+        exit()
     al.align(alignment_manual=True)
 
     print(datetime.now())

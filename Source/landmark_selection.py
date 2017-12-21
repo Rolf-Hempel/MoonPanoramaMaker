@@ -25,7 +25,7 @@ from datetime import datetime
 from math import degrees, radians
 from math import sin, cos
 
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 
 import configuration
 from edit_landmarks import EditLandmarks
@@ -153,7 +153,7 @@ class LandmarkSelection:
 
 
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     c = configuration.Configuration()
     date_time = datetime(2016, 3, 18, 9, 0, 0)
     me = MoonEphem(c, date_time)

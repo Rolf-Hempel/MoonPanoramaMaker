@@ -61,8 +61,6 @@ class TileVisualization:
         # colored red, processed ones light-blue.
         self.active_tile = None
 
-        # Switch on interactive mode to make the window changeable.
-        plt.ion()
         # Get the size of the window from the configuration object and create the figure.
         figsize = ((self.configuration.conf.getfloat("Tile Visualization", "figsize horizontal")),
                    (self.configuration.conf.getfloat("Tile Visualization", "figsize vertical")))
@@ -77,7 +75,7 @@ class TileVisualization:
         # move the tile visualization window to the stored position:
         self.mngr.window.setGeometry(x0, y0, width, height)
 
-        self.ax = self.fig.add_subplot(111, axisbg='black')
+        self.ax = self.fig.add_subplot(111, facecolor='black')
         # Set the coordinate range in x and y. Coordinates are in radians from now on.
         fig_half_width = self.m_diameter / 2. + 0.0003 + self.tc.ol_outer
         plt.axis(([-fig_half_width, fig_half_width, -fig_half_width, fig_half_width]))
@@ -121,7 +119,7 @@ class TileVisualization:
                                          "in normalized orientation (see user "
                                          "guide)")
         plt.tight_layout()
-        self.fig.canvas.draw()
+        self.fig.canvas.manager.show()
 
     def line_select_callback(self, eclick, erelease):
         """
@@ -151,7 +149,6 @@ class TileVisualization:
             self.selection_rectangle = Rectangle((self.select_rect_x_min, self.select_rect_y_min),
                 width, height, color='lightgrey', alpha=0.4)
             self.ax.add_patch(self.selection_rectangle)
-            self.fig.canvas.draw()
         # No valid rectangle selected, reset the selection.
         else:
             self.reset_selection_rectangle()
@@ -171,7 +168,6 @@ class TileVisualization:
         # If there is an active selection rectangle: Remove it.
         if self.selection_rectangle != None:
             self.ax.patches.remove(self.selection_rectangle)
-            self.fig.canvas.draw()
         self.selection_rectangle = None
 
     def get_selected_tile_numbers(self):
@@ -230,7 +226,6 @@ class TileVisualization:
         # Memorize this tile as "active_tile".
         self.active_tile = self.tiles[index]
         self.active_tile.set_color('blue')
-        self.fig.canvas.draw()
 
     def mark_processed(self, index_list):
         """
@@ -244,7 +239,6 @@ class TileVisualization:
         for index in index_list:
             self.tc.list_of_tiles_sorted[index]['processed'] = True
             self.tiles[index].set_color('skyblue')
-        self.fig.canvas.draw()
 
     def mark_all_processed(self):
         """
@@ -258,7 +252,6 @@ class TileVisualization:
             t['processed'] = True
         for t in self.tiles:
             t.set_color('skyblue')
-        self.fig.canvas.draw()
 
     def mark_unprocessed(self, index_list):
         """
@@ -272,7 +265,6 @@ class TileVisualization:
         for index in index_list:
             self.tc.list_of_tiles_sorted[index]['processed'] = False
             self.tiles[index].set_color('red')
-        self.fig.canvas.draw()
 
     def mark_all_unprocessed(self):
         """
@@ -286,7 +278,6 @@ class TileVisualization:
             t['processed'] = False
         for t in self.tiles:
             t.set_color('red')
-        self.fig.canvas.draw()
 
     def close_tile_visualization(self):
         """
@@ -317,19 +308,19 @@ if __name__ == "__main__":
     tv = TileVisualization(configuration, tc)
 
     for i in range(len(tv.tiles)):
-        time.sleep(0.1)
+        plt.pause(0.1)
         tv.mark_active(i)
-        time.sleep(0.1)
+        plt.pause(0.1)
         tv.mark_processed([i])
 
-    time.sleep(2)
+    plt.pause(2.)
 
     tv.mark_all_unprocessed()
 
-    time.sleep(2)
+    plt.pause(2)
 
     tv.mark_all_processed()
 
-    time.sleep(2)
+    plt.pause(2)
 
     tv.close_tile_visualization()

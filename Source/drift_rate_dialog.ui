@@ -135,82 +135,6 @@ end time for drift computation - L</string>
        </property>
       </widget>
      </item>
-     <item row="12" column="2">
-      <widget class="QDialogButtonBox" name="buttonBox">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>41</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>Set drift rate as selected or exit without change</string>
-       </property>
-       <property name="standardButtons">
-        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="2">
-      <widget class="QSpinBox" name="spinBoxLastIndex">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>60</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>Spin box for the selection of the second alignment point for drift rate computation</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLabel" name="labelFirstIndex">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>50</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
-       <property name="toolTip">
-        <string>Shortcut A sets the focus on the first spin box.</string>
-       </property>
-       <property name="text">
-        <string>Choose alignment point index
-for begin of drift computation - A</string>
-       </property>
-      </widget>
-     </item>
-     <item row="10" column="1" colspan="2">
-      <widget class="Line" name="line_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="1" colspan="2">
       <widget class="QRadioButton" name="noRadioButton">
        <property name="minimumSize">
@@ -316,14 +240,79 @@ for end of drift computation - B</string>
        </property>
       </widget>
      </item>
-     <item row="11" column="1" colspan="2">
-      <widget class="MatplotlibWidget" name="mplwidget">
+     <item row="12" column="2">
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>41</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Set drift rate as selected or exit without change</string>
+       </property>
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="2">
+      <widget class="QSpinBox" name="spinBoxLastIndex">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>60</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Spin box for the selection of the second alignment point for drift rate computation</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="labelFirstIndex">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>50</height>
+        </size>
+       </property>
        <property name="font">
         <font>
          <pointsize>10</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
         </font>
+       </property>
+       <property name="toolTip">
+        <string>Shortcut A sets the focus on the first spin box.</string>
+       </property>
+       <property name="text">
+        <string>Choose alignment point index
+for begin of drift computation - A</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="1" colspan="2">
+      <widget class="Line" name="line_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
@@ -343,17 +332,17 @@ for end of drift computation - B</string>
        </property>
       </spacer>
      </item>
+     <item row="11" column="1" colspan="2">
+      <widget class="QLabel" name="mpl_placeholder">
+       <property name="text">
+        <string>Matplotlib window placeholder</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>MatplotlibWidget</class>
-   <extends>QWidget</extends>
-   <header>matplotlibwidget</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections>
   <connection>

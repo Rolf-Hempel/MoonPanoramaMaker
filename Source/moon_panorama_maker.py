@@ -24,7 +24,7 @@ import sys
 import time
 from math import degrees
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from compute_drift_rate import ComputeDriftRate
 from configuration import Configuration
@@ -38,7 +38,7 @@ from tile_visualization import TileVisualization
 from workflow import Workflow
 
 
-class StartQT4(QtGui.QMainWindow):
+class StartQT5(QtWidgets.QMainWindow):
     """
     This class is the main class of the MoonPanoramaMaker software. It implements the main gui and
     through it communicates with the user. It creates the workflow thread which asynchronously
@@ -54,7 +54,7 @@ class StartQT4(QtGui.QMainWindow):
         """
 
         # The (generated) QtGui class is contained in module qtgui.py.
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setChildrenFocusPolicy(QtCore.Qt.NoFocus)
@@ -165,7 +165,7 @@ class StartQT4(QtGui.QMainWindow):
         """
 
         def recursiveSetChildFocusPolicy(parentQWidget):
-            for childQWidget in parentQWidget.findChildren(QtGui.QWidget):
+            for childQWidget in parentQWidget.findChildren(QtWidgets.QWidget):
                 childQWidget.setFocusPolicy(policy)
                 recursiveSetChildFocusPolicy(childQWidget)
 
@@ -874,7 +874,7 @@ class StartQT4(QtGui.QMainWindow):
 
     def select_tile(self):
         """
-        Triggered by pressing the "Select Tile" bui button. Open a gui for selecting a tile index.
+        Triggered by pressing the "Select Tile" gui button. Open a gui for selecting a tile index.
         Then enable the "Move to Selected Tile" button which can be used to drive the mount to the
         tile's position.
         
@@ -1309,10 +1309,10 @@ class StartQT4(QtGui.QMainWindow):
         # Ask the user for confirmation.
         quit_msg = "Are you sure you want to exit the MoonPanoramaMaker " \
                    "program?"
-        reply = QtGui.QMessageBox.question(self, 'Message', quit_msg, QtGui.QMessageBox.Yes,
-                                           QtGui.QMessageBox.No)
+        reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg, QtWidgets.QMessageBox.Yes,
+                                               QtWidgets.QMessageBox.No)
         # Positive reply: Do it.
-        if reply == QtGui.QMessageBox.Yes:
+        if reply == QtWidgets.QMessageBox.Yes:
             evnt.accept()
 
             # Store the geometry of main window, so it is placed the same at next program start.
@@ -1335,7 +1335,7 @@ class StartQT4(QtGui.QMainWindow):
             evnt.ignore()
 
 
-class TileNumberInput(QtGui.QDialog, Ui_TileNumberInputDialog):
+class TileNumberInput(QtWidgets.QDialog, Ui_TileNumberInputDialog):
     """
     This class extends the (generated) class Ui_TileNumberInputDialog. Methods __init__ and accept
     override their parent versions.
@@ -1350,7 +1350,7 @@ class TileNumberInput(QtGui.QDialog, Ui_TileNumberInputDialog):
         :param value_context: name of an object where the entered spinBox value is to be stored.
         """
         self.value_context = value_context
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.setupUi(self)
         self.spinBox.setFocus()
         # Initialize spinBox to current tile number
@@ -1370,7 +1370,7 @@ class TileNumberInput(QtGui.QDialog, Ui_TileNumberInputDialog):
 
 
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
-    myapp = StartQT4()
+    app = QtWidgets.QApplication(sys.argv)
+    myapp = StartQT5()
     myapp.show()
     sys.exit(app.exec_())

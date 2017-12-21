@@ -21,7 +21,7 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as Canvas
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as Canvas
 from matplotlib.figure import Figure
 
 

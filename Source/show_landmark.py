@@ -22,12 +22,12 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 
-from PyQt4 import QtGui
+from PyQt5 import QtGui, QtWidgets
 
 from DisplayLandmark import Ui_DisplayLandmark
 
 
-class ShowLandmark(QtGui.QDialog, Ui_DisplayLandmark):
+class ShowLandmark(QtWidgets.QDialog, Ui_DisplayLandmark):
     """
     This class implements the gui which presents the user the currently selected landmark. It is
     invoked by pressing the "Show Landmark - K" button.
@@ -40,7 +40,7 @@ class ShowLandmark(QtGui.QDialog, Ui_DisplayLandmark):
         :param ls: The LandmarkSelection object (from module landmark_selection)
         """
 
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         # Get the name of the currently selected landmark from the LandmarkSelection object.
         self.landmark = ls.selected_landmark
         # The landmark pictures are stored in subdirectory "landmark_pictures".

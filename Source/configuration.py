@@ -24,7 +24,7 @@ import configparser
 import os.path
 import sys
 
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 
 from configuration_editor import ConfigurationEditor
 
@@ -397,7 +397,7 @@ class Configuration:
 if __name__ == "__main__":
     c = Configuration()
     camera_list = c.get_camera_list()
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     editor = ConfigurationEditor(c)
     editor.show()
     app.exec_()

@@ -20,12 +20,12 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 
 from camera_delete_dialog import Ui_Dialog
 
 
-class CameraConfigurationDelete(QtGui.QDialog, Ui_Dialog):
+class CameraConfigurationDelete(QtWidgets.QDialog, Ui_Dialog):
     """
     This class implements the activities executed when a camera configuration is to be deleted
     from the list of available models. In particular, the configuration is to be marked as changed.
@@ -33,7 +33,7 @@ class CameraConfigurationDelete(QtGui.QDialog, Ui_Dialog):
     """
 
     def __init__(self, parent=None):
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.setupUi(self)
         self.configuration_changed = False
 

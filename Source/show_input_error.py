@@ -20,12 +20,12 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 
 from input_error_dialog import Ui_InputErrorDialog
 
 
-class ShowInputError(QtGui.QDialog, Ui_InputErrorDialog):
+class ShowInputError(QtWidgets.QDialog, Ui_InputErrorDialog):
     """
     This class implements an InputErrorDialog window. It prompts the user to correct the input
     of a parameter and gives a correctly formatted example.
@@ -39,7 +39,7 @@ class ShowInputError(QtGui.QDialog, Ui_InputErrorDialog):
         :param example_string: example for a correctly formatted parameter
         """
 
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.setupUi(self)
         self.message.setText("Invalid input for parameter: \n" +
                              parameter_string + "\n\nValid input example: \n" +

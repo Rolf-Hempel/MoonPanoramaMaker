@@ -23,12 +23,12 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 import os
 from math import radians, pi
 
-from PyQt4 import QtGui
+from PyQt5 import QtGui, QtWidgets
 
 from ViewLandmarks import Ui_ViewLandmarks
 
 
-class EditLandmarks(QtGui.QDialog, Ui_ViewLandmarks):
+class EditLandmarks(QtWidgets.QDialog, Ui_ViewLandmarks):
     """
     This class implements the landmark selection by the user. A gui is presented with a list
     of available landmarks. If the user selects a landmark from the combobox, the corresponding
@@ -45,7 +45,7 @@ class EditLandmarks(QtGui.QDialog, Ui_ViewLandmarks):
         :param colong: current selenographic co-longitude of the sun
         """
 
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.selected_landmark = selected_landmark
         # For each landmark a picture is stored in subdirectory "landmark_pictures".
         self.picture_dir = os.getcwd() + '\\landmark_pictures\\'

@@ -26,7 +26,7 @@ import sys
 basePath = os.path.dirname(os.path.abspath(sys.argv[0]))
 sys.path.insert(0, basePath)
 
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 from pytz import timezone
 from configuration_dialog import Ui_ConfigurationDialog
 from camera_configuration_editor import CameraConfigurationEditor
@@ -35,7 +35,7 @@ from camera_configuration_delete import CameraConfigurationDelete
 from miscellaneous import Miscellaneous
 
 
-class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
+class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
     """
     Update the parameters used by MoonPanoramaMaker which are stored in the configuration object.
     The interaction with the user is through the ConfigurationDialog class.
@@ -51,7 +51,7 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
         :param parent: 
         """
 
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.setupUi(self)
         # Configuration object c
         self.c = configuration
@@ -618,5 +618,5 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
         self.configuration_changed = False
         self.close()
 
-    def closeEvent(self, evnt):
+    def closeEvent(self, event):
         self.close()
