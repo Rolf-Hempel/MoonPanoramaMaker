@@ -136,10 +136,10 @@ class TileVisualization:
         :param erelease: event object created when mouse button was released
         :return: -
         """
-
-        # If new coordinates are as the old ones, a point has been selected.
+        # If new coordinates are as the old ones, or if the rectangle has zero width,
+        # a point has been selected.
         if self.x1 == eclick.xdata and self.y1 == eclick.ydata and self.x2 == erelease.xdata and \
-                        self.y2 == erelease.ydata:
+                self.y2 == erelease.ydata or eclick.xdata == erelease.xdata:
             self.reset_selection_rectangle()
             return
 
