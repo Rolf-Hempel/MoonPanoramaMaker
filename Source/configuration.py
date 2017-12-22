@@ -178,9 +178,9 @@ class Configuration:
             self.conf.set('Telescope', 'focal length', '2800.')
 
             self.conf.add_section('Tile Visualization')
-            self.conf.set('Tile Visualization', 'figsize horizontal', '8.5')
-            self.conf.set('Tile Visualization', 'figsize vertical', '8.5')
-            self.conf.set('Tile Visualization', 'label fontsize', '11')
+            self.conf.set('Tile Visualization', 'figsize horizontal', '7.')
+            self.conf.set('Tile Visualization', 'figsize vertical', '7.')
+            self.conf.set('Tile Visualization', 'label fontsize', '9')
             self.conf.set('Tile Visualization', 'label shift', '0.8')
 
             self.conf.add_section('Workflow')
