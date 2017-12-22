@@ -113,6 +113,12 @@ class TileVisualization:
                                                # don't use middle button
                                                minspanx=0, minspany=0, spancoords='pixels')
         plt.connect('key_press_event', toggle_selector)
+
+        # Initialize mouse coordinates for rectangle selector.
+        self.x1 = -2.
+        self.x2 = -2.
+        self.y1 = -2.
+        self.y2 = -2.
         self.selection_rectangle = None
         self.reset_selection_rectangle()
         self.fig.canvas.set_window_title("MoonPanoramaMaker: Tile Arrangement "
@@ -130,28 +136,32 @@ class TileVisualization:
         :param erelease: event object created when mouse button was released
         :return: -
         """
+
+        # If new coordinates are as the old ones, a point has been selected.
+        if self.x1 == eclick.xdata and self.y1 == eclick.ydata and self.x2 == erelease.xdata and \
+                        self.y2 == erelease.ydata:
+            self.reset_selection_rectangle()
+            return
+
         # eclick and erelease are the press and release events, get corners of rectangle.
-        x1, y1 = eclick.xdata, eclick.ydata
-        x2, y2 = erelease.xdata, erelease.ydata
+        self.x1, self.y1 = eclick.xdata, eclick.ydata
+        self.x2, self.y2 = erelease.xdata, erelease.ydata
 
         # Compute corner coordinates, width and height
-        self.select_rect_x_min = min(x1, x2)
-        self.select_rect_x_max = max(x1, x2)
-        self.select_rect_y_min = min(y1, y2)
-        self.select_rect_y_max = max(y1, y2)
+        self.select_rect_x_min = min(self.x1, self.x2)
+        self.select_rect_x_max = max(self.x1, self.x2)
+        self.select_rect_y_min = min(self.y1, self.y2)
+        self.select_rect_y_max = max(self.y1, self.y2)
         width = self.select_rect_x_max - self.select_rect_x_min
         height = self.select_rect_y_max - self.select_rect_y_min
 
-        # If not a point: remove previous selection_rectangle and draw a new one.
-        if width >= 0.00005 and height >= 0.00005:
-            if self.selection_rectangle != None:
-                self.ax.patches.remove(self.selection_rectangle)
-            self.selection_rectangle = Rectangle((self.select_rect_x_min, self.select_rect_y_min),
-                width, height, color='lightgrey', alpha=0.4)
-            self.ax.add_patch(self.selection_rectangle)
-        # No valid rectangle selected, reset the selection.
-        else:
-            self.reset_selection_rectangle()
+        # Not a point selected: remove previous selection_rectangle and draw a new one.
+        if self.selection_rectangle != None:
+            self.ax.patches.remove(self.selection_rectangle)
+        self.selection_rectangle = Rectangle((self.select_rect_x_min, self.select_rect_y_min),
+                                             width, height, color='lightgrey', alpha=0.4)
+        self.ax.add_patch(self.selection_rectangle)
+        self.fig.canvas.draw()
 
     def reset_selection_rectangle(self):
         """
