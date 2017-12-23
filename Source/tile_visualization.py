@@ -64,8 +64,11 @@ class TileVisualization:
         # Get the size of the window from the configuration object and create the figure.
         figsize = ((self.configuration.conf.getfloat("Tile Visualization", "figsize horizontal")),
                    (self.configuration.conf.getfloat("Tile Visualization", "figsize vertical")))
-        self.fig = plt.figure(figsize=figsize)
+        # self.fig = plt.figure(figsize=figsize, frameon=False)
+        self.fig = plt.figure(figsize=figsize, facecolor=(0., 0., 0., 1))
 
+        # Switch on interactive mode.
+        plt.ion()
         # Replace the window location with coordinates stored from a previous run in configuration.
         self.mngr = plt.get_current_fig_manager()
         (x0, y0, width, height) = self.mngr.window.geometry().getRect()

@@ -22,7 +22,7 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 import time
 
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 
 from miscellaneous import Miscellaneous
 from socket_client import SocketClient, SocketClientDebug
@@ -40,6 +40,10 @@ class Camera(QtCore.QThread):
     
     """
 
+    # During camera initialization (in class "workflow") the signal is connected with method
+    # "signal_from_camera" in moon_panormaa_maker.
+    camera_signal = QtCore.pyqtSignal()
+
     def __init__(self, configuration, telescope, mark_processed, debug=False):
         """
         Initialize the camera object.
@@ -53,14 +57,11 @@ class Camera(QtCore.QThread):
         
         """
         QtCore.QThread.__init__(self)
-        # During camera initialization (in class "workflow") the signal is connected with method
-        # "signal_from_camera" in moon_panormaa_maker.
-        self.signal = QtCore.SIGNAL("signal")
 
         self.configuration = configuration
         self.telescope = telescope
 
-        # Register method in StartQT4 (module moon_panorama_maker) for marking tile as processed.
+        # Register method in StartQT5 (module moon_panorama_maker) for marking tile as processed.
         self.mark_processed = mark_processed
 
         # Avoid too much compute power consumption due to idle looping
@@ -138,7 +139,7 @@ class Camera(QtCore.QThread):
                 # All videos for this tile are acquired, mark tile as processed.
                 self.mark_processed()
                 # Trigger method "signal_from_camera" in moon_panorama_maker
-                self.emit(self.signal, "hi from camera")
+                self.camera_signal.emit()
                 if self.configuration.protocol_level > 0:
                     Miscellaneous.protocol("Camera, all videos for tile " +
                                            str(self.active_tile_number) +

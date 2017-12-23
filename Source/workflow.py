@@ -136,7 +136,8 @@ class Workflow(QtCore.QThread):
                         self.camera = Camera(self.gui.configuration, self.telescope,
                                              self.gui.mark_processed,
                                              debug=self.gui.configuration.camera_debug)
-                        self.connect(self.camera, self.camera.signal, self.gui.signal_from_camera)
+                        # self.connect(self.camera, self.camera.signal, self.gui.signal_from_camera)
+                        self.camera.camera_signal.connect(self.gui.signal_from_camera)
                         self.camera_connected = True
                         self.camera.start()
 
