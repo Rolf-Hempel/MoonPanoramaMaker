@@ -43,7 +43,7 @@ class Configuration:
         """
 
         # The version number is displayed on the MPM main gui title line.
-        self.version = "MoonPanoramaMaker 0.9.5"
+        self.version = "MoonPanoramaMaker 0.9.6"
 
         ############################################################################################
         # Switch on/off debug modes:
@@ -296,7 +296,7 @@ class Configuration:
 
         file_is_compatible = False
         version_read = self.conf.get('Hidden Parameters', 'version')
-        if version_read == self.version:
+        if version_read == self.version or version_read == "MoonPanoramaMaker 0.9.5":
             # Configuration file matches current format. Nothing to be done.
             file_is_compatible = True
         elif version_read == "MoonPanoramaMaker 0.9.3":

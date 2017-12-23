@@ -25,7 +25,6 @@ import time
 from math import degrees
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 from compute_drift_rate import ComputeDriftRate
 from configuration import Configuration
 from configuration_editor import ConfigurationEditor
@@ -537,7 +536,7 @@ class StartQT5(QtWidgets.QMainWindow):
             # The configuration parameter is in percent. In "workflow" it is compared to a value
             # between 0. and 1.
             self.max_alignment_error = (self.configuration.conf.getfloat("Alignment",
-                                        "max alignment error")) / 100.
+                                                            "max alignment error")) / 100.
             # Initialize the maximum time between auto-aligns to the minimum acceptable value.
             # The interval will be increased at next auto-align if the correction is very small.
             self.max_seconds_between_autoaligns = self.min_autoalign_interval
@@ -656,9 +655,10 @@ class StartQT5(QtWidgets.QMainWindow):
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol("Camera rotation finished")
         # Activate gui buttons. Auto-alignment is possible only when camera_automation is active.
-        self.enable_keys([self.ui.set_focus_area, self.ui.start_continue_recording,
-                          self.ui.select_tile, self.ui.set_tile_unprocessed,
-                          self.ui.set_all_tiles_unprocessed, self.ui.set_all_tiles_processed])
+        self.enable_keys(
+            [self.ui.set_focus_area, self.ui.start_continue_recording, self.ui.select_tile,
+             self.ui.set_tile_unprocessed, self.ui.set_all_tiles_unprocessed,
+             self.ui.set_all_tiles_processed])
         self.ui.autoalignment.setEnabled(self.camera_automation)
         # When the camera orientation has changed, all tiles are marked "unprocessed"
         self.tv.mark_all_unprocessed()
@@ -894,8 +894,8 @@ class StartQT5(QtWidgets.QMainWindow):
         self.tni = TileNumberInput(self.workflow.active_tile_number, self.workflow)
         self.tni.exec_()
         if self.configuration.protocol_level > 1:
-            Miscellaneous.protocol("Tile number " + str(self.workflow.active_tile_number) +
-                                   " was selected.")
+            Miscellaneous.protocol(
+                "Tile number " + str(self.workflow.active_tile_number) + " was selected.")
         self.ui.move_to_selected_tile.setEnabled(True)
         # Clear the text browser.
         self.set_text_browser("")
@@ -936,8 +936,8 @@ class StartQT5(QtWidgets.QMainWindow):
         # The action is performed in class TileVisualization.
         self.tv.mark_unprocessed(self.selected_tile_numbers)
         if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("Tile(s) " + self.selected_tile_numbers_string +
-                                   " are marked unprocessed.")
+            Miscellaneous.protocol(
+                "Tile(s) " + self.selected_tile_numbers_string + " are marked unprocessed.")
         # Since at least one tile is unprocessed now, reset the "all_tiles_recorded" flag.
         self.all_tiles_recorded = False
         self.set_text_browser("")
@@ -1015,8 +1015,8 @@ class StartQT5(QtWidgets.QMainWindow):
         # Get the tile object from the list kept by the TileConstructor object.
         self.selected_tile = self.tc.list_of_tiles_sorted[self.workflow.active_tile_number]
         if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("Goto selected tile number " +
-                                   str(self.workflow.active_tile_number))
+            Miscellaneous.protocol(
+                "Goto selected tile number " + str(self.workflow.active_tile_number))
         # Mark the tile active in the tile visualization window, refresh the status bar.
         self.tv.mark_active(self.workflow.active_tile_number)
         self.set_statusbar()

@@ -23,7 +23,6 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 import time
 
 from PyQt5 import QtCore
-
 from miscellaneous import Miscellaneous
 from socket_client import SocketClient, SocketClientDebug
 
@@ -56,6 +55,7 @@ class Camera(QtCore.QThread):
         acknowledgement as the real object does.
         
         """
+
         QtCore.QThread.__init__(self)
 
         self.configuration = configuration
@@ -66,7 +66,7 @@ class Camera(QtCore.QThread):
 
         # Avoid too much compute power consumption due to idle looping
         self.lookup_polling_interval = (
-        self.configuration.conf.getfloat("ASCOM", "polling interval"))
+            self.configuration.conf.getfloat("ASCOM", "polling interval"))
         # The "triggered" flag is set to True in "workflow" to start an exposure.
         self.triggered = False
         # The "active" flag is looked up in "workflow" to find out if a video is being acquired.
@@ -113,9 +113,8 @@ class Camera(QtCore.QThread):
                         # time. Otherwise FireCapture might get stuck.
                         time.sleep(self.configuration.camera_time_between_multiple_exposures)
                     if self.configuration.protocol_level > 0:
-                        Miscellaneous.protocol("Camera: Send trigger to FireCapture, tile: " +
-                            str(self.active_tile_number) + ", repetition number: " +
-                            str(video_number))
+                        Miscellaneous.protocol("Camera: Send trigger to FireCapture, tile: " + str(
+                            self.active_tile_number) + ", repetition number: " + str(video_number))
                     try:
                         # The tile number is encoded in the message. The FireCapture plugin appends
                         # this message to the video file names (to keep the files apart later).
@@ -141,9 +140,8 @@ class Camera(QtCore.QThread):
                 # Trigger method "signal_from_camera" in moon_panorama_maker
                 self.camera_signal.emit()
                 if self.configuration.protocol_level > 0:
-                    Miscellaneous.protocol("Camera, all videos for tile " +
-                                           str(self.active_tile_number) +
-                                           " captured, signal (tile processed) emitted")
+                    Miscellaneous.protocol("Camera, all videos for tile " + str(
+                        self.active_tile_number) + " captured, signal (tile processed) emitted")
                 self.active = False
 
             time.sleep(self.lookup_polling_interval)
