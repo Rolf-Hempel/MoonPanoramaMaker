@@ -1370,6 +1370,15 @@ class TileNumberInput(QtWidgets.QDialog, Ui_TileNumberInputDialog):
 
 
 if __name__ == "__main__":
+    # The following four lines are a workaround to make PyInstaller work. Remove them when the
+    # PyInstaller issue is fixed. Additionally, file "qwindows.dll" must be moved from directory
+    # "dist\moon_panorama_maker\PyQt5\Qt\plugins\platforms" into a new directory
+    # "dist\moon_panorama_maker\platforms".
+    import os
+    if getattr(sys, 'frozen', False):
+        here = os.path.dirname(sys.executable)
+        sys.path.insert(1, here)
+
     app = QtWidgets.QApplication(sys.argv)
     myapp = StartQT5()
     myapp.show()
