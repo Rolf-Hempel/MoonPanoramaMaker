@@ -1,6 +1,6 @@
 [General]
 Program name = MoonPanoramaMaker
-Program version = 0.9.5
+Program version = 0.9.6
 Windows 2000 = 0
 Windows XP = 0
 Windows Server 2003 = 0
@@ -51,7 +51,7 @@ Time = 2
 PlaySound = 0
 Allow = 0
 [Build]
-File = D:\SW-Development\Python\MoonPanoramaMaker\Windows_Installer\MoonPanoramaMaker_V0.9.5_Windows-Installer.exe
+File = D:\SW-Development\Python\MoonPanoramaMaker\Windows_Installer\MoonPanoramaMaker_V0.9.6_Windows-Installer.exe
 [Updater]
 Allow = 0
 1 = <appname>
@@ -73,13 +73,10 @@ pdf
 D:\SW-Development\Python\MoonPanoramaMaker\Documentation\Illustrations\MoonPanoramaMaker.ico
 1.2 MB
 ico
-D:\SW-Development\Python\MoonPanoramaMaker\InstallForge\build\
+D:\SW-Development\Python\MoonPanoramaMaker\InstallForge\moon_panorama_maker\
 n/a
 [Folder]
-D:\SW-Development\Python\MoonPanoramaMaker\InstallForge\dist\
-n/a
-[Folder]
-D:\SW-Development\Python\MoonPanoramaMaker\InstallForge\MoonPanoramaMaker\
+D:\SW-Development\Python\MoonPanoramaMaker\InstallForge\plugins\
 n/a
 [Folder]
 [Licence_Begin]
