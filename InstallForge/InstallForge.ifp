@@ -86,11 +86,11 @@ n/a
 [SCs]
 Desktop
 MoonPanoramaMaker
-<installpath>\dist\moon_panorama_maker.exe
+<installpath>\moon_panorama_maker\moon_panorama_maker.exe
 
 Startmenu
 MoonPanoramaMaker
-<installpath>\dist\moon_panorama_maker.exe
+<installpath>\moon_panorama_maker\moon_panorama_maker.exe
 
 Startmenu
 Uninstall
