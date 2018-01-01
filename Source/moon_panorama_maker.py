@@ -1374,6 +1374,10 @@ if __name__ == "__main__":
     # PyInstaller issue is fixed. Additionally, file "qwindows.dll" must be moved from directory
     # "dist\moon_panorama_maker\PyQt5\Qt\plugins\platforms" into a new directory
     # "dist\moon_panorama_maker\platforms".
+    #
+    # To run the PyInstaller, open a Terminal in PyCharm and enter
+    # "pyinstaller moon_panorama_maker.spec"
+    #
     import os
     if getattr(sys, 'frozen', False):
         here = os.path.dirname(sys.executable)
