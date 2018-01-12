@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>850</width>
-    <height>274</height>
+    <height>252</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,119 +18,23 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="4" column="0" colspan="5">
-     <widget class="QTextBrowser" name="prompt_text_browser">
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="toolTip">
-       <string>Window to show user instructions</string>
-      </property>
-      <property name="undoRedoEnabled">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="2">
-     <widget class="QPushButton" name="goto_focus_area">
-      <property name="toolTip">
-       <string>Move the telescope for focus adjustment</string>
-      </property>
-      <property name="text">
-       <string>GoTo Focus Area - G</string>
-      </property>
-      <property name="shortcut">
-       <string>G</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="3">
-     <widget class="QPushButton" name="start_continue_recording">
-      <property name="toolTip">
-       <string>Continue recording with next unprocessed tile</string>
-      </property>
-      <property name="text">
-       <string>Start / Continue Recording - S</string>
-      </property>
-      <property name="shortcut">
-       <string>S</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="3">
-     <widget class="QPushButton" name="set_tile_unprocessed">
-      <property name="toolTip">
-       <string>Remove current tile number from list of processed tiles</string>
-      </property>
-      <property name="text">
-       <string>Set Tile(s) Unprocessed - U</string>
-      </property>
-      <property name="shortcut">
-       <string>U</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="3">
-     <widget class="QPushButton" name="select_tile">
-      <property name="toolTip">
-       <string>Select tile number for next recording</string>
-      </property>
-      <property name="text">
-       <string>Select Tile - T</string>
-      </property>
-      <property name="shortcut">
-       <string>T</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="3">
-     <widget class="QPushButton" name="set_all_tiles_unprocessed">
-      <property name="toolTip">
-       <string>Mark all tiles as unprocessed</string>
-      </property>
-      <property name="text">
-       <string>Set All Tiles Unprocessed - V</string>
-      </property>
-      <property name="shortcut">
-       <string>V</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QPushButton" name="alignment">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="toolTip">
-       <string>Align (or re-align) telescope with landmark</string>
-      </property>
-      <property name="text">
-       <string>Alignment - A</string>
-      </property>
-      <property name="shortcut">
-       <string>A</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
+    <item row="4" column="0">
      <widget class="QPushButton" name="new_landmark_selection">
       <property name="toolTip">
-       <string>Select new landmark for alignment in planetarium program</string>
+       <string>Select a new landmark for mount alignment</string>
       </property>
       <property name="text">
-       <string>New Landmark Selection - L</string>
+       <string>Select new landmark - L</string>
       </property>
       <property name="shortcut">
        <string>L</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="0">
+    <item row="0" column="0">
      <widget class="QPushButton" name="restart">
       <property name="toolTip">
-       <string>Restart from scratch (new tile layout)</string>
+       <string>Restart the whole workflow (new tile layout)</string>
       </property>
       <property name="text">
        <string>Restart - R</string>
@@ -140,33 +44,20 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="0">
-     <widget class="QPushButton" name="edit_configuration">
+    <item row="4" column="6">
+     <widget class="QPushButton" name="set_all_tiles_unprocessed">
       <property name="toolTip">
-       <string>Input configuration parameters for location, camera, telescope and window layout</string>
+       <string>Mark all tiles as unprocessed</string>
       </property>
       <property name="text">
-       <string>Edit Configuration - C</string>
+       <string>Mark all tiles unprocessed - V</string>
       </property>
       <property name="shortcut">
-       <string>C</string>
+       <string>V</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="1">
-     <widget class="QPushButton" name="rotate_camera">
-      <property name="toolTip">
-       <string>Align short side of sensor with Moon limb</string>
-      </property>
-      <property name="text">
-       <string>Camera Orientation - O</string>
-      </property>
-      <property name="shortcut">
-       <string>O</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
+    <item row="6" column="0">
      <widget class="QPushButton" name="set_focus_area">
       <property name="font">
        <font>
@@ -174,43 +65,189 @@
        </font>
       </property>
       <property name="toolTip">
-       <string>Mark current view as the place where the telescope focus is to be set</string>
+       <string>Mark current location for setting the telescope focus</string>
       </property>
       <property name="text">
-       <string>Select Focus Area - F</string>
+       <string>Select focus area - F</string>
       </property>
       <property name="shortcut">
        <string>F</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="4">
+    <item row="0" column="2" rowspan="7">
+     <widget class="Line" name="line">
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+      <property name="midLineWidth">
+       <number>0</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="5">
+     <widget class="QPushButton" name="set_tile_unprocessed">
+      <property name="toolTip">
+       <string>Remove current tile number from list of processed tiles</string>
+      </property>
+      <property name="text">
+       <string>Mark tile(s) unprocessed - U</string>
+      </property>
+      <property name="shortcut">
+       <string>U</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="5">
+     <widget class="QPushButton" name="select_tile">
+      <property name="toolTip">
+       <string>Select the number of a single tile</string>
+      </property>
+      <property name="text">
+       <string>Select tile - T</string>
+      </property>
+      <property name="shortcut">
+       <string>T</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="6">
      <widget class="QPushButton" name="move_to_selected_tile">
       <property name="toolTip">
        <string>Move the telescope to the selected tile</string>
       </property>
       <property name="text">
-       <string>Move to Selected Tile - M</string>
+       <string>Move to selected tile - M</string>
       </property>
       <property name="shortcut">
        <string>M</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="4">
+    <item row="6" column="6">
      <widget class="QPushButton" name="set_all_tiles_processed">
       <property name="toolTip">
        <string>Mark all tiles as processed</string>
       </property>
       <property name="text">
-       <string>Set All Tiles Processed - P</string>
+       <string>Mark all tiles processed - Q</string>
+      </property>
+      <property name="shortcut">
+       <string>Q</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QPushButton" name="edit_configuration">
+      <property name="toolTip">
+       <string>Set configuration parameters for location, equipment and program execution</string>
+      </property>
+      <property name="text">
+       <string>Edit configuration - C</string>
+      </property>
+      <property name="shortcut">
+       <string>C</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="5" colspan="2">
+     <widget class="QPushButton" name="start_continue_recording">
+      <property name="toolTip">
+       <string>Continue recording with next unprocessed tile</string>
+      </property>
+      <property name="text">
+       <string>Start / continue recording - S</string>
+      </property>
+      <property name="shortcut">
+       <string>S</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="3">
+     <widget class="QPushButton" name="configure_drift_correction">
+      <property name="toolTip">
+       <string>Select alignment points for drift computation and compensation</string>
+      </property>
+      <property name="text">
+       <string>Configure drift correction - D</string>
+      </property>
+      <property name="shortcut">
+       <string>D</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="QPushButton" name="alignment">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="toolTip">
+       <string>Align (or re-align) telescope with landmark</string>
+      </property>
+      <property name="text">
+       <string>Align mount - A</string>
+      </property>
+      <property name="shortcut">
+       <string>A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3">
+     <widget class="QPushButton" name="autoalignment">
+      <property name="toolTip">
+       <string>Switch on / off auto-alignment</string>
+      </property>
+      <property name="text">
+       <string>Switch on Auto-alignment - B</string>
+      </property>
+      <property name="shortcut">
+       <string>B</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="5">
+     <widget class="QPushButton" name="set_tile_processed">
+      <property name="toolTip">
+       <string>Add current tile number to list of processed tiles</string>
+      </property>
+      <property name="text">
+       <string>Mark tile(s) processed - P</string>
       </property>
       <property name="shortcut">
        <string>P</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="1">
+    <item row="3" column="0" colspan="2">
+     <widget class="Line" name="line_3">
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+      <property name="midLineWidth">
+       <number>0</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QPushButton" name="goto_focus_area">
+      <property name="toolTip">
+       <string>Move the telescope for focus adjustment</string>
+      </property>
+      <property name="text">
+       <string>GoTo focus area - G</string>
+      </property>
+      <property name="shortcut">
+       <string>G</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
      <widget class="QPushButton" name="show_landmark">
       <property name="font">
        <font>
@@ -221,36 +258,80 @@
        <string>Show a picture of the landmark currently selected </string>
       </property>
       <property name="text">
-       <string>Show Landmark - K</string>
+       <string>Show landmark - K</string>
       </property>
       <property name="shortcut">
        <string>K</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="2">
-     <widget class="QPushButton" name="configure_drift_correction">
+    <item row="2" column="0">
+     <widget class="QPushButton" name="rotate_camera">
       <property name="toolTip">
-       <string>Select alignment points for drift computation and compensation</string>
+       <string>Rotate camera until the moon limb stands vertically at FOV center</string>
       </property>
       <property name="text">
-       <string>Correct for Drift - D</string>
+       <string>Adjust camera orientation - O</string>
       </property>
       <property name="shortcut">
-       <string>D</string>
+       <string>O</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="1">
-     <widget class="QPushButton" name="autoalignment">
+    <item row="0" column="4" rowspan="7">
+     <widget class="Line" name="line_2">
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+      <property name="midLineWidth">
+       <number>0</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="5" colspan="2">
+     <widget class="Line" name="line_4">
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+      <property name="midLineWidth">
+       <number>0</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0" colspan="7">
+     <widget class="QTextBrowser" name="prompt_text_browser">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="toolTip">
-       <string>Switch on / off auto-alignment</string>
+       <string>Window to show user instructions</string>
       </property>
-      <property name="text">
-       <string>Auto-Alignment on - B</string>
+      <property name="lineWidth">
+       <number>1</number>
       </property>
-      <property name="shortcut">
-       <string>B</string>
+      <property name="midLineWidth">
+       <number>0</number>
+      </property>
+      <property name="undoRedoEnabled">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="3">
+     <widget class="Line" name="line_5">
+      <property name="lineWidth">
+       <number>0</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
       </property>
      </widget>
     </item>
@@ -259,21 +340,22 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <tabstops>
-  <tabstop>edit_configuration</tabstop>
   <tabstop>restart</tabstop>
-  <tabstop>new_landmark_selection</tabstop>
-  <tabstop>alignment</tabstop>
+  <tabstop>edit_configuration</tabstop>
   <tabstop>rotate_camera</tabstop>
-  <tabstop>set_focus_area</tabstop>
+  <tabstop>new_landmark_selection</tabstop>
   <tabstop>show_landmark</tabstop>
-  <tabstop>autoalignment</tabstop>
+  <tabstop>set_focus_area</tabstop>
   <tabstop>goto_focus_area</tabstop>
+  <tabstop>alignment</tabstop>
+  <tabstop>autoalignment</tabstop>
   <tabstop>configure_drift_correction</tabstop>
   <tabstop>start_continue_recording</tabstop>
   <tabstop>select_tile</tabstop>
+  <tabstop>move_to_selected_tile</tabstop>
   <tabstop>set_tile_unprocessed</tabstop>
   <tabstop>set_all_tiles_unprocessed</tabstop>
-  <tabstop>move_to_selected_tile</tabstop>
+  <tabstop>set_tile_processed</tabstop>
   <tabstop>set_all_tiles_processed</tabstop>
   <tabstop>prompt_text_browser</tabstop>
  </tabstops>
