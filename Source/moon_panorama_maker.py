@@ -93,6 +93,8 @@ class StartQT5(QtWidgets.QMainWindow):
         self.button_list.append(self.ui.show_landmark)
         self.ui.autoalignment.clicked.connect(self.prompt_autoalignment)
         self.button_list.append(self.ui.autoalignment)
+        self.ui.set_tile_processed.clicked.connect(self.set_tile_processed)
+        self.button_list.append(self.ui.set_tile_processed)
 
         # The gui_context is used to know, at which point of program execution, for example, a
         # "Enter" key was pressed.
@@ -231,7 +233,7 @@ class StartQT5(QtWidgets.QMainWindow):
              self.ui.set_focus_area, self.ui.goto_focus_area, self.ui.start_continue_recording,
              self.ui.select_tile, self.ui.move_to_selected_tile, self.ui.set_tile_unprocessed,
              self.ui.set_all_tiles_unprocessed, self.ui.set_all_tiles_processed,
-             self.ui.show_landmark, self.ui.autoalignment])
+             self.ui.show_landmark, self.ui.autoalignment, self.ui.set_tile_processed])
 
         self.camera_automation = (
             self.configuration.conf.getboolean("Workflow", "camera automation"))
@@ -433,7 +435,7 @@ class StartQT5(QtWidgets.QMainWindow):
 
         self.ui.autoalignment.setStyleSheet("background-color: light gray")
         self.ui.autoalignment.setFont(QtGui.QFont("MS Shell Dlg 2", weight=QtGui.QFont.Normal))
-        self.ui.autoalignment.setText('Auto-Alignment on - B')
+        self.ui.autoalignment.setText('Switch on auto-alignment - B')
         self.ui.autoalignment.setShortcut("b")
         # Reconnect the auto-alignment button with autoalignment initialization.
         self.ui.autoalignment.clicked.connect(self.prompt_autoalignment)
@@ -474,7 +476,7 @@ class StartQT5(QtWidgets.QMainWindow):
         self.ui.autoalignment.clicked.connect(self.prompt_autoalignment_off)
         self.ui.autoalignment.setStyleSheet("background-color: red; color: white")
         self.ui.autoalignment.setFont(QtGui.QFont("MS Shell Dlg 2", weight=QtGui.QFont.Bold))
-        self.ui.autoalignment.setText('Auto-Alignment off - B')
+        self.ui.autoalignment.setText('Switch off auto-alignment - B')
         self.ui.autoalignment.setShortcut("b")
         # Write a text message to the text browser, reset the active tile in the tile visualization
         # window, update the status bar and trigger the workflow thread to move the telescope.
@@ -623,7 +625,7 @@ class StartQT5(QtWidgets.QMainWindow):
             [self.ui.set_focus_area, self.ui.goto_focus_area, self.ui.start_continue_recording,
              self.ui.select_tile, self.ui.move_to_selected_tile, self.ui.set_tile_unprocessed,
              self.ui.set_all_tiles_unprocessed, self.ui.set_all_tiles_processed,
-             self.ui.autoalignment])
+             self.ui.autoalignment, self.ui.set_tile_processed])
         # Display info for the user, and trigger workflow thread to move the telescope to the
         # center point of the sunlit moon limb.
         self.set_text_browser("Slewing telescope to Moon limb, please wait.")
@@ -658,7 +660,7 @@ class StartQT5(QtWidgets.QMainWindow):
         self.enable_keys(
             [self.ui.set_focus_area, self.ui.start_continue_recording, self.ui.select_tile,
              self.ui.set_tile_unprocessed, self.ui.set_all_tiles_unprocessed,
-             self.ui.set_all_tiles_processed])
+             self.ui.set_all_tiles_processed, self.ui.set_tile_processed])
         self.ui.autoalignment.setEnabled(self.camera_automation)
         # When the camera orientation has changed, all tiles are marked "unprocessed"
         self.tv.mark_all_unprocessed()
@@ -752,14 +754,14 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         if self.configuration.conf.getboolean("Workflow", "focus on star"):
-            self.ui.set_focus_area.setText('Select Focus Star - F')
+            self.ui.set_focus_area.setText('Select focus star - F')
             self.ui.set_focus_area.setShortcut("f")
-            self.ui.goto_focus_area.setText('GoTo Focus Star - G')
+            self.ui.goto_focus_area.setText('GoTo focus star - G')
             self.ui.goto_focus_area.setShortcut("g")
         else:
-            self.ui.set_focus_area.setText('Select Focus Area - F')
+            self.ui.set_focus_area.setText('Select focus area - F')
             self.ui.set_focus_area.setShortcut("f")
-            self.ui.goto_focus_area.setText('GoTo Focus Area - G')
+            self.ui.goto_focus_area.setText('GoTo focus area - G')
             self.ui.goto_focus_area.setShortcut("g")
 
     def start_continue_recording(self):
@@ -942,6 +944,46 @@ class StartQT5(QtWidgets.QMainWindow):
         self.all_tiles_recorded = False
         self.set_text_browser("")
         self.set_statusbar()
+
+    def set_tile_processed(self):
+        """
+        Tiles can be selected either done by drawing a rectangle in the tile visualization
+        window, or by the variable "active_tile_number" of the workflow object not being set to -1.
+        First, check if one mechanism results in an non-empty list. If so, present the list to the
+        user and ask for acknowledgement that these tiles should be marked as processed.
+
+        :return: -
+        """
+
+        # Initialize the list with (potentially) selected tiles in visualization window.
+        self.selected_tile_numbers = self.tv.get_selected_tile_numbers()
+        # If empty, check if there is a non-trivial active_tile_number.
+        if len(self.selected_tile_numbers) == 0 and self.workflow.active_tile_number != -1:
+            self.selected_tile_numbers.append(self.workflow.active_tile_number)
+        # If one of the mechanisms produced a non-empty list, set the gui context and ask the
+        # user to confirm the operation.
+        if len(self.selected_tile_numbers) > 0:
+            self.selected_tile_numbers_string = str(self.selected_tile_numbers)[1:-1]
+            self.gui_context = "set_tile_processed"
+            self.set_text_browser(
+                "Do you want to mark tile(s) " + self.selected_tile_numbers_string + " as "
+                "processed? Confirm with 'enter', otherwise press 'esc'.")
+
+    def tile_processed(self):
+        """
+        The user has confirmed that the selected tile numbers should be marked processed. Method
+        "mark_processed" in class "TileVisualization" both sets the corresponding flags and
+        changes the color of the tiles in the visualization window.
+
+        :return: -
+        """
+
+        # The action is performed in class TileVisualization.
+        self.tv.mark_processed(self.selected_tile_numbers)
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol(
+                "Tile(s) " + self.selected_tile_numbers_string + " are marked processed.")
+        self.set_text_browser("")
 
     def set_all_tiles_unprocessed(self):
         """
@@ -1183,6 +1225,9 @@ class StartQT5(QtWidgets.QMainWindow):
                 elif self.gui_context == "set_all_tiles_unprocessed":
                     self.gui_context = ""
                     self.mark_all_tiles_unprocessed()
+                elif self.gui_context == "set_tile_processed":
+                    self.gui_context = ""
+                    self.tile_processed()
                 elif self.gui_context == "set_all_tiles_processed":
                     self.gui_context = ""
                     self.mark_all_tiles_processed()
