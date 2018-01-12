@@ -885,15 +885,18 @@ class StartQT5(QtWidgets.QMainWindow):
 
         if self.workflow.active_tile_number > -1:
             # There is an active tile. If it is still unprocessed, mark it as such in the tile
-            # visualization window.
+            # visualization window. Otherwise mark it as processed.
             if (self.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
                     'processed'] == False):
                 self.tv.mark_unprocessed([self.workflow.active_tile_number])
+            else:
+                self.tv.mark_processed([self.workflow.active_tile_number])
         # Open the dialog for selecting a tile number. Class TileNumberInput (in this module, see
         # below) extends the TileNumberInputDialog in module tile_number_input_dialog. Set the
         # context to "workflow", so that on dialog closing the selected value will be stored in
         # "active_tile_number" of the workflow object.
-        self.tni = TileNumberInput(self.workflow.active_tile_number, self.workflow)
+        self.tni = TileNumberInput(len(self.tc.list_of_tiles_sorted)-1,
+                                   self.workflow.active_tile_number, self.workflow)
         self.tni.exec_()
         if self.configuration.protocol_level > 1:
             Miscellaneous.protocol(
@@ -1062,8 +1065,12 @@ class StartQT5(QtWidgets.QMainWindow):
         # Mark the tile active in the tile visualization window, refresh the status bar.
         self.tv.mark_active(self.workflow.active_tile_number)
         self.set_statusbar()
-        # Clear the text browser and instruct the workflow thread to move the mount.
-        self.set_text_browser("")
+        # De-activate all keys while the operation is in progress.
+        self.save_key_status()
+        # Write the tile number to the text browser and instruct the workflow thread to move the
+        # mount.
+        self.set_text_browser("Moving telescope to tile " + str(self.workflow.active_tile_number)
+                              + ".")
         self.workflow.move_to_selected_tile_flag = True
 
     def reset_active_tile(self):
@@ -1387,16 +1394,19 @@ class TileNumberInput(QtWidgets.QDialog, Ui_TileNumberInputDialog):
     
     """
 
-    def __init__(self, start_value, value_context, parent=None):
+    def __init__(self, max_value, start_value, value_context, parent=None):
         """
         Initialization of the TileNumberInputDialog.
         
+        :param max_value: maximum value for the spinBox.
         :param start_value: the spinBox is preset at this particular start value.
         :param value_context: name of an object where the entered spinBox value is to be stored.
         """
         self.value_context = value_context
         QtWidgets.QDialog.__init__(self, parent)
         self.setupUi(self)
+        self.spinBox.setMinimum(0)
+        self.spinBox.setMaximum(max_value)
         self.spinBox.setFocus()
         # Initialize spinBox to current tile number
         self.spinBox.setValue(start_value)

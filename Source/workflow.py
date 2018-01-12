@@ -427,6 +427,9 @@ class Workflow(QtCore.QThread):
                     self.al.tile_to_telescope_coordinates(self.gui.selected_tile))
                 # Move telescope to aim point. (This is a blocking operation.)
                 self.telescope.slew_to(ra_selected_tile, de_selected_tile)
+                self.set_text_browser_signal.emit("")
+                # Start method "reset_key_status" in gui to re-activate gui buttons.
+                self.reset_key_status_signal.emit()
 
             # The escape key has been pressed during video workflow. Wait until running activities
             # are safe to be interrupted. Then give control back to gui.
