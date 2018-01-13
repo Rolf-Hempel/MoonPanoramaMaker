@@ -140,19 +140,18 @@ class Configuration:
         self.protocol_filename = home + "\\MoonPanoramaMaker.log"
 
         self.config_file_exists = os.path.isfile(self.config_filename)
-        self.config_up_to_date = False
+        self.file_identical = False
+        self.file_compatible = False
+        
         # If an existing config file is found, read it in.
         if self.config_file_exists:
             self.conf = configparser.ConfigParser()
             self.conf.read(self.config_filename)
             # Check if the file is for the current MPM version, otherwise try to update it.
-            # If not successful, do not use the old config file.
-            self.config_up_to_date = self.check_for_compatibility()
-            if self.config_up_to_date:
-                # The configuration was read from the parameter file or made compatible.
-                self.configuration_read = True
+            # If file could not be made compatible, do not use the old config file.
+            self.file_identical, self.file_compatible = self.check_for_compatibility()
 
-        if not self.config_file_exists or not self.config_up_to_date:
+        if not self.config_file_exists or not self.file_compatible:
             # Code to set standard config info. The "Hidden Parameters" are not displayed in the
             # configuration gui. Most of them are for placing gui windows where they had been at
             # the previous session.
@@ -192,8 +191,7 @@ class Configuration:
             self.conf.set('Workflow', 'camera trigger delay', '3.')
 
             self.conf.add_section('ASCOM')
-            self.conf.set('ASCOM', 'chooser', 'ASCOM.Utilities.Chooser')
-            self.conf.set('ASCOM', 'hub', 'POTH.Telescope')
+            self.conf.set('ASCOM', 'telescope driver', 'POTH.Telescope')
             self.conf.set('ASCOM', 'guiding interval', '0.2')
             self.conf.set('ASCOM', 'wait interval', '1.')
             self.conf.set('ASCOM', 'polling interval', '0.1')
@@ -290,20 +288,46 @@ class Configuration:
         version. At program termination the new parameter set will be written, so next time the
         parameters will be consistent.
         
-        :return: True, if the data read from the file could be made compatible with the current
-                  version. Otherwise return False.
+        :return: (file_identical, file_compatible), where:
+                  file_identical: True if the data was imported from a file with the same format
+                                  as the current one. False, if the format was different.
+                  file_compatible: True if the file read has the same format as the current version,
+                                   or the data read from the file could be made compatible with the
+                                   current version. Otherwise return False.
         """
 
-        file_is_compatible = False
+
         version_read = self.conf.get('Hidden Parameters', 'version')
-        if version_read == self.version or version_read == "MoonPanoramaMaker 0.9.5":
+        if version_read == self.version:
             # Configuration file matches current format. Nothing to be done.
-            file_is_compatible = True
+            file_identical = True
+            file_compatible = True
+            
+        elif version_read == "MoonPanoramaMaker 0.9.5":
+            # Update the version number.
+            self.conf.set('Hidden Parameters', 'version', self.version)
+            # Up to version 0.9.5 the ASCOM telescope driver was selected via a chooser GUI. Now
+            # the name of the ASCOM driver is given by a configuration parameter. Take the name
+            # of the ASCOM telescope hub for the telescope driver and remove the old configuration
+            # parameter names.
+            self.conf.set('ASCOM', 'telescope driver', self.conf.get('ASCOM', 'hub'))
+            self.conf.remove_option('ASCOM', 'chooser')
+            self.conf.remove_option('ASCOM', 'hub')
+            file_identical = False
+            file_compatible = True
+            
         elif version_read == "MoonPanoramaMaker 0.9.3":
             # The update support starts for version 0.9.3. Before that one, not many users had
             # installed MoonPanoramaMaker. Update the version number.
             self.conf.set('Hidden Parameters', 'version', self.version)
-            # The handling of session protocol changed.
+            # Up to version 0.9.5 the ASCOM telescope driver was selected via a chooser GUI. Now
+            # the name of the ASCOM driver is given by a configuration parameter. Take the name
+            # of the ASCOM telescope hub for the telescope driver and remove the old configuration
+            # parameter names.
+            self.conf.set('ASCOM', 'telescope driver', self.conf.get('ASCOM', 'hub'))
+            self.conf.remove_option('ASCOM', 'chooser')
+            self.conf.remove_option('ASCOM', 'hub')
+            # The handling of session protocol has changed.
             wp = self.conf.getboolean('Workflow', 'protocol')
             if wp:
                 self.conf.set('Workflow', 'protocol level', '2')
@@ -324,10 +348,15 @@ class Configuration:
             camlist = self.get_camera_list()
             for cam in camlist:
                 self.conf.set('Camera ' + cam, 'repetition count', '1')
+            file_identical = False
+            file_compatible = True
+            
         else:
             # Parameter file cannot be made compatible.
-            file_is_compatible = False
-        return file_is_compatible
+            file_identical = False
+            file_compatible = False
+            
+        return (file_identical, file_compatible)
 
     def set_protocol_level(self):
         """

@@ -131,27 +131,21 @@ class OperateTelescope(threading.Thread):
         # This is necessary because Windows COM objects are shared between threads.
         pythoncom.CoInitialize()
 
-        # Initialize the ASCOM chooser and open a window where the telescope hub can be selected.
-        x = win32com.client.Dispatch(self.configuration.conf.get("ASCOM", "chooser"))
-        x.DeviceType = 'Telescope'
-        # Set the comboBox in the chooser to the hub specified in the configuration.
-        name = x.Choose(self.configuration.conf.get("ASCOM", "hub"))
-
-        # Connect to the ASCOM hub.
-        self.tel = win32com.client.Dispatch(name)
+        # Connect to the ASCOM telescope driver.
+        self.tel = win32com.client.Dispatch(self.configuration.conf.get("ASCOM", "telescope driver"))
 
         # Check if the telescope was already connected to the hub. If not, establish the connection.
         if self.tel.Connected:
             if self.configuration.protocol_level > 1:
-                Miscellaneous.protocol("The Telescope was already connected to the hub")
+                Miscellaneous.protocol("The Telescope was already connected.")
         else:
             self.tel.Connected = True
             if self.tel.Connected:
                 if self.configuration.protocol_level > 1:
-                    Miscellaneous.protocol("Telescope and hub are connected now.")
+                    Miscellaneous.protocol("The Telescope is connected now.")
             else:
                 if self.configuration.protocol_level > 0:
-                    Miscellaneous.protocol("Unable to connect hub and telescope, expect exception")
+                    Miscellaneous.protocol("Unable to connect with telescope, expect exception")
 
         # Serve the instruction queue, until the "terminate" instruction is encountered.
         while True:

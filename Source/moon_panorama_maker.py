@@ -141,8 +141,9 @@ class StartQT5(QtWidgets.QMainWindow):
         self.workflow.set_session_output_flag = True
 
         # If the configuration was not read in from a previous run (i.e. only default values have
-        # been set so far), open the configuration editor gui.
-        if not self.configuration.configuration_read:
+        # been set so far), or it was imported from an old file format, open the configuration
+        # editor gui.
+        if not self.configuration.file_identical:
             editor = ConfigurationEditor(self.configuration)
             editor.exec_()
             # If the user made changes to the configuration, choices of writing a protocol,

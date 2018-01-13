@@ -50,6 +50,68 @@
        <item>
         <layout class="QGridLayout" name="gridLayout">
          <item row="27" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_telescope_lookup_precision">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <widget class="QLabel" name="telescope">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Telescope</string>
+           </property>
+          </widget>
+         </item>
+         <item row="27" column="0">
+          <widget class="QLabel" name="telescope_lookup_precision">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Required precision (&quot;) for lookup of telescope position. Must be between 0.1 and 10.</string>
+           </property>
+           <property name="text">
+            <string>Telescope position lookup precision (&quot;)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="16" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_camera_trigger_delay">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item row="14" column="0">
+          <widget class="QLabel" name="limb_first">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>True, if tiles at the bright Moon limb should be recorded first, False if to start at terminator</string>
+           </property>
+           <property name="text">
+            <string>Limb first (True / False)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="26" column="2" colspan="4">
           <widget class="QLineEdit" name="input_polling_interval">
            <property name="font">
             <font>
@@ -135,7 +197,7 @@
            </property>
           </widget>
          </item>
-         <item row="27" column="0">
+         <item row="26" column="0">
           <widget class="QLabel" name="polling_interval">
            <property name="font">
             <font>
@@ -195,18 +257,18 @@
            </property>
           </widget>
          </item>
-         <item row="24" column="0">
-          <widget class="QLabel" name="hub">
+         <item row="23" column="0">
+          <widget class="QLabel" name="telescope_driver">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
            </property>
            <property name="toolTip">
-            <string>ASCOM hub to connect more than one program to telescope driver, e.g. POTH.Telescope</string>
+            <string>Name of the ASCOM telescope driver (or ASCOM telescope hub). Example: POTH.Telescope</string>
            </property>
            <property name="text">
-            <string>Hub</string>
+            <string>Telescope driver</string>
            </property>
           </widget>
          </item>
@@ -237,21 +299,6 @@
            </property>
            <property name="text">
             <string>Latitude (degrees)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="23" column="0">
-          <widget class="QLabel" name="chooser">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>ASCOM chooser to select telescope driver, e.g. ASCOM.Utilities.Chooser</string>
-           </property>
-           <property name="text">
-            <string>Chooser</string>
            </property>
           </widget>
          </item>
@@ -387,7 +434,7 @@
            </property>
           </widget>
          </item>
-         <item row="26" column="0">
+         <item row="25" column="0">
           <widget class="QLabel" name="wait_interval">
            <property name="font">
             <font>
@@ -595,7 +642,7 @@
           </widget>
          </item>
          <item row="23" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_chooser">
+          <widget class="QLineEdit" name="input_telescope_driver">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
@@ -603,79 +650,8 @@
            </property>
           </widget>
          </item>
-         <item row="24" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_hub">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="26" column="2" colspan="4">
+         <item row="25" column="2" colspan="4">
           <widget class="QLineEdit" name="input_wait_interval">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="8" column="0">
-          <widget class="QLabel" name="telescope">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Telescope</string>
-           </property>
-          </widget>
-         </item>
-         <item row="14" column="0">
-          <widget class="QLabel" name="limb_first">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>True, if tiles at the bright Moon limb should be recorded first, False if to start at terminator</string>
-           </property>
-           <property name="text">
-            <string>Limb first (True / False)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="16" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_camera_trigger_delay">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="28" column="0">
-          <widget class="QLabel" name="telescope_lookup_precision">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Required precision (&quot;) for lookup of telescope position. Must be between 0.1 and 10.</string>
-           </property>
-           <property name="text">
-            <string>Telescope position lookup precision (&quot;)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="28" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_telescope_lookup_precision">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
@@ -731,7 +707,7 @@
            </property>
           </widget>
          </item>
-         <item row="25" column="0">
+         <item row="24" column="0">
           <widget class="QLabel" name="guiding_interval">
            <property name="font">
             <font>
@@ -746,7 +722,7 @@
            </property>
           </widget>
          </item>
-         <item row="25" column="2" colspan="4">
+         <item row="24" column="2" colspan="4">
           <widget class="QLineEdit" name="input_guiding_interval">
            <property name="font">
             <font>
@@ -755,7 +731,7 @@
            </property>
           </widget>
          </item>
-         <item row="32" column="0">
+         <item row="31" column="0">
           <widget class="QLabel" name="max_autoalign_interval">
            <property name="font">
             <font>
@@ -770,7 +746,7 @@
            </property>
           </widget>
          </item>
-         <item row="31" column="0">
+         <item row="30" column="0">
           <widget class="QLabel" name="min_autoalign_interval">
            <property name="font">
             <font>
@@ -785,7 +761,7 @@
            </property>
           </widget>
          </item>
-         <item row="31" column="2" colspan="4">
+         <item row="30" column="2" colspan="4">
           <widget class="QLineEdit" name="input_min_autoalign_interval">
            <property name="minimumSize">
             <size>
@@ -800,7 +776,7 @@
            </property>
           </widget>
          </item>
-         <item row="30" column="0">
+         <item row="29" column="0">
           <widget class="QLabel" name="ALIGNMENT">
            <property name="font">
             <font>
@@ -814,7 +790,7 @@
            </property>
           </widget>
          </item>
-         <item row="32" column="2" colspan="4">
+         <item row="31" column="2" colspan="4">
           <widget class="QLineEdit" name="input_max_autoalign_interval">
            <property name="font">
             <font>
@@ -823,7 +799,7 @@
            </property>
           </widget>
          </item>
-         <item row="33" column="2" colspan="4">
+         <item row="32" column="2" colspan="4">
           <widget class="QLineEdit" name="input_max_alignment_error">
            <property name="font">
             <font>
@@ -832,7 +808,7 @@
            </property>
           </widget>
          </item>
-         <item row="33" column="0">
+         <item row="32" column="0">
           <widget class="QLabel" name="max_alignment_error">
            <property name="font">
             <font>
@@ -848,11 +824,14 @@
           </widget>
          </item>
          <item row="13" column="0">
-          <widget class="QLabel" name="foxus_on_star">
+          <widget class="QLabel" name="focus_on_star">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
+           </property>
+           <property name="toolTip">
+            <string>True, if focus is adjusted on a star. False, if a moon surface detail is used</string>
            </property>
            <property name="text">
             <string>Focus on a star (True / False)</string>
@@ -913,8 +892,7 @@
   <tabstop>input_fig_size_vertical</tabstop>
   <tabstop>input_label_font_size</tabstop>
   <tabstop>input_label_shift</tabstop>
-  <tabstop>input_chooser</tabstop>
-  <tabstop>input_hub</tabstop>
+  <tabstop>input_telescope_driver</tabstop>
   <tabstop>input_guiding_interval</tabstop>
   <tabstop>input_wait_interval</tabstop>
   <tabstop>input_polling_interval</tabstop>

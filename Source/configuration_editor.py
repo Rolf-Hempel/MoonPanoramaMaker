@@ -85,8 +85,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.input_label_font_size.setText(self.c.conf.get("Tile Visualization", "label fontsize"))
         self.input_label_shift.setText(self.c.conf.get("Tile Visualization", "label shift"))
 
-        self.input_chooser.setText(self.c.conf.get("ASCOM", "chooser"))
-        self.input_hub.setText(self.c.conf.get("ASCOM", "hub"))
+        self.input_telescope_driver.setText(self.c.conf.get("ASCOM", "telescope driver"))
         self.input_guiding_interval.setText(self.c.conf.get("ASCOM", "guiding interval"))
         self.input_wait_interval.setText(self.c.conf.get("ASCOM", "wait interval"))
         self.input_polling_interval.setText(self.c.conf.get("ASCOM", "polling interval"))
@@ -123,8 +122,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.input_label_font_size.textChanged.connect(self.label_font_size_write)
         self.input_label_shift.textChanged.connect(self.label_shift_write)
 
-        self.input_chooser.textChanged.connect(self.chooser_write)
-        self.input_hub.textChanged.connect(self.hub_write)
+        self.input_telescope_driver.textChanged.connect(self.telescope_driver_write)
         self.input_guiding_interval.textChanged.connect(self.guiding_interval_write)
         self.input_wait_interval.textChanged.connect(self.wait_interval_write)
         self.input_polling_interval.textChanged.connect(self.polling_interval_write)
@@ -347,26 +345,15 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
         self.configuration_changed = True
 
-    def chooser_write(self):
+    def telescope_driver_write(self):
         """
-        Special case for the ASCOM chooser: No check for validity of the input string.
+        Special case for the ASCOM telescope driver name: No check for validity of the input string.
         If the parameter has been changed, set the configuration_changed flag to True.
 
         :return: -
         """
 
-        self.c.conf.set("ASCOM", "chooser", str(self.input_chooser.text()))
-        self.configuration_changed = True
-
-    def hub_write(self):
-        """
-        Special case for the ASCOM hub: No check for validity of the input string.
-        If the parameter has been changed, set the configuration_changed flag to True.
-
-        :return: -
-        """
-
-        self.c.conf.set("ASCOM", "hub", str(self.input_hub.text()))
+        self.c.conf.set("ASCOM", "telescope driver", str(self.input_telescope_driver.text()))
         self.configuration_changed = True
 
     def guiding_interval_write(self):
