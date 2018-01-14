@@ -91,6 +91,10 @@ class Workflow(QtCore.QThread):
 
         self.camera_connected = False
 
+        # It is unclear why this sleep is necessary. If it is removed, workflow restart does not
+        # work properly.
+        time.sleep(4. * self.run_loop_delay)
+
         self.start()
 
     def run(self):

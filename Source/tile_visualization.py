@@ -337,3 +337,12 @@ if __name__ == "__main__":
     plt.pause(2)
 
     tv.close_tile_visualization()
+
+    # for i in range(10):
+    #     tv = TileVisualization(configuration, tc)
+    #     plt.pause(1)
+    #     if i%2==0:
+    #         tv.mark_all_processed()
+    #     else:
+    #         tv.mark_all_unprocessed()
+    #     tv.close_tile_visualization()

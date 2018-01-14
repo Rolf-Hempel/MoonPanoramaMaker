@@ -108,24 +108,8 @@ class StartQT5(QtWidgets.QMainWindow):
         # Set the button labels for focus area / focus star according to the configuration.
         self.set_focus_button_labels()
 
-        # Start the workflow thread. It is executed asynchronously to keep the gui from freezing
-        # during long-running tasks.
-        self.workflow = Workflow(self)
-
-        # The workflow thread sends signals when a task is finished. Connect those signals with
-        # the appropriate gui activity.
-        self.workflow.alignment_ready_signal.connect(self.start_workflow)
-        self.workflow.camera_ready_signal.connect(self.camera_ready)
-        self.workflow.alignment_point_reached_signal.connect(self.alignment_point_reached)
-        self.workflow.alignment_performed_signal.connect(self.alignment_performed)
-        self.workflow.autoalignment_point_reached_signal.connect(self.autoalignment_point_reached)
-        self.workflow.autoalignment_performed_signal.connect(self.autoalignment_performed)
-        self.workflow.autoalignment_reset_signal.connect(self.wait_for_autoalignment_off)
-        self.workflow.moon_limb_centered_signal.connect(self.prompt_camera_rotated_acknowledged)
-        self.workflow.focus_area_set_signal.connect(self.set_focus_area_finished)
-        self.workflow.set_statusbar_signal.connect(self.set_statusbar)
-        self.workflow.reset_key_status_signal.connect(self.reset_key_status)
-        self.workflow.set_text_browser_signal.connect(self.set_text_browser)
+        # Start the workflow thread.
+        self.create_workflow_thread()
 
         # Look up the location and size of the main gui. Replace the location parameters with those
         # stored in the configuration file when the gui was closed last time. This way, the gui
@@ -146,16 +130,67 @@ class StartQT5(QtWidgets.QMainWindow):
         if not self.configuration.file_identical:
             editor = ConfigurationEditor(self.configuration)
             editor.exec_()
-            # If the user made changes to the configuration, choices of writing a protocol,
-            # of focussing on a star or surface area, and of re-directing it to a file might have
-            # changed. Therefore, repeat the two above initializations.
+            # If the user made changes to the configuration, restart the workflow.
             if editor.configuration_changed:
-                self.configuration.set_protocol_level()
-                self.set_focus_button_labels()
-                self.workflow.set_session_output_flag = True
+                self.restart_workflow()
 
         # Write the program version into the window title.
         self.setWindowTitle(self.configuration.version)
+
+    def restart_workflow(self):
+        '''
+        If the configuration is changed at runtime, the threads which operate the telescope and
+        camera have to be restarted. This method stops the running threads and starts a new
+        workflow.
+
+        :return: -
+        '''
+
+        # Stop the workflow thread. This will terminate the telescope and camera threads and close
+        # the protocol file.
+        self.workflow.exiting = True
+        # Close the tile visualization window.
+        try:
+            self.tv.close_tile_visualization()
+        except AttributeError:
+            pass
+        time.sleep(4. * self.workflow.run_loop_delay)
+
+        # If the user made changes to the configuration, choices of writing a protocol and
+        # of focussing on a star or surface area might have changed. Therefore, repeat the two above
+        # initializations.
+        self.configuration.set_protocol_level()
+        self.set_focus_button_labels()
+
+        self.create_workflow_thread()
+
+    def create_workflow_thread(self):
+        '''
+        Create the workflow object and start the workflow thread. It is executed asynchronously to
+        keep the gui from freezing during long-running tasks.
+
+        :return: -
+        '''
+
+        self.workflow = Workflow(self)
+
+        # The workflow thread sends signals when a task is finished. Connect those signals with
+        # the appropriate gui activity.
+        self.workflow.alignment_ready_signal.connect(self.start_workflow)
+        self.workflow.camera_ready_signal.connect(self.camera_ready)
+        self.workflow.alignment_point_reached_signal.connect(self.alignment_point_reached)
+        self.workflow.alignment_performed_signal.connect(self.alignment_performed)
+        self.workflow.autoalignment_point_reached_signal.connect(self.autoalignment_point_reached)
+        self.workflow.autoalignment_performed_signal.connect(self.autoalignment_performed)
+        self.workflow.autoalignment_reset_signal.connect(self.wait_for_autoalignment_off)
+        self.workflow.moon_limb_centered_signal.connect(self.prompt_camera_rotated_acknowledged)
+        self.workflow.focus_area_set_signal.connect(self.set_focus_area_finished)
+        self.workflow.set_statusbar_signal.connect(self.set_statusbar)
+        self.workflow.reset_key_status_signal.connect(self.reset_key_status)
+        self.workflow.set_text_browser_signal.connect(self.set_text_browser)
+
+        # Re-direct output to a file if specified in configuration.
+        self.workflow.set_session_output_flag = True
 
     def setChildrenFocusPolicy(self, policy):
         """
@@ -183,14 +218,20 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         editor = ConfigurationEditor(self.configuration)
         editor.exec_()
-        # print >> sys.stderr, "config changed:",
-        # editor.configuration_changed, \
-        #     ", config initialized: ", self.configuration_initialized
         if editor.configuration_changed:
-            self.configuration.set_protocol_level()
-            self.set_focus_button_labels()
-            self.workflow.set_session_output_flag = True
-            self.do_restart()
+            self.restart_workflow()
+
+    def restart(self):
+        """
+        This method is invoked with the "restart" gui button. Set the context and write a
+        confirmation message to the text browser. If "Enter" is pressed (in this context), the
+        do_restart method (above) is called.
+
+        :return: -
+        """
+        self.gui_context = "restart"
+        self.set_text_browser("Do you really want to restart? "
+                              "Confirm with 'enter', otherwise press 'esc'.")
 
     def do_restart(self):
         """
@@ -204,18 +245,6 @@ class StartQT5(QtWidgets.QMainWindow):
         except AttributeError:
             pass
         self.start_workflow()
-
-    def restart(self):
-        """
-        This method is invoked with the "restart" gui button. Set the context and write a
-        confirmation message to the text browser. If "Enter" is pressed (in this context), the
-        do_restart method (above) is called.
-        
-        :return: -
-        """
-        self.gui_context = "restart"
-        self.set_text_browser("Do you really want to restart? "
-                              "Confirm with 'enter', otherwise press 'esc'.")
 
     def start_workflow(self):
         """
