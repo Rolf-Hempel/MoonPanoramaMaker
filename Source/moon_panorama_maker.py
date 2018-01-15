@@ -120,10 +120,6 @@ class StartQT5(QtWidgets.QMainWindow):
         self.setGeometry(x0, y0, width, height)
         self.configuration.set_protocol_level()
 
-        # Actions in the workflow thread are triggered by setting the corresponding flag in the gui
-        # thread to True. Here, trigger redirecting stdout to a file if requested in configuration.
-        self.workflow.set_session_output_flag = True
-
         # If the configuration was not read in from a previous run (i.e. only default values have
         # been set so far), or it was imported from an old file format, open the configuration
         # editor gui.
@@ -188,9 +184,6 @@ class StartQT5(QtWidgets.QMainWindow):
         self.workflow.set_statusbar_signal.connect(self.set_statusbar)
         self.workflow.reset_key_status_signal.connect(self.reset_key_status)
         self.workflow.set_text_browser_signal.connect(self.set_text_browser)
-
-        # Re-direct output to a file if specified in configuration.
-        self.workflow.set_session_output_flag = True
 
     def setChildrenFocusPolicy(self, policy):
         """

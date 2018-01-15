@@ -71,7 +71,6 @@ class Workflow(QtCore.QThread):
         self.run_loop_delay = float(self.gui.configuration.conf.get('ASCOM', 'polling interval'))
         self.exiting = False
 
-        self.set_session_output_flag = False
         self.camera_initialization_flag = False
         self.slew_to_alignment_point_flag = False
         self.perform_alignment_flag = False
@@ -85,16 +84,22 @@ class Workflow(QtCore.QThread):
 
         # Save the descriptor of standard output. Stdout might be redirected to a file.
         self.stdout_saved = sys.stdout
+        # Re-direct stdout to a file if requested in configuration.
+        if self.gui.configuration.conf.getboolean('Workflow', 'protocol to file'):
+            # print >> sys.stderr, "redirecting output to file"
+            try:
+                self.protocol_file = open(self.gui.configuration.protocol_filename, 'a')
+                sys.stdout = self.protocol_file
+            except IOError:
+                pass
 
         # Start the telescope.
         self.telescope = Telescope(self.gui.configuration)
-
         self.camera_connected = False
 
         # It is unclear why this sleep is necessary. If it is removed, workflow restart does not
         # work properly.
         time.sleep(4. * self.run_loop_delay)
-
         self.start()
 
     def run(self):
@@ -116,22 +121,10 @@ class Workflow(QtCore.QThread):
         self.alignment_ready_signal.emit()
 
         while not self.exiting:
-            # Re-direct stdout to a file if requested in configuration.
-            if self.set_session_output_flag:
-                self.set_session_output_flag = False
-                if self.gui.configuration.conf.getboolean('Workflow', 'protocol to file'):
-                    # print >> sys.stderr, "redirecting output to file"
-                    try:
-                        self.protocol_file = open(self.gui.configuration.protocol_filename, 'a')
-                    except IOError:
-                        pass
-                    sys.stdout = self.protocol_file
-                else:
-                    # print >> sys.stderr, "redirecting output to stdout"
-                    sys.stdout = self.stdout_saved
+
             # If camera automation is on, check if the camera is already connected. If not,
             # create a Camera object and connect the camera.
-            elif self.camera_initialization_flag:
+            if self.camera_initialization_flag:
                 self.camera_initialization_flag = False
                 if self.gui.camera_automation:
                     self.camera_trigger_delay = (
@@ -140,7 +133,6 @@ class Workflow(QtCore.QThread):
                         self.camera = Camera(self.gui.configuration, self.telescope,
                                              self.gui.mark_processed,
                                              debug=self.gui.configuration.camera_debug)
-                        # self.connect(self.camera, self.camera.signal, self.gui.signal_from_camera)
                         self.camera.camera_signal.connect(self.gui.signal_from_camera)
                         self.camera_connected = True
                         self.camera.start()
@@ -460,9 +452,11 @@ class Workflow(QtCore.QThread):
         if self.gui.camera_automation:
             self.camera.terminate = True
         time.sleep(self.run_loop_delay)
-        try:
-            self.protocol_file.close()
-        except:
-            pass
-        # Set standard output back to the value before it was re-routed to protocol file.
-        sys.stdout = self.stdout_saved
+        # If stdout was re-directed to a file: Close the file and reset stdout to original value.
+        if self.gui.configuration.conf.getboolean('Workflow', 'protocol to file'):
+            try:
+                self.protocol_file.close()
+                # Set standard output back to the value before it was re-routed to protocol file.
+                sys.stdout = self.stdout_saved
+            except:
+                pass
