@@ -47,24 +47,20 @@ class Alignment:
     systems
     
     """
-    def __init__(self, configuration, telescope, moon_ephem, debug=False):
+    def __init__(self, configuration, debug=False):
         """
         Initialization of instance variables
         
         :param configuration: object containing parameters set by the user
-        :param telescope: encapsulates telescope control via ASCOM
-        :param moon_ephem: object with positions of the sun and moon, including libration info
         :param debug: if set to True, display keypoints and shifts during auto-alignment
         """
 
-        self.debug = debug
         self.configuration = configuration
-        self.wait_interval = (self.configuration.conf.getfloat(
-            "ASCOM", "wait interval"))
-        self.tel = telescope
-        self.me = moon_ephem
-        self.ls = LandmarkSelection(self.me, self.configuration)
-        self.is_landmark_offset_set = False
+        self.debug = debug
+        self.ls = LandmarkSelection(self.configuration)
+        # The landmark offset is the offset in (RA,DE) of the landmark from the moon center.
+        self.landmark_offset_set = False
+        # The is_aligned flag is set to True as soon as one alignment point is measured.
         self.is_aligned = False
         # Initialization of alignments performed during an observing session.
         self.alignment_points = []
@@ -88,6 +84,24 @@ class Alignment:
         self.ra_correction = 0.
         self.de_correction = 0.
 
+    def set_moon_ephem(self, moon_ephem):
+        """
+        Initialization of instance variable "me" (moon ephemeris)
+
+        :param moon_ephem: object with positions of the sun and moon, including libration info
+        """
+
+        self.me = moon_ephem
+
+    def set_telescope(self, telescope):
+        """
+        Initialization of instance variable "me" (moon ephemeris)
+
+        :param telescope: encapsulates telescope control via ASCOM
+        """
+
+        self.tel = telescope
+
     def set_landmark(self):
         """
         Let the user select the landmark used for telescope alignment and compute its offset
@@ -97,7 +111,7 @@ class Alignment:
         """
 
         # Open a gui where the user can select among a collection of landmarks on the moon
-        offsets = self.ls.select_landmark(datetime.now())
+        offsets = self.ls.select_landmark(self.me, datetime.now())
         # A landmark has been selected, store and print coordinate offsets.
         if self.ls.landmark_selected:
             (self.ra_offset_landmark, self.de_offset_landmark) = offsets
@@ -106,9 +120,9 @@ class Alignment:
                     str(round(degrees(self.ra_offset_landmark) * 60., 3)) +
                     ", DE ('): " +
                     str(round(degrees(self.de_offset_landmark) * 60., 3)))
-            self.is_landmark_offset_set = True
+            self.landmark_offset_set = True
         else:
-            self.is_landmark_offset_set = False
+            self.landmark_offset_set = False
 
     def align(self, alignment_manual=True):
         """
@@ -125,7 +139,7 @@ class Alignment:
         """
 
         # Alignment is only possible after a landmark has been selected.
-        if not self.is_landmark_offset_set:
+        if not self.landmark_offset_set:
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol("Error in alignment: Landmark offset not set")
             raise RuntimeError("Error: Landmark offset not set")
@@ -147,7 +161,7 @@ class Alignment:
             (ra_landmark, de_landmark) = (
                 self.compute_telescope_coordinates_of_landmark())
             self.tel.slew_to(ra_landmark, de_landmark)
-            time.sleep(self.wait_interval)
+            time.sleep(self.configuration.conf.getfloat("ASCOM", "wait interval"))
             try:
                 # Measure shift against reference frame
                 (x_shift, y_shift, in_cluster, outliers) = \
@@ -164,13 +178,11 @@ class Alignment:
                 raise RuntimeError(str(e))
             global_shift = sqrt(x_shift**2+y_shift**2)
             relative_alignment_error = global_shift/self.shift_angle
-            # Translate shifts measured in camera image into equatorial
-            # coordinates
+            # Translate shifts measured in camera image into equatorial coordinates
             scale_factor = 1.
-            # In tile construction (where the rotate function had been
-            # designed for) x is pointing right and y upwards. Here, x is
-            # pointing right and y downwards. Therefore, the y flip has to
-            # be reversed.
+            # In tile construction (where the rotate function had been designed for) x is pointing
+            # right and y upwards. Here, x is pointing right and y downwards. Therefore, the y flip
+            # has to be reversed.
             (ra_shift, de_shift) = Miscellaneous.rotate(self.me.pos_angle_pole,
                                                         self.me.de,
                                                         scale_factor,
@@ -181,9 +193,8 @@ class Alignment:
                 Miscellaneous.protocol("Alignment shift rotated to RA/DE: RA: " +
                     str(round(ra_shift / self.im_shift.pixel_angle, 1)) +
                     ", DE: " + str(round(de_shift / self.im_shift.pixel_angle, 1)) + " (pixels)")
-            # The shift is computed as "current frame - reference". Add
-            # coordinate shifts to current mount position to get mount
-            # setting where landmark is located as on reference frame.
+            # The shift is computed as "current frame - reference". Add coordinate shifts to current
+            # mount position to get mount setting where landmark is located as on reference frame.
             ra_landmark += ra_shift
             de_landmark += de_shift
 
@@ -250,8 +261,7 @@ class Alignment:
 
         try:
             # Capture an alignment reference frame
-            self.im_shift = ImageShift(self.configuration, camera_socket,
-                                       debug=self.debug)
+            self.im_shift = ImageShift(self.configuration, camera_socket, debug=self.debug)
         except RuntimeError as e:
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol(
@@ -273,9 +283,8 @@ class Alignment:
             # Compute current coordinates of landmark, including corrections for alignment and drift
             (ra_landmark, de_landmark) = (
                 self.compute_telescope_coordinates_of_landmark())
-            # Transform (x,y) coordinates into (ra,de) coordinates.
-            # The y-flip has to be set to -1. because the rotate function
-            # assumes the y coordinate to point up, whereas the y pixel
+            # Transform (x,y) coordinates into (ra,de) coordinates. The y-flip has to be set to -1.
+            # because the rotate function assumes the y coordinate to point up, whereas the y pixel
             # coordinate is pointing down (see comment in method align.
             (shift_angle_ra, shift_angle_de) = Miscellaneous.rotate(
                 self.me.pos_angle_pole, self.me.de, 1., 1., -1.,
@@ -284,12 +293,11 @@ class Alignment:
             self.tel.slew_to(ra_landmark + shift_angle_ra,
                              de_landmark + shift_angle_de)
             # Wait until the telescope orientation has stabilized.
-            time.sleep(self.wait_interval)
+            time.sleep(self.configuration.conf.getfloat("ASCOM", "wait interval"))
             try:
                 # Capture a still image of the area around landmark and determine the shift versus
                 # the reference frame.
-                (x_shift, y_shift, in_cluster, outliers) = \
-                    self.im_shift.shift_vs_reference()
+                (x_shift, y_shift, in_cluster, outliers) = self.im_shift.shift_vs_reference()
             # If the image was not good enough for automatic shift determination, disable auto-
             # alignment.
             except RuntimeError as e:
@@ -328,10 +336,8 @@ class Alignment:
         # Determine how much the measured shifts deviate from the expected shifts in the focal
         # plane. If the difference is too large, auto-alignment initialization is interpreted as
         # not successful.
-        error_x = abs(
-            abs(shift_vector_0_measured[0]) - self.shift_angle) / self.shift_angle
-        error_y = abs(
-            abs(shift_vector_2_measured[1]) - self.shift_angle) / self.shift_angle
+        error_x = abs(abs(shift_vector_0_measured[0]) - self.shift_angle) / self.shift_angle
+        error_y = abs(abs(shift_vector_2_measured[1]) - self.shift_angle) / self.shift_angle
         error = max(error_x, error_y)
         focal_length_x = abs(
             shift_vector_0_measured[0]) / self.shift_angle * self.im_shift.focal_length
@@ -441,8 +447,7 @@ class Alignment:
                 except:
                     fract = 0.
                 # Compute time in seconds since last alignment.
-                time_diff = (time.mktime(now.timetuple()) + fract
-                             - self.alignment_time)
+                time_diff = (time.mktime(now.timetuple()) + fract - self.alignment_time)
                 ra_offset += time_diff * self.drift_ra
                 de_offset += time_diff * self.drift_de
         # Before the first alignment, set offsets to zero and print a warning to stdout.
@@ -605,7 +610,9 @@ if __name__ == "__main__":
 
     me = moon_ephem.MoonEphem(c, date_time, debug=c.ephemeris_debug)
 
-    al = Alignment(c, tel, me, debug=c.alignment_debug)
+    al = Alignment(c, debug=c.alignment_debug)
+    al.set_telescope(tel)
+    al.set_moon_ephem(me)
     al.set_landmark()
 
     print("ra_offset_landmark (s): ", 240 * degrees(al.ra_offset_landmark))

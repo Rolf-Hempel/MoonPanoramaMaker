@@ -321,28 +321,33 @@ if __name__ == "__main__":
     tv = TileVisualization(configuration, tc)
 
     for i in range(len(tv.tiles)):
+        # time.sleep(0.1)
         plt.pause(0.1)
         tv.mark_active(i)
+        # time.sleep(0.1)
         plt.pause(0.1)
         tv.mark_processed([i])
 
+    # time.sleep(2.)
     plt.pause(2.)
 
     tv.mark_all_unprocessed()
 
-    plt.pause(2)
+    # time.sleep(2.)
+    plt.pause(2.)
 
     tv.mark_all_processed()
 
-    plt.pause(2)
+    # time.sleep(2.)
+    plt.pause(2.)
 
     tv.close_tile_visualization()
 
     # for i in range(10):
     #     tv = TileVisualization(configuration, tc)
-    #     plt.pause(1)
     #     if i%2==0:
     #         tv.mark_all_processed()
     #     else:
     #         tv.mark_all_unprocessed()
+    #     plt.pause(1)
     #     tv.close_tile_visualization()

@@ -44,7 +44,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
     def __init__(self, configuration, parent=None):
         """
-        Initialize the text fields in the gui based on the configuration object, and connect
+        Initialize the text fields in the GUI based on the configuration object, and connect
         gui signals with methods to update the configuration object entries.
         
         :param configuration: object containing parameters set by the user
@@ -57,8 +57,12 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.c = configuration
         # Set the flag indicating if the configuration was changed to False.
         self.configuration_changed = False
+        self.output_channel_changed = False
+        self.telescope_changed = False
+        self.camera_automation_changed = False
+        self.tesselation_changed = False
 
-        # Start filling the text fields of the gui.
+        # Start filling the text fields of the GUI.
         self.input_longitude.setText(self.c.conf.get("Geographical Position", "longitude"))
         self.input_latitude.setText(self.c.conf.get("Geographical Position", "latitude"))
         self.input_elevation.setText(self.c.conf.get("Geographical Position", "elevation"))
@@ -135,59 +139,64 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
     def longitude_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
         
         :return: -
         """
 
+        self.tesselation_changed = True
         self.configuration_changed = True
 
     def latitude_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
 
+        self.tesselation_changed = True
         self.configuration_changed = True
 
     def elevation_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
 
+        self.tesselation_changed = True
         self.configuration_changed = True
 
     def timezone_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
 
+        self.tesselation_changed = True
         self.configuration_changed = True
 
     def camera_changed(self):
         """
         First check if the camera name is valid (i.e. not blank). Then copy all parameters of the
         choosen camera into the "Camera" section of the configuration object. Finally, set the
-        configuration_changed flag to True.
+        appropriate configuration change flags to True.
 
         :return: -
         """
 
         if str(self.camera_chooser.currentText()) != "":
             self.c.copy_camera_configuration(str(self.camera_chooser.currentText()))
+            self.tesselation_changed = True
             self.configuration_changed = True
 
     def start_edit_camera_dialog(self):
         """
-        The "Edit camera" button is clicked: start the camera configuration gui and populate the
-        text fields with the parameters of the currently chosen camera. Start the editor gui. When
-        it closes, check if parameters have changed. If so, set the configuration_changed flag
-        to True.
+        The "Edit camera" button is clicked: start the camera configuration GUI and populate the
+        text fields with the parameters of the currently chosen camera. Start the editor GUI. When
+        it closes, check if parameters have changed. If so, If the parameter has been changed, set
+        the appropriate configuration change flags to True.
 
         :return: -
         """
@@ -196,6 +205,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.editor = CameraConfigurationEditor(self.c, camera_name)
         self.editor.exec_()
         if self.editor.configuration_changed:
+            self.tesselation_changed = True
             self.configuration_changed = True
 
     def start_new_camera_dialog(self):
@@ -206,7 +216,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         """
 
         self.inputeditor = CameraConfigurationInput(self.c)
-        # Start the input gui.
+        # Start the input GUI.
         self.inputeditor.exec_()
         # Check if new parameters have been entered.
         if self.inputeditor.configuration_changed:
@@ -229,7 +239,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         """
 
         self.deleteeditor = CameraConfigurationDelete()
-        # Start the gui.
+        # Start the GUI.
         self.deleteeditor.exec_()
         # Check if the selected camera is really deleted.
         if self.deleteeditor.configuration_changed:
@@ -248,16 +258,17 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
     def focal_length_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
 
+        self.tesselation_changed = True
         self.configuration_changed = True
 
     def protocol_level_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
@@ -266,16 +277,17 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
     def protocol_to_file_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
 
+        self.output_channel_changed = True
         self.configuration_changed = True
 
     def focus_on_star_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
@@ -284,25 +296,27 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
     def limb_first_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
 
+        self.tesselation_changed = True
         self.configuration_changed = True
 
     def camera_automation_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
 
+        self.camera_automation_changed = True
         self.configuration_changed = True
 
     def camera_trigger_delay_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
@@ -311,54 +325,59 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
     def fig_size_horizontal_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
 
+        self.tesselation_changed = True
         self.configuration_changed = True
 
     def fig_size_vertical_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
 
+        self.tesselation_changed = True
         self.configuration_changed = True
 
     def label_font_size_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
 
+        self.tesselation_changed = True
         self.configuration_changed = True
 
     def label_shift_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
 
+        self.tesselation_changed = True
         self.configuration_changed = True
 
     def telescope_driver_write(self):
         """
         Special case for the ASCOM telescope driver name: No check for validity of the input string.
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
 
         self.c.conf.set("ASCOM", "telescope driver", str(self.input_telescope_driver.text()))
+        self.telescope_changed = True
         self.configuration_changed = True
 
     def guiding_interval_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
@@ -367,7 +386,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
     def wait_interval_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
@@ -376,7 +395,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
     def polling_interval_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
@@ -385,7 +404,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
     def telescope_lookup_precision_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
@@ -394,7 +413,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
     def min_autoalign_interval_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
@@ -403,7 +422,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
     def max_autoalign_interval_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
@@ -412,7 +431,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
     def max_alignment_error_write(self):
         """
-        If the parameter has been changed, set the configuration_changed flag to True.
+        If the parameter has been changed, set the appropriate configuration change flags to True.
 
         :return: -
         """
@@ -428,7 +447,20 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         """
 
         if self.configuration_changed:
-            # Get the input string from the gui text field.
+            # If the tesselation is changed, most of the work done so far has to be repeated.
+            # Ask the user if this is really what he/she wants to do.
+            if self.tesselation_changed:
+                # Ask the user for confirmation.
+                quit_msg = "The configuration change will invalidate the videos recorded so far. " \
+                           "Do you really want to restart the recording workflow?"
+                reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
+                                                       QtWidgets.QMessageBox.Yes,
+                                                       QtWidgets.QMessageBox.No)
+                # Negative reply: Ignore changed inputs and close the editor.
+                if reply == QtWidgets.QMessageBox.No:
+                    self.reject()
+
+            # Get the input string from the GUI text field.
             input_string = str(self.input_longitude.text())
             # Test the input value if it is within the allowed interval (here [-360., +360.])
             if Miscellaneous.testfloat(input_string, -360., 360.):
@@ -473,6 +505,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
             input_string = str(self.input_protocol_level.text())
             if Miscellaneous.testint(input_string, 0, 3) is not None:
                 self.c.conf.set("Workflow", "protocol level", str(self.input_protocol_level.text()))
+                self.c.set_protocol_level()
             else:
                 Miscellaneous.show_input_error("Session protocol level", "2")
                 return
@@ -593,16 +626,20 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
                 return
 
         # All tests passed successfully, and all parameters have been written to the
-        # configuration object. Close the gui window.
+        # configuration object. Close the GUI window.
         self.close()
 
     def reject(self):
         """
-        The Cancel button is pressed, discard the changes and close the gui window.
+        The Cancel button is pressed, discard the changes and close the GUI window.
         :return: -
         """
 
         self.configuration_changed = False
+        self.output_channel_changed = False
+        self.telescope_changed = False
+        self.camera_automation_changed = False
+        self.tesselation_changed = False
         self.close()
 
     def closeEvent(self, event):

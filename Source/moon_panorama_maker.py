@@ -31,15 +31,13 @@ from configuration_editor import ConfigurationEditor
 from miscellaneous import Miscellaneous
 from qtgui import Ui_MainWindow
 from show_landmark import ShowLandmark
-from tile_constructor import TileConstructor
 from tile_number_input_dialog import Ui_TileNumberInputDialog
-from tile_visualization import TileVisualization
 from workflow import Workflow
 
 
 class StartQT5(QtWidgets.QMainWindow):
     """
-    This class is the main class of the MoonPanoramaMaker software. It implements the main gui and
+    This class is the main class of the MoonPanoramaMaker software. It implements the main GUI and
     through it communicates with the user. It creates the workflow thread which asynchronously
     controls all program activities.
     
@@ -58,126 +56,83 @@ class StartQT5(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         self.setChildrenFocusPolicy(QtCore.Qt.NoFocus)
 
-        # Build a list of gui buttons. It is used to control the de-activation and re-activation of
-        # gui buttons at runtime. Also, connect gui events with method invocations.
+        # Build a list of GUI buttons. It is used to control the de-activation and re-activation of
+        # GUI buttons at runtime. Also, connect GUI events with method invocations.
         self.button_list = []
-        self.ui.edit_configuration.clicked.connect(self.edit_configuration)
+        self.ui.edit_configuration.clicked.connect(self.edit_configuration)                   # 00
         self.button_list.append(self.ui.edit_configuration)
-        self.ui.restart.clicked.connect(self.restart)
+        self.ui.restart.clicked.connect(self.restart)                                         # 01
         self.button_list.append(self.ui.restart)
-        self.ui.new_landmark_selection.clicked.connect(self.prompt_new_landmark_selection)
+        self.ui.new_landmark_selection.clicked.connect(self.prompt_new_landmark_selection)    # 02
         self.button_list.append(self.ui.new_landmark_selection)
-        self.ui.alignment.clicked.connect(self.prompt_alignment)
+        self.ui.alignment.clicked.connect(self.prompt_alignment)                              # 03
         self.button_list.append(self.ui.alignment)
-        self.ui.configure_drift_correction.clicked.connect(self.configure_drift_correction)
+        self.ui.configure_drift_correction.clicked.connect(self.configure_drift_correction)   # 04
         self.button_list.append(self.ui.configure_drift_correction)
-        self.ui.rotate_camera.clicked.connect(self.prompt_rotate_camera)
+        self.ui.rotate_camera.clicked.connect(self.prompt_rotate_camera)                      # 05
         self.button_list.append(self.ui.rotate_camera)
-        self.ui.set_focus_area.clicked.connect(self.set_focus_area)
+        self.ui.set_focus_area.clicked.connect(self.set_focus_area)                           # 06
         self.button_list.append(self.ui.set_focus_area)
-        self.ui.goto_focus_area.clicked.connect(self.goto_focus_area)
+        self.ui.goto_focus_area.clicked.connect(self.goto_focus_area)                         # 07
         self.button_list.append(self.ui.goto_focus_area)
-        self.ui.start_continue_recording.clicked.connect(self.start_continue_recording)
+        self.ui.start_continue_recording.clicked.connect(self.start_continue_recording)       # 08
         self.button_list.append(self.ui.start_continue_recording)
-        self.ui.select_tile.clicked.connect(self.select_tile)
+        self.ui.select_tile.clicked.connect(self.select_tile)                                 # 09
         self.button_list.append(self.ui.select_tile)
-        self.ui.move_to_selected_tile.clicked.connect(self.move_to_selected_tile)
+        self.ui.move_to_selected_tile.clicked.connect(self.move_to_selected_tile)             # 10
         self.button_list.append(self.ui.move_to_selected_tile)
-        self.ui.set_tile_unprocessed.clicked.connect(self.set_tile_unprocessed)
+        self.ui.set_tile_unprocessed.clicked.connect(self.set_tile_unprocessed)               # 11
         self.button_list.append(self.ui.set_tile_unprocessed)
-        self.ui.set_all_tiles_unprocessed.clicked.connect(self.set_all_tiles_unprocessed)
+        self.ui.set_all_tiles_unprocessed.clicked.connect(self.set_all_tiles_unprocessed)     # 12
         self.button_list.append(self.ui.set_all_tiles_unprocessed)
-        self.ui.set_all_tiles_processed.clicked.connect(self.set_all_tiles_processed)
+        self.ui.set_all_tiles_processed.clicked.connect(self.set_all_tiles_processed)         # 13
         self.button_list.append(self.ui.set_all_tiles_processed)
-        self.ui.show_landmark.clicked.connect(self.show_landmark)
+        self.ui.show_landmark.clicked.connect(self.show_landmark)                             # 14
         self.button_list.append(self.ui.show_landmark)
-        self.ui.autoalignment.clicked.connect(self.prompt_autoalignment)
+        self.ui.autoalignment.clicked.connect(self.prompt_autoalignment)                      # 15
         self.button_list.append(self.ui.autoalignment)
-        self.ui.set_tile_processed.clicked.connect(self.set_tile_processed)
+        self.ui.set_tile_processed.clicked.connect(self.set_tile_processed)                   # 16
         self.button_list.append(self.ui.set_tile_processed)
-
-        # The gui_context is used to know, at which point of program execution, for example, a
-        # "Enter" key was pressed.
-        self.gui_context = ""
-        # Before gui buttons are de-activated, the activation status of all keys is saved for later
-        # restoration. At the moment, no key status is saved.
-        self.key_status_saved = False
 
         # Read in or (if no config file is found) create all configuration parameters.
         self.configuration = Configuration()
-        # Set the button labels for focus area / focus star according to the configuration.
-        self.set_focus_button_labels()
 
-        # Start the workflow thread.
-        self.create_workflow_thread()
-
-        # Look up the location and size of the main gui. Replace the location parameters with those
-        # stored in the configuration file when the gui was closed last time. This way, the gui
+        # Look up the location and size of the main GUI. Replace the location parameters with those
+        # stored in the configuration file when the GUI was closed last time. This way, the GUI
         # memorizes its location between MPM invocations.
         (x0, y0, width, height) = self.geometry().getRect()
         x0 = int(self.configuration.conf.get('Hidden Parameters', 'main window x0'))
         y0 = int(self.configuration.conf.get('Hidden Parameters', 'main window y0'))
         self.setGeometry(x0, y0, width, height)
-        self.configuration.set_protocol_level()
-
-        # Actions in the workflow thread are triggered by setting the corresponding flag in the gui
-        # thread to True. Here, trigger redirecting stdout to a file if requested in configuration.
-        self.workflow.set_session_output_flag = True
-
-        # If the configuration was not read in from a previous run (i.e. only default values have
-        # been set so far), or it was imported from an old file format, open the configuration
-        # editor gui.
-        if not self.configuration.file_identical:
-            editor = ConfigurationEditor(self.configuration)
-            editor.exec_()
-            # If the user made changes to the configuration, restart the workflow.
-            if editor.configuration_changed:
-                self.restart_workflow()
-
+        # Set the button labels for focus area / focus star according to the configuration.
+        self.set_focus_button_labels()
+        # Disable the keys which at program start do not make sense.
+        self.disable_keys(
+            [self.ui.alignment, self.ui.configure_drift_correction, self.ui.rotate_camera,
+             self.ui.set_focus_area, self.ui.goto_focus_area, self.ui.start_continue_recording,
+             self.ui.select_tile, self.ui.move_to_selected_tile, self.ui.set_tile_unprocessed,
+             self.ui.set_all_tiles_unprocessed, self.ui.set_all_tiles_processed,
+             self.ui.show_landmark, self.ui.autoalignment, self.ui.set_tile_processed])
         # Write the program version into the window title.
         self.setWindowTitle(self.configuration.version)
 
-    def restart_workflow(self):
-        '''
-        If the configuration is changed at runtime, the threads which operate the telescope and
-        camera have to be restarted. This method stops the running threads and starts a new
-        workflow.
+        # If the configuration was not read in from a previous run (i.e. only default values have
+        # been set so far), or it was imported from an old file format, open the configuration
+        # editor GUI to let the user make adjustments if necessary.
+        if not self.configuration.file_identical:
+            editor = ConfigurationEditor(self.configuration)
+            editor.exec_()
 
-        :return: -
-        '''
-
-        # Stop the workflow thread. This will terminate the telescope and camera threads and close
-        # the protocol file.
-        self.workflow.exiting = True
-        # Close the tile visualization window.
-        try:
-            self.tv.close_tile_visualization()
-        except AttributeError:
-            pass
-        time.sleep(4. * self.workflow.run_loop_delay)
-
-        # If the user made changes to the configuration, choices of writing a protocol and
-        # of focussing on a star or surface area might have changed. Therefore, repeat the two above
-        # initializations.
-        self.configuration.set_protocol_level()
-        self.set_focus_button_labels()
-
-        self.create_workflow_thread()
-
-    def create_workflow_thread(self):
-        '''
-        Create the workflow object and start the workflow thread. It is executed asynchronously to
-        keep the gui from freezing during long-running tasks.
-
-        :return: -
-        '''
-
+        # Start the workflow thread.
         self.workflow = Workflow(self)
+        time.sleep(2.)
 
         # The workflow thread sends signals when a task is finished. Connect those signals with
-        # the appropriate gui activity.
-        self.workflow.alignment_ready_signal.connect(self.start_workflow)
-        self.workflow.camera_ready_signal.connect(self.camera_ready)
+        # the appropriate GUI activity.
+        self.workflow.output_channel_initialized_signal.connect(self.initialize_telescope)
+        self.workflow.telescope_initialized_signal.connect(self.initialize_camera)
+        self.workflow.camera_initialized_signal.connect(self.initialize_tesselation)
+        self.workflow.tesselation_initialized_signal.connect(self.start_workflow)
         self.workflow.alignment_point_reached_signal.connect(self.alignment_point_reached)
         self.workflow.alignment_performed_signal.connect(self.alignment_performed)
         self.workflow.autoalignment_point_reached_signal.connect(self.autoalignment_point_reached)
@@ -189,14 +144,26 @@ class StartQT5(QtWidgets.QMainWindow):
         self.workflow.reset_key_status_signal.connect(self.reset_key_status)
         self.workflow.set_text_browser_signal.connect(self.set_text_browser)
 
-        # Re-direct output to a file if specified in configuration.
-        self.workflow.set_session_output_flag = True
+        # Set status flags.
+        self.initialized = False
+        self.camera_rotated = False
+        self.focus_area_set = False
+        self.autoalign_enabled = False
+        # Before GUI buttons are de-activated, the activation status of all keys is saved for later
+        # restoration. At the moment, no key status is saved.
+        self.key_status_saved = False
+
+        # The gui_context variable is used to know, at which point of program execution, for
+        # example, the "Enter" key was pressed.
+        self.gui_context = ""
+
+        self.do_restart()
 
     def setChildrenFocusPolicy(self, policy):
         """
         This method is needed so that arrow key events are associated with this object. The arrow
         keys are used to make pointing corrections to the telescope mount.
-        
+
         :param policy: focus policy to be used
         :return: -
         """
@@ -205,25 +172,33 @@ class StartQT5(QtWidgets.QMainWindow):
             for childQWidget in parentQWidget.findChildren(QtWidgets.QWidget):
                 childQWidget.setFocusPolicy(policy)
                 recursiveSetChildFocusPolicy(childQWidget)
-
         recursiveSetChildFocusPolicy(self)
 
     def edit_configuration(self):
         """
-        This method is invoked with the "configuration" gui button. Open the configuration editor.
-        If the configuration is changed, close the tile visualization window and restart the
-        workflow.
-        
+        This method is invoked with the "configuration" GUI button. Open the configuration editor.
+        If the configuration is changed, set the flags for those initialization tasks which have to
+        be repeated (because parameters have changed), and start the initialization chain.
+
         :return: -
         """
         editor = ConfigurationEditor(self.configuration)
         editor.exec_()
         if editor.configuration_changed:
-            self.restart_workflow()
+            self.output_channel_initialization_flag = editor.output_channel_changed
+            self.telescope_initialization_flag = editor.telescope_changed
+            self.camera_initialization_flag = editor.camera_automation_changed
+            self.new_tesselation_flag = editor.tesselation_changed
+            # The focus can be set on a surface area or a star, depending on a configuration
+            # parameter. Adjust the text on the GUI buttons according to the current choice.
+            self.set_focus_button_labels()
+        # The initialization chain starts with "redirect_stdout". When the chain is finished, the
+        # workflow is started with "start_workflow".
+        self.redirect_stdout()
 
     def restart(self):
         """
-        This method is invoked with the "restart" gui button. Set the context and write a
+        This method is invoked with the "restart" GUI button. Set the context and write a
         confirmation message to the text browser. If "Enter" is pressed (in this context), the
         do_restart method (above) is called.
 
@@ -235,95 +210,127 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def do_restart(self):
         """
-        Do a program restart. First close the tile visualization window. Then restart the workflow.
-        
+        Do a program restart. Initialize output channel redirection, telescope driver and camera
+        connections, and do a new tesselation. Then re-start the workflow.
+
         :return: -
         """
 
-        try:
-            self.tv.close_tile_visualization()
-        except AttributeError:
-            pass
-        self.start_workflow()
+        self.output_channel_initialization_flag = True
+        self.telescope_initialization_flag = True
+        self.camera_initialization_flag = True
+        self.new_tesselation_flag = True
+
+        self.redirect_stdout()
+
+    def redirect_stdout(self):
+        '''
+        This is the first in four initialization steps (output channel, telescope, camera and
+        tesselation. In each step the GUI thread sets a flag in the workflow thread where the
+        action is performed. When finished, the workflow thread sends a signal back to the GUI and
+        triggers the next initialization step.
+
+        If the flag is set, trigger the workflow thread to re-direct stdout to a file, if the
+        corresponding parameter is set in the configuration object. After completion, the workflow
+        thread will trigger the "initialize_telescope" method below.
+
+        :return: -
+        '''
+        print("in MPM: initialize stdout")
+        if self.output_channel_initialization_flag:
+            self.workflow.output_channel_initialization_flag = True
+        else:
+            self.initialize_telescope()
+
+    def initialize_telescope(self):
+        '''
+        If the flag is set, trigger the workflow thread to connect the telescope driver. After
+        completion, the workflow thread will trigger the "initialize_camera" method below.
+
+        :return: -
+        '''
+        print ("in MPM: initialize telescope")
+        if self.telescope_initialization_flag:
+            self.workflow.telescope_initialization_flag = True
+        else:
+            self.initialize_camera()
+
+    def initialize_camera(self):
+        '''
+        If the flag is set, trigger the workflow thread to disconnect an existing connection to
+        FireCapture. If camera automation is switched on in the configuration object, re-establish
+        the connection to FireCapture. After completion, the workflow thread will trigger the
+        "initialize_tesselation" method below.
+
+        :return: -
+        '''
+        print("in MPM: initialize camera")
+        if self.camera_initialization_flag:
+            if self.configuration.conf.getboolean("Workflow", "camera automation"):
+                # Pressing the "Enter" key in this context will invoke method
+                # "camera_connect_request_answered"
+                self.gui_context = "camera connect request"
+                self.set_text_browser("Make sure that FireCapture is started, and that "
+                                      "'MoonPanoramaMaker' is selected in the PreProcessing section. "
+                                      "Confirm with 'enter', otherwise press 'esc'.")
+            else:
+                self.camera_connect_request_answered()
+
+    def camera_connect_request_answered(self):
+        """
+        Start camera initialization in workflow thread, if camera automation is active. This method
+        is either invoked directly from method "initialize_camera" (if no camera is to be connected,
+        i.e., the user does not have to acknowledge FireCapture to be started), or by hitting the
+        "Enter" key within the "camera connect request" context.
+
+        :return: -
+        """
+        print("in MPM: camera connect request answered")
+        self.workflow.camera_initialization_flag = True
+
+    def initialize_tesselation(self):
+        '''
+        If the flag is set, first trigger the workflow thread to close an existing tile
+        visualization window. Then compute a new tesselation of the moon phase. After completion,
+        the workflow thread will trigger the "start_workflow" method below.
+
+        :return: -
+        '''
+        print("in MPM: initialize tesselation")
+        if self.new_tesselation_flag:
+            self.workflow.new_tesselation_flag = True
+        else:
+            self.start_workflow()
 
     def start_workflow(self):
         """
-        Start the observation workflow. Disable all keys which at this point do not make sense yet.
-        Then check if camera automation is selected in the configuration. If so, remind the user
-        to start the FireCapture program. If camera automation is de-selected, skip this reminder,
-        and proceed with method "camera_connect_request_answered".
+        Initialization is complete. Start the observation workflow. Continue with the appropriate
+        activity, based on status flags set during previous operations.
         
         :return: -
         """
 
         # Just in case: reset autoalignment.
         self.reset_autoalignment()
-        self.disable_keys(
-            [self.ui.alignment, self.ui.configure_drift_correction, self.ui.rotate_camera,
-             self.ui.set_focus_area, self.ui.goto_focus_area, self.ui.start_continue_recording,
-             self.ui.select_tile, self.ui.move_to_selected_tile, self.ui.set_tile_unprocessed,
-             self.ui.set_all_tiles_unprocessed, self.ui.set_all_tiles_processed,
-             self.ui.show_landmark, self.ui.autoalignment, self.ui.set_tile_processed])
 
-        self.camera_automation = (
-            self.configuration.conf.getboolean("Workflow", "camera automation"))
-        if not self.camera_automation:
-            # No camera automation: Go directly to "camera_connect_request_answered"
-            self.camera_connect_request_answered()
-        else:
-            # Pressing the "Enter" key in this context will invoke method
-            # "camera_connect_request_answered"
-            self.gui_context = "camera connect request"
-            self.set_text_browser("Make sure that FireCapture is started, and that "
-                                  "'MoonPanoramaMaker' is selected in the PreProcessing section. "
-                                  "Confirm with 'enter', otherwise press 'esc'.")
-
-    def camera_connect_request_answered(self):
-        """
-        Start camera initialization in workflow thread, if camera automation is active. This method
-        is either invoked directly from method "start_workflow", or by hitting the "Enter" key 
-        within the "camera connect request".
-        
-        :return: -
-        """
-
-        self.workflow.camera_initialization_flag = True
-
-    def camera_ready(self, de_center, m_diameter, phase_angle, pos_angle):
-        """
-        This method is started by the workflow thread when camera initialization is finished.
-        Set status flags and compute the optimal coverage of the sunlit part of the moon with
-        camera tiles.
-        
-        :param de_center: declination of the moon center
-        :param m_diameter: diameter (angle) of the moon
-        :param phase_angle: phase angle of the sunlit moon phase. 0 corresponds to new moon, and
-        pi to full moon.
-        :param pos_angle: position angle of the "north pole" of the sunlit moon phase, counted
-        counterclockwise.
-        :return: -
-        """
-
-        # Set status flags.
-        self.camera_rotated = False
-        self.focus_area_set = False
-        self.autoalign_enabled = False
-
-        # Compute the tesselation of the sunlit moon phase.
-        self.tc = TileConstructor(self.configuration, de_center, m_diameter, phase_angle, pos_angle)
-
-        # Open the Matplotlib window which displays the tesselation.
-        self.tv = TileVisualization(self.configuration, self.tc)
-
-        # Initialization is complete, set the main gui status bar and proceed with landmark
-        # selection.
+        # Initialization is complete, set the main GUI status bar.
         self.initialized = True
         self.set_statusbar()
-        self.select_new_landmark()
+
+        # A landmark has been selected already.
+        if self.workflow.al.landmark_offset_set:
+            # Check if an alignment has been performed already. If so, skip alignment at this time.
+            if self.workflow.al.is_aligned:
+                self.alignment_performed()
+            else:
+                self.wait_for_alignment()
+        # During the first pass, a new landmark has to be selected.
+        else:
+            self.select_new_landmark()
 
     def prompt_new_landmark_selection(self):
         """
-        This method is invoked by pressing the gui button "New Landmark Selection". Before doing
+        This method is invoked by pressing the GUI button "New Landmark Selection". Before doing
         so, ask the user for acknowledgement. Hitting "Enter" leads to method "select_new_landmark".
         
         :return: -
@@ -335,19 +342,18 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def select_new_landmark(self):
         """
-        Discard any previously selected landmark. De-activate all keys further down in the
-        observation workflow and ask the user to select a new landmark. When the selection is done,
-        compute the offset of the landmark relative to the moon center and enable further gui
-        activities.
+        Discard any previously selected landmark. Ask the user to select a new landmark.
+        When the selection is done, compute the offset of the landmark relative to the moon center
+        and enable further GUI activities.
         
         :return: -
         """
 
         self.set_text_browser("Select a landmark from the list. ")
-        # Invoke "set_landmark" method of the alignment object. It offers the user a gui interface
+        # Invoke "set_landmark" method of the alignment object. It offers the user a GUI interface
         # for landmark selection. Based on the selection, the method computes the center offset.
         self.workflow.al.set_landmark()
-        if self.workflow.al.is_landmark_offset_set:
+        if self.workflow.al.landmark_offset_set:
             # Enable the "Show Landmark" button.
             self.ui.show_landmark.setEnabled(True)
             # If not in autoalignment mode: enable the button for manual alignment.
@@ -358,7 +364,7 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def show_landmark(self):
         """
-        Show the currently selected landmark. ShowLandmark implements the gui. It is passed the
+        Show the currently selected landmark. ShowLandmark implements the GUI. It is passed the
         "LandmarkSelection" object which keeps the name of the landmark. The name is used to read
         the corresponding picture file from subdirectory "landmark_pictures".
         :return: -
@@ -369,7 +375,7 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def prompt_alignment(self):
         """
-        The "Alignment" gui button is pressed. Ask the user for acknowledgement before a new
+        The "Alignment" GUI button is pressed. Ask the user for acknowledgement before a new
         alignment is done.
         
         :return: -
@@ -440,10 +446,10 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         self.reset_key_status()
-        # Activate the "Correct for Drift" gui button if enough alignment points are available.
+        # Activate the "Correct for Drift" GUI button if enough alignment points are available.
         if self.workflow.al.drift_dialog_enabled:
             self.ui.configure_drift_correction.setEnabled(True)
-        # At this point correcting the camera orientation makes sense. Enable the gui button.
+        # At this point correcting the camera orientation makes sense. Enable the GUI button.
         self.ui.rotate_camera.setEnabled(True)
         self.set_statusbar()
         # If the camera is properly oriented, prompt the user for proceeding with video recording.
@@ -489,7 +495,7 @@ class StartQT5(QtWidgets.QMainWindow):
     def wait_for_autoalignment(self):
         """
         The user has acknowledged that auto-alignment is to be switched on. Change the appearance of
-        the gui button and slew to the alignment point.
+        the GUI button and slew to the alignment point.
         
         :return: -
         """
@@ -577,13 +583,13 @@ class StartQT5(QtWidgets.QMainWindow):
             self.set_statusbar()
             self.set_text_browser("Continue video recording using the record group buttons.")
         # Auto-alignment initialization failed. Reset buttons to manual alignment and mark
-        # auto-alignment as not enabled (same activity as if triggered by the user via gui).
+        # auto-alignment as not enabled (same activity as if triggered by the user via GUI).
         else:
             self.wait_for_autoalignment_off()
 
     def prompt_autoalignment_off(self):
         """
-        Connected to the "Auto-Align off" gui button while auto-alignment is active. Ask the user
+        Connected to the "Auto-Align off" GUI button while auto-alignment is active. Ask the user
         before really switching back to manual alignment.
         
         :return: -
@@ -615,7 +621,7 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def configure_drift_correction(self):
         """
-        The "Correct for Drift" button is pressed. Open a gui dialog for displaying available
+        The "Correct for Drift" button is pressed. Open a GUI dialog for displaying available
         alignment points and selecting points used for drift determination.
         
         :return: -
@@ -686,14 +692,15 @@ class StartQT5(QtWidgets.QMainWindow):
         self.camera_rotated = True
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol("Camera rotation finished")
-        # Activate gui buttons. Auto-alignment is possible only when camera_automation is active.
+        # Activate GUI buttons. Auto-alignment is possible only when camera_automation is active.
         self.enable_keys(
             [self.ui.set_focus_area, self.ui.start_continue_recording, self.ui.select_tile,
              self.ui.set_tile_unprocessed, self.ui.set_all_tiles_unprocessed,
              self.ui.set_all_tiles_processed, self.ui.set_tile_processed])
-        self.ui.autoalignment.setEnabled(self.camera_automation)
+        self.ui.autoalignment.setEnabled(self.configuration.conf.getboolean("Workflow",
+                                                                            "camera automation"))
         # When the camera orientation has changed, all tiles are marked "unprocessed"
-        self.tv.mark_all_unprocessed()
+        self.workflow.tv.mark_all_unprocessed()
         self.workflow.active_tile_number = -1
         # Update the status bar and display message.
         self.set_statusbar()
@@ -706,7 +713,7 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def set_focus_area(self):
         """
-        Triggered by the "Select Focus Area" gui button. The user is requested to move the telescope
+        Triggered by the "Select Focus Area" GUI button. The user is requested to move the telescope
         manually to an appropriate location for focus checking, and to confirm the position with
         pressing "Enter". This position is stored. The telescope can be moved back to this point
         later by pressing "Goto Focus Area".
@@ -754,7 +761,7 @@ class StartQT5(QtWidgets.QMainWindow):
         self.focus_area_set = True
         self.set_statusbar()
         self.set_text_browser("Start / continue video recording using the record group buttons.")
-        # Enable the gui button "Goto Focus Area"
+        # Enable the GUI button "Goto Focus Area"
         self.ui.goto_focus_area.setEnabled(True)
 
     def goto_focus_area(self):
@@ -801,7 +808,7 @@ class StartQT5(QtWidgets.QMainWindow):
         video.
         
         This method is invoked from three places:
-        - Manually by pressing the gui button "Start / Continue Recording"
+        - Manually by pressing the GUI button "Start / Continue Recording"
         - In manual camera mode, by pressing the enter key when the user has taken a video.
         - In automatic camera mode, when the "signal_from_camera" method is executed.
         
@@ -820,16 +827,16 @@ class StartQT5(QtWidgets.QMainWindow):
             self.workflow.telescope.stop_guiding()
         # Check if the currently active tile is marked "processed", change its display in the
         # tile visualization window accordingly. It will not be marked as "active" any more.
-        if self.tc.list_of_tiles_sorted[self.workflow.active_tile_number]['processed']:
+        if self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number]['processed']:
             self.mark_processed()
         # Look for the next unprocessed tile.
         (self.next_tile, next_tile_index) = self.find_next_unprocessed_tile()
 
         # There is no unprocessed tile left, set the "all_tiles_recorded" flag, display a message,
-        # re-activate gui keys and exit the viceo acquisition loop
+        # re-activate GUI keys and exit the viceo acquisition loop
         if self.next_tile is None:
             self.all_tiles_recorded = True
-            self.ui.move_to_selected_tile.setEnabled(False)
+            # self.ui.move_to_selected_tile.setEnabled(False)
             self.set_statusbar()
             self.set_text_browser("All tiles have been recorded.")
             if self.configuration.protocol_level > 0:
@@ -841,10 +848,26 @@ class StartQT5(QtWidgets.QMainWindow):
         # video.
         else:
             self.workflow.active_tile_number = next_tile_index
-            self.tv.mark_active(self.workflow.active_tile_number)
-            if self.camera_automation:
+            self.workflow.tv.mark_active(self.workflow.active_tile_number)
+            if self.configuration.conf.getboolean("Workflow", "camera automation"):
                 self.camera_interrupted = False
             self.workflow.slew_to_tile_and_record_flag = True
+
+    def signal_from_camera(self):
+        """
+        In "camera automation" mode, the camera has emitted its signal "camera_signal" when video
+        acquisition is finished. (The signal is connected with this method in the workflow thread.)
+        If in the meantime the "Esc" key was pressed, stop the video acquisition loop. Otherwise
+        continue with method "start_continue_recording".
+
+        :return:
+        """
+
+        self.reset_key_status()  # Überprüfen, ob das hier richtig hingehört (war sonst im else-Block.
+        if self.camera_interrupted:
+            self.camera_interrupted = False
+        else:
+            self.start_continue_recording()
 
     def find_next_unprocessed_tile(self):
         """
@@ -859,7 +882,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         # Initialize an index vector, starting with 0. Its length is the total number of tiles.
-        indices = list(range(len(self.tc.list_of_tiles_sorted)))
+        indices = list(range(len(self.workflow.tc.list_of_tiles_sorted)))
 
         # After failure in auto-alignment, let the index vector start with index "repeat_from_here",
         # and wrap around.
@@ -880,7 +903,7 @@ class StartQT5(QtWidgets.QMainWindow):
         next_tile = None
         next_tile_index = -1
         for i in indices_shifted:
-            tile = self.tc.list_of_tiles_sorted[i]
+            tile = self.workflow.tc.list_of_tiles_sorted[i]
             if not tile['processed']:
                 next_tile = tile
                 next_tile_index = i
@@ -897,7 +920,7 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         """
 
-        self.tv.mark_processed([self.workflow.active_tile_number])
+        self.workflow.tv.mark_processed([self.workflow.active_tile_number])
         # After successful exposure, put active tile on list of tiles processed since last
         # auto-align. This list will be reset to unprocessed later if the error in the next
         # auto-align is too large.
@@ -906,7 +929,7 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def select_tile(self):
         """
-        Triggered by pressing the "Select Tile" gui button. Open a gui for selecting a tile index.
+        Triggered by pressing the "Select Tile" GUI button. Open a GUI for selecting a tile index.
         Then enable the "Move to Selected Tile" button which can be used to drive the mount to the
         tile's position.
         
@@ -916,16 +939,16 @@ class StartQT5(QtWidgets.QMainWindow):
         if self.workflow.active_tile_number > -1:
             # There is an active tile. If it is still unprocessed, mark it as such in the tile
             # visualization window. Otherwise mark it as processed.
-            if (self.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
+            if (self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
                     'processed'] == False):
-                self.tv.mark_unprocessed([self.workflow.active_tile_number])
+                self.workflow.tv.mark_unprocessed([self.workflow.active_tile_number])
             else:
-                self.tv.mark_processed([self.workflow.active_tile_number])
+                self.workflow.tv.mark_processed([self.workflow.active_tile_number])
         # Open the dialog for selecting a tile number. Class TileNumberInput (in this module, see
         # below) extends the TileNumberInputDialog in module tile_number_input_dialog. Set the
         # context to "workflow", so that on dialog closing the selected value will be stored in
         # "active_tile_number" of the workflow object.
-        self.tni = TileNumberInput(len(self.tc.list_of_tiles_sorted)-1,
+        self.tni = TileNumberInput(len(self.workflow.tc.list_of_tiles_sorted)-1,
                                    self.workflow.active_tile_number, self.workflow)
         self.tni.exec_()
         if self.configuration.protocol_level > 1:
@@ -946,11 +969,11 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         # Initialize the list with (potentially) selected tiles in visualization window.
-        self.selected_tile_numbers = self.tv.get_selected_tile_numbers()
+        self.selected_tile_numbers = self.workflow.tv.get_selected_tile_numbers()
         # If empty, check if there is a non-trivial active_tile_number.
         if len(self.selected_tile_numbers) == 0 and self.workflow.active_tile_number != -1:
             self.selected_tile_numbers.append(self.workflow.active_tile_number)
-        # If one of the mechanisms produced a non-empty list, set the gui context and ask the
+        # If one of the mechanisms produced a non-empty list, set the GUI context and ask the
         # user to confirm the operation.
         if len(self.selected_tile_numbers) > 0:
             self.selected_tile_numbers_string = str(self.selected_tile_numbers)[1:-1]
@@ -969,7 +992,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         # The action is performed in class TileVisualization.
-        self.tv.mark_unprocessed(self.selected_tile_numbers)
+        self.workflow.tv.mark_unprocessed(self.selected_tile_numbers)
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol(
                 "Tile(s) " + self.selected_tile_numbers_string + " are marked unprocessed.")
@@ -989,11 +1012,11 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         # Initialize the list with (potentially) selected tiles in visualization window.
-        self.selected_tile_numbers = self.tv.get_selected_tile_numbers()
+        self.selected_tile_numbers = self.workflow.tv.get_selected_tile_numbers()
         # If empty, check if there is a non-trivial active_tile_number.
         if len(self.selected_tile_numbers) == 0 and self.workflow.active_tile_number != -1:
             self.selected_tile_numbers.append(self.workflow.active_tile_number)
-        # If one of the mechanisms produced a non-empty list, set the gui context and ask the
+        # If one of the mechanisms produced a non-empty list, set the GUI context and ask the
         # user to confirm the operation.
         if len(self.selected_tile_numbers) > 0:
             self.selected_tile_numbers_string = str(self.selected_tile_numbers)[1:-1]
@@ -1012,7 +1035,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         # The action is performed in class TileVisualization.
-        self.tv.mark_processed(self.selected_tile_numbers)
+        self.workflow.tv.mark_processed(self.selected_tile_numbers)
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol(
                 "Tile(s) " + self.selected_tile_numbers_string + " are marked processed.")
@@ -1041,7 +1064,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         # Perform the task in class TileVisualization.
-        self.tv.mark_all_unprocessed()
+        self.workflow.tv.mark_all_unprocessed()
         self.all_tiles_recorded = False
         # Reset the active tile number. Processing will start from the beginning.
         self.workflow.active_tile_number = -1
@@ -1071,7 +1094,7 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         """
 
-        self.tv.mark_all_processed()
+        self.workflow.tv.mark_all_processed()
         # Mark the recording process as finished. No more tiles to record.
         self.all_tiles_recorded = True
         self.workflow.active_tile_number = -1
@@ -1081,19 +1104,19 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def move_to_selected_tile(self):
         """
-        Triggered by the gui button "Move to Selected Tile". Mark the tile active in the tile
+        Triggered by the GUI button "Move to Selected Tile". Mark the tile active in the tile
         visualization window and trigger the workflow thread to move the telescope to the tile.
         
         :return: -
         """
 
         # Get the tile object from the list kept by the TileConstructor object.
-        self.selected_tile = self.tc.list_of_tiles_sorted[self.workflow.active_tile_number]
+        self.selected_tile = self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number]
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol(
                 "Goto selected tile number " + str(self.workflow.active_tile_number))
         # Mark the tile active in the tile visualization window, refresh the status bar.
-        self.tv.mark_active(self.workflow.active_tile_number)
+        self.workflow.tv.mark_active(self.workflow.active_tile_number)
         self.set_statusbar()
         # De-activate all keys while the operation is in progress.
         self.save_key_status()
@@ -1114,16 +1137,16 @@ class StartQT5(QtWidgets.QMainWindow):
 
         # There is a selected active tile.
         if self.workflow.active_tile_number > -1:
-            if (self.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
+            if (self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
                     'processed'] == False):
-                self.tv.mark_unprocessed([self.workflow.active_tile_number])
+                self.workflow.tv.mark_unprocessed([self.workflow.active_tile_number])
             else:
                 self.mark_processed()
         self.workflow.active_tile_number = -1
 
     def save_key_status(self):
         """
-        For all buttons of the main gui: save the current state (enabled / disabled), then disable
+        For all buttons of the main GUI: save the current state (enabled / disabled), then disable
         all buttons. The saved state is restored with method "reset_key_status".
         
         :return: -
@@ -1141,7 +1164,7 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def change_saved_key_status(self, button, new_status):
         """
-        During a long-running process the gui buttons are disabled by a call of "save_key_status".
+        During a long-running process the GUI buttons are disabled by a call of "save_key_status".
         This method is used if in such a situation the saved status of a button must be changed. At
         the next call of "reset_key_status" this button will then be changed to this new status
         insted to the one saved originally.
@@ -1156,7 +1179,7 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def reset_key_status(self):
         """
-        Reverse operation to save_key_status: Restore the status of all gui buttons and reset the
+        Reverse operation to save_key_status: Restore the status of all GUI buttons and reset the
         flag "key_status_saved" to False.
         
         :return: -
@@ -1168,9 +1191,9 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def disable_keys(self, button_list):
         """
-        Disable a specific list of gui buttons.
+        Disable a specific list of GUI buttons.
         
-        :param button_list: list with selected gui buttons
+        :param button_list: list with selected GUI buttons
         :return: -
         """
 
@@ -1179,30 +1202,14 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def enable_keys(self, button_list):
         """
-        Enable a specific list of gui buttons.
+        Enable a specific list of GUI buttons.
 
-        :param button_list: list with selected gui buttons
+        :param button_list: list with selected GUI buttons
         :return: -
         """
 
         for item in button_list:
             item.setEnabled(True)
-
-    def signal_from_camera(self):
-        """
-        In "camera automation" mode, the camera has emitted its signal "signal" when video
-        acquisition is finished. (The signal is connected with this method in the workflow thread.)
-        If in the meantime the "Esc" key was pressed, stop the video acquisition loop. Otherwise
-        continue with method "start_continue_recording".
-        
-        :return: 
-        """
-
-        if self.camera_interrupted:
-            self.camera_interrupted = False
-        else:
-            self.reset_key_status()
-            self.start_continue_recording()
 
     def keyPressEvent(self, event):
         """
@@ -1318,7 +1325,7 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def set_text_browser(self, text):
         """
-        Display a text in the text browser field of the main gui. This is used for messages to the
+        Display a text in the text browser field of the main GUI. This is used for messages to the
         user and for prompts for user actions.
         
         :param text: string to be displayed in the text browser
@@ -1329,10 +1336,10 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def set_statusbar(self):
         """
-        The status bar at the bottom of the main gui summarizes various infos on the process status.
+        The status bar at the bottom of the main GUI summarizes various infos on the process status.
         Depending of the situation within the observation process, specific information may or may
         not be available. Read out flags to decide which infos to present. The status information
-        is concatenated into a single "status_text" which eventually is written into the main gui
+        is concatenated into a single "status_text" which eventually is written into the main GUI
         status bar.
         
         :return: -
@@ -1344,7 +1351,7 @@ class StartQT5(QtWidgets.QMainWindow):
         else:
             status_text = ""
         # Show name of selected landmark.
-        if self.workflow.al.is_landmark_offset_set:
+        if self.workflow.al.landmark_offset_set:
             status_text += ", landmark %s selected" % self.workflow.al.ls.selected_landmark
         # Display current alignment corrections in RA, DE (in arc minutes)
         if self.workflow.al.is_aligned:
@@ -1381,8 +1388,8 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def closeEvent(self, evnt):
         """
-        When the user asks to close the main gui, a dialog is presented asking for confirmation.
-        In case the user confirms, do cleanup activities before closing the main gui. 
+        When the user asks to close the main GUI, a dialog is presented asking for confirmation.
+        In case the user confirms, do cleanup activities before closing the main GUI.
         
         :param evnt: event object
         :return: -
@@ -1403,7 +1410,7 @@ class StartQT5(QtWidgets.QMainWindow):
             self.configuration.conf.set('Hidden Parameters', 'main window y0', str(y0))
             try:
                 # The tile visualization window geometry is saved as well before closing the window.
-                self.tv.close_tile_visualization()
+                self.workflow.tv.close_tile_visualization()
             except AttributeError:
                 pass
             # Write the whole configuration back to disk.
@@ -1411,7 +1418,7 @@ class StartQT5(QtWidgets.QMainWindow):
             # Stop the workflow thread. This will terminate the camera thread and close the protocol
             # file.
             self.workflow.exiting = True
-            time.sleep(4. * self.workflow.run_loop_delay)
+            time.sleep(4. * self.configuration.conf.get('ASCOM', 'polling interval'))
         else:
             # No confirmation by the user: Don't stop program execution.
             evnt.ignore()

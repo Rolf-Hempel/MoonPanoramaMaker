@@ -26,12 +26,15 @@ from datetime import datetime
 from math import degrees
 
 from PyQt5 import QtCore
+import matplotlib.pyplot as plt
 
 from alignment import Alignment
 from camera import Camera
 from miscellaneous import Miscellaneous
 from moon_ephem import MoonEphem
 from telescope import Telescope
+from tile_constructor import TileConstructor
+from tile_visualization import TileVisualization
 
 
 class Workflow(QtCore.QThread):
@@ -44,11 +47,13 @@ class Workflow(QtCore.QThread):
     """
 
     # Define the list of signals with which this thread communicates with the main gui.
-    alignment_ready_signal = QtCore.pyqtSignal()
-    camera_ready_signal = QtCore.pyqtSignal(float, float, float, float)
+    output_channel_initialized_signal = QtCore.pyqtSignal()
+    telescope_initialized_signal = QtCore.pyqtSignal()
+    camera_initialized_signal = QtCore.pyqtSignal()
+    tesselation_initialized_signal = QtCore.pyqtSignal()
     alignment_point_reached_signal = QtCore.pyqtSignal()
-    alignment_performed_signal = QtCore.pyqtSignal()
     autoalignment_point_reached_signal = QtCore.pyqtSignal()
+    alignment_performed_signal = QtCore.pyqtSignal()
     autoalignment_performed_signal = QtCore.pyqtSignal(bool)
     autoalignment_reset_signal = QtCore.pyqtSignal()
     moon_limb_centered_signal = QtCore.pyqtSignal()
@@ -68,11 +73,16 @@ class Workflow(QtCore.QThread):
         QtCore.QThread.__init__(self, parent)
         self.gui = gui
 
-        self.run_loop_delay = float(self.gui.configuration.conf.get('ASCOM', 'polling interval'))
+        # Create the alignment object. Alignment points are kept throughout the whole program
+        # execution, even if the telescope driver or other configuration parameters are changed.
+        self.al = Alignment(self.gui.configuration, debug=self.gui.configuration.alignment_debug)
+
         self.exiting = False
 
-        self.set_session_output_flag = False
+        self.output_channel_initialization_flag = False
+        self.telescope_initialization_flag = False
         self.camera_initialization_flag = False
+        self.new_tesselation_flag = False
         self.slew_to_alignment_point_flag = False
         self.perform_alignment_flag = False
         self.perform_autoalignment_flag = False
@@ -83,17 +93,15 @@ class Workflow(QtCore.QThread):
         self.move_to_selected_tile_flag = False
         self.escape_pressed_flag = False
 
-        # Save the descriptor of standard output. Stdout might be redirected to a file.
+        # Save the descriptor of standard output. Stdout might be redirected to a file and back
+        # later.
         self.stdout_saved = sys.stdout
 
-        # Start the telescope.
-        self.telescope = Telescope(self.gui.configuration)
-
+        # Initialize status variables.
+        self.output_redirected = False
+        self.telescope_connected = False
         self.camera_connected = False
-
-        # It is unclear why this sleep is necessary. If it is removed, workflow restart does not
-        # work properly.
-        time.sleep(4. * self.run_loop_delay)
+        self.tesselation_created = False
 
         self.start()
 
@@ -106,59 +114,110 @@ class Workflow(QtCore.QThread):
         :return: -
         """
 
-        # Set the time to current time and create moon ephemeris and alignment objects.
-        self.date_time = datetime.now()
-        self.me = MoonEphem(self.gui.configuration, self.date_time,
-                            debug=self.gui.configuration.ephemeris_debug)
-        self.al = Alignment(self.gui.configuration, self.telescope, self.me,
-                            debug=self.gui.configuration.alignment_debug)
-        # Trigger execution of method "start_workflow" in main gui.
-        self.alignment_ready_signal.emit()
-
+        # Main workflow loop.
         while not self.exiting:
+
             # Re-direct stdout to a file if requested in configuration.
-            if self.set_session_output_flag:
-                self.set_session_output_flag = False
-                if self.gui.configuration.conf.getboolean('Workflow', 'protocol to file'):
-                    # print >> sys.stderr, "redirecting output to file"
-                    try:
-                        self.protocol_file = open(self.gui.configuration.protocol_filename, 'a')
-                    except IOError:
-                        pass
-                    sys.stdout = self.protocol_file
-                else:
-                    # print >> sys.stderr, "redirecting output to stdout"
-                    sys.stdout = self.stdout_saved
-            # If camera automation is on, check if the camera is already connected. If not,
-            # create a Camera object and connect the camera.
+            if self.output_channel_initialization_flag:
+                self.output_channel_initialization_flag = False
+                # Action required if configuration value does not match current redirection status.
+                if self.gui.configuration.conf.getboolean('Workflow', 'protocol to file') != self.output_redirected:
+                    # Output currently redirected. Reset to stdout.
+                    if self.output_redirected:
+                        sys.stdout = self.stdout_saved
+                        self.output_redirected = False
+                    # Currently set to stdout, redirect to file now.
+                    else:
+                        try:
+                            self.protocol_file = open(self.gui.configuration.protocol_filename, 'a')
+                            sys.stdout = self.protocol_file
+                            self.output_redirected = True
+                        except IOError:
+                            pass
+                print ("Signal the main GUI that the output channel is initialized.")
+                # Signal the main GUI that the output channel is initialized.
+                self.output_channel_initialized_signal.emit()
+
+            # Initialize the telescope object.
+            elif self.telescope_initialization_flag:
+                self.telescope_initialization_flag = False
+                # If a telescope driver is active, first terminate it:
+                if self.telescope_connected:
+                    self.telescope.terminate()
+                    time.sleep(4 * self.gui.configuration.conf.get('ASCOM', 'polling interval'))
+                    self.telescope_connected = False
+                # Connect the telescope driver specified in configuration.
+                try:
+                    self.telescope = Telescope(self.gui.configuration)
+                    # Register new telescope object with the alignment object.
+                    self.al.set_telescope(self.telescope)
+                    self.telescope_connected = True
+                except Exception:
+                    if self.gui.configuration.protocol_level > 0:
+                        Miscellaneous.protocol("Telescope initialization failed.")
+                print ("Signal the main GUI that the telescope driver is initialized.")
+                # Signal the main GUI that the telescope driver is initialized.
+                self.telescope_initialized_signal.emit()
+
+            # Initialize the camera object.
             elif self.camera_initialization_flag:
                 self.camera_initialization_flag = False
-                if self.gui.camera_automation:
-                    self.camera_trigger_delay = (
-                        self.gui.configuration.conf.getfloat("Workflow", "camera trigger delay"))
-                    if not self.camera_connected:
-                        self.camera = Camera(self.gui.configuration, self.telescope,
-                                             self.gui.mark_processed,
+                # If the camera is connected, disconnect it now.
+                if self.camera_connected:
+                    self.camera.terminate = True
+                    time.sleep(4 * self.gui.configuration.conf.get('ASCOM', 'polling interval'))
+                    self.camera_connected = False
+                # If camera automation is on, create a Camera object and connect the camera.
+                if self.gui.configuration.conf.getboolean("Workflow", "camera automation"):
+                    try:
+                        self.camera = Camera(self.gui.configuration, self.gui.mark_processed,
                                              debug=self.gui.configuration.camera_debug)
-                        # self.connect(self.camera, self.camera.signal, self.gui.signal_from_camera)
+                        self.camera.start()
                         self.camera.camera_signal.connect(self.gui.signal_from_camera)
                         self.camera_connected = True
-                        self.camera.start()
+                    except Exception:
+                        if self.gui.configuration.protocol_level > 0:
+                            Miscellaneous.protocol("Camera initialization failed.")
+                print ("Signal the main GUI that the camera is initialized.")
+                # Signal the main GUI that the camera is initialized.
+                self.camera_initialized_signal.emit()
+
+            # Initialize a new tesselation of the current moon phase and create the tile
+            # visualization window.
+            elif self.new_tesselation_flag:
+                self.new_tesselation_flag = False
+                # If a tesselation is active already, disable it and close the Matplotlib window.
+                if self.tesselation_created:
+                    try:
+                        self.workflow.tv.close_tile_visualization()
+                        self.tesselation_created = False
+                        time.sleep(4. * self.gui.configuration.conf.get('ASCOM', 'polling interval'))
+                    except AttributeError:
+                        pass
 
                 # Initialize some instance variables.
-                self.al.is_landmark_offset_set = False
                 self.active_tile_number = -1
                 self.repeat_from_here = -1
                 self.all_tiles_recorded = False
 
-                # Update the current positions of sun and moon.
+                # Set the time to current time and create a new moon ephemeris object.
                 self.date_time = datetime.now()
-                self.me.update(self.date_time)
+                self.me = MoonEphem(self.gui.configuration, self.date_time,
+                                    debug=self.gui.configuration.ephemeris_debug)
+                # Register the new ephemeris object with the alignment object.
+                self.al.set_moon_ephem(self.me)
 
                 de_center = self.me.de
                 m_diameter = self.me.diameter
                 phase_angle = self.me.phase_angle
                 pos_angle = self.me.pos_angle_pole
+                # Compute the tesselation of the sunlit moon phase.
+                self.tc = TileConstructor(self.gui.configuration, de_center, m_diameter, phase_angle,
+                                          pos_angle)
+                # Open the Matplotlib window which displays the tesselation.
+                self.tv = TileVisualization(self.gui.configuration, self.tc)
+
+                # Write the initialization message to stdout / file:
                 if self.gui.configuration.protocol:
                     if self.gui.configuration.protocol_level > 0:
                         print("")
@@ -178,9 +237,10 @@ class Workflow(QtCore.QThread):
                                     str(round(degrees(self.me.rate_ra) * 216000., 3)) + ", DE: " +
                                     str(round(degrees(self.me.rate_de) * 216000., 3)))
 
-                # Start the camera_ready method in main gui. Send ephemeris info with signal.
-                # Gui will construct the tiles and start the tile visualization window.
-                self.camera_ready_signal.emit(de_center, m_diameter, phase_angle, pos_angle)
+                self.tesselation_created = True
+                print ("Signal the main GUI that the tesselation is initialized.")
+                # Signal the main GUI that the tesselation is initialized.
+                self.tesselation_initialized_signal.emit()
 
             # Slew the telescope to the coordinates of the alignment point.
             elif self.slew_to_alignment_point_flag:
@@ -244,7 +304,7 @@ class Workflow(QtCore.QThread):
                 self.slew_to_moon_limb_flag = False
                 # Compute coordinates of limb center point and slew telescope there.
                 (ra, de) = self.al.center_offset_to_telescope_coordinates(
-                    self.gui.tc.delta_ra_limb_center, self.gui.tc.delta_de_limb_center)
+                    self.tc.delta_ra_limb_center, self.tc.delta_de_limb_center)
                 if self.gui.configuration.protocol_level > 0:
                     Miscellaneous.protocol("Moving telescope to Moon limb.")
                 self.telescope.slew_to(ra, de)
@@ -327,7 +387,7 @@ class Workflow(QtCore.QThread):
                                                 self.gui.max_seconds_between_autoaligns) + " seconds.")
                                     # Videos since last auto-alignment have to be repeated.
                                     if len(self.tile_indices_since_last_autoalign) > 0:
-                                        self.gui.tv.mark_unprocessed(
+                                        self.tv.mark_unprocessed(
                                             self.tile_indices_since_last_autoalign)
                                         # Reset list of tiles since last auto-align (a fresh
                                         # auto-align has been just performed). Save the lowest index of
@@ -401,7 +461,7 @@ class Workflow(QtCore.QThread):
                 self.telescope.start_guiding(guiding_rate_ra, guiding_rate_de)
                 if self.gui.camera_automation:
                     # Wait a little until telescope pointing has stabilized.
-                    time.sleep(self.camera_trigger_delay)
+                    time.sleep(self.gui.configuration.conf.getfloat("Workflow", "camera trigger delay"))
                     # Send tile number to camera (for inclusion in video file name) and start
                     # camera.
                     self.camera.active_tile_number = self.active_tile_number
@@ -452,17 +512,21 @@ class Workflow(QtCore.QThread):
                 self.reset_key_status_signal.emit()
 
             # Sleep time inserted to limit CPU consumption by idle looping.
-            time.sleep(self.run_loop_delay)
+            t = float(self.gui.configuration.conf.get('ASCOM', 'polling interval'))
+            time.sleep(t)
+            # print ("End of main loop")
 
         # The "exiting" flag is set (by gui method "CloseEvent"). Terminate the telescope first.
         self.telescope.terminate()
         # If camera automation is active, set termination flag in camera and wait a short while.
         if self.gui.camera_automation:
             self.camera.terminate = True
-        time.sleep(self.run_loop_delay)
-        try:
-            self.protocol_file.close()
-        except:
-            pass
-        # Set standard output back to the value before it was re-routed to protocol file.
-        sys.stdout = self.stdout_saved
+        time.sleep(self.gui.configuration.conf.get('ASCOM', 'polling interval'))
+        # If stdout was re-directed to a file: Close the file and reset stdout to original value.
+        if self.gui.configuration.conf.getboolean('Workflow', 'protocol to file'):
+            try:
+                self.protocol_file.close()
+                # Set standard output back to the value before it was re-routed to protocol file.
+                sys.stdout = self.stdout_saved
+            except:
+                pass

@@ -42,7 +42,7 @@ class Configuration:
         
         """
 
-        # The version number is displayed on the MPM main gui title line.
+        # The version number is displayed on the MPM main GUI title line.
         self.version = "MoonPanoramaMaker 0.9.6"
 
         ############################################################################################
@@ -147,13 +147,15 @@ class Configuration:
         if self.config_file_exists:
             self.conf = configparser.ConfigParser()
             self.conf.read(self.config_filename)
+            # Set flag to indicate that parameters were read from file.
+            self.configuration_read = True
             # Check if the file is for the current MPM version, otherwise try to update it.
             # If file could not be made compatible, do not use the old config file.
             self.file_identical, self.file_compatible = self.check_for_compatibility()
 
         if not self.config_file_exists or not self.file_compatible:
             # Code to set standard config info. The "Hidden Parameters" are not displayed in the
-            # configuration gui. Most of them are for placing gui windows where they had been at
+            # configuration GUI. Most of them are for placing GUI windows where they had been at
             # the previous session.
             self.configuration_read = False
             self.conf = configparser.ConfigParser()
@@ -355,7 +357,9 @@ class Configuration:
             # Parameter file cannot be made compatible.
             file_identical = False
             file_compatible = False
-            
+
+        # Set the "protocol_level" variable. This will control the amount of protocol output.
+        self.set_protocol_level()
         return (file_identical, file_compatible)
 
     def set_protocol_level(self):
@@ -435,6 +439,16 @@ if __name__ == "__main__":
     longitude = c.conf.getfloat("Geographical Position", "longitude")
     print("longitude: ", longitude)
 
-    if not c.configuration_read or editor.configuration_changed:
-        print("configuration has changed, write back config file: ")
+    if c.configuration_read:
+        print ("Configuration read from file.")
+    if editor.output_channel_changed:
+        print ("Output channel changed.")
+    if editor.telescope_changed:
+        print ("Telescope changed.")
+    if editor.camera_automation_changed:
+        print ("Camera automation changed.")
+    if editor.tesselation_changed:
+        print ("Tesselation changed.")
+    if editor.configuration_changed:
+        print("Configuration has changed, write back config file. ")
         c.write_config()

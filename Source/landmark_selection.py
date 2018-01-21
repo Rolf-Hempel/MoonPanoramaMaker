@@ -40,7 +40,7 @@ class LandmarkSelection:
     RA and DE relative to the moon center.
     
     """
-    def __init__(self, me, configuration):
+    def __init__(self, configuration):
         """
         Initialization of the landmark list. For each landmark there must be a file "landmark.png"
         in the subdirectory "landmark_pictures". This picture shows a section of the moon with
@@ -70,39 +70,40 @@ class LandmarkSelection:
             'Krafft': [-72.72, 16.56],
             'Ulugh Beigh': [-81.96, 32.67]
         }
-        self.me = me
         self.configuration = configuration
         # Initialize the selected landmark as empty string.
         self.selected_landmark = ""
 
-    def select_landmark(self, date_time):
+    def select_landmark(self, me, date_time):
         """
-        Update ephemeris and libration data for the moon, then open a gui window for landmark
+        Update ephemeris and libration data for the moon, then open a GUI window for landmark
         selection. If the user has selected a landmark, compute true topocentric offset angles in
         (RA, DE) for the landmark relative to the moon center and set the "landmark_selected" flag
         to True. If no landmark is selected, set the flag to False.
-        
+
+        :param me: object with positions of the sun and moon, including libration info
         :param date_time: Datetime object with current time information
         :return: Offsets in (RA, DE) of landmark relative to the center of the moon
         """
-        self.me.update(date_time)
-        self.me.compute_libration()
+        me.update(date_time)
+        me.compute_libration()
         myapp = EditLandmarks(self.selected_landmark, self.landmarks,
-                              self.me.colong)
+                              me.colong)
         myapp.exec_()
         if myapp.selected_landmark != "":
             self.selected_landmark = myapp.selected_landmark
             self.landmark_selected = True
-            return self.compute_landmark_offsets(self.selected_landmark)
+            return self.compute_landmark_offsets(me, self.selected_landmark)
         else:
             self.landmark_selected = False
             return (1., 1.)
 
-    def compute_landmark_offsets(self, landmark):
+    def compute_landmark_offsets(self, me, landmark):
         """
         Compute offsets in (RA, DE) relative to the moon center for the landmark feature. Take into
         account topocentric parallax and libration.
-        
+
+        :param me: object with positions of the sun and moon, including libration info
         :param landmark: name of the landmark (String)
         :return: offset (radians) in (RA, DE) of landmark relative to moon center
         """
@@ -116,17 +117,18 @@ class LandmarkSelection:
                     ", selenographic longitude: " + str(degrees(longitude)) + ", latitude: " +
                     str(degrees(latitude)))
             # Perform the coordinate transformation and return the offsets (in radians)
-            return self.coord_translation(longitude, latitude)
+            return self.coord_translation(me, longitude, latitude)
         except:
             # This is an internal error and should not occur.
             print("Error in landmark_selection: unknown landmark", file=sys.stderr)
             return (0., 0.)
 
-    def coord_translation(self, longitude, latitude):
+    def coord_translation(self, me, longitude, latitude):
         """
         Translate selenographic coordinates on the moon into true topocentric displacements in
         (RA, DE).
-        
+
+        :param me: object with positions of the sun and moon, including libration info
         :param longitude: selenographic longitude of landmark
         :param latitude: selenographic latitude of landmark
         :return: offset (radians) in (RA, DE) of landmark relative to moon center
@@ -134,21 +136,21 @@ class LandmarkSelection:
 
         # Look at the user's guide for algorithmic details. (da_prime, dd_prime) are the
         # displacements (radians) on the moon's disk, oriented with lunar north up.
-        da_prime = -sin(longitude - self.me.topocentric_lib_long) * cos(
-            latitude) * self.me.radius
-        y = -cos(longitude - self.me.topocentric_lib_long) * cos(
-            latitude) * self.me.radius
-        z = sin(latitude) * self.me.radius
-        y_prime = y * cos(self.me.topocentric_lib_lat) - z * sin(
-            self.me.topocentric_lib_lat)
-        dd_prime = y * sin(self.me.topocentric_lib_lat) + z * cos(
-            self.me.topocentric_lib_lat)
+        da_prime = -sin(longitude - me.topocentric_lib_long) * cos(
+            latitude) * me.radius
+        y = -cos(longitude - me.topocentric_lib_long) * cos(
+            latitude) * me.radius
+        z = sin(latitude) * me.radius
+        y_prime = y * cos(me.topocentric_lib_lat) - z * sin(
+            me.topocentric_lib_lat)
+        dd_prime = y * sin(me.topocentric_lib_lat) + z * cos(
+            me.topocentric_lib_lat)
         # Rotate for position angle of the moon's rotational axis. Apply approximate correction
         # to RA offset for the moon's declination angle.
-        offset_ra = (da_prime * cos(self.me.pos_rot_north) + dd_prime * sin(
-            self.me.pos_rot_north)) / cos(self.me.de)
-        offset_de = -da_prime * sin(self.me.pos_rot_north) + dd_prime * cos(
-            self.me.pos_rot_north)
+        offset_ra = (da_prime * cos(me.pos_rot_north) + dd_prime * sin(
+            me.pos_rot_north)) / cos(me.de)
+        offset_de = -da_prime * sin(me.pos_rot_north) + dd_prime * cos(
+            me.pos_rot_north)
         return (offset_ra, offset_de)
 
 
@@ -157,9 +159,9 @@ if __name__ == "__main__":
     c = configuration.Configuration()
     date_time = datetime(2016, 3, 18, 9, 0, 0)
     me = MoonEphem(c, date_time)
-    ls = LandmarkSelection(me, c)
+    ls = LandmarkSelection(c)
 
-    offsets = ls.select_landmark(date_time)
+    offsets = ls.select_landmark(me, date_time)
 
     if ls.landmark_selected:
         print('Time (UT): ', me.location_time.date)

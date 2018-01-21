@@ -43,12 +43,11 @@ class Camera(QtCore.QThread):
     # "signal_from_camera" in moon_panormaa_maker.
     camera_signal = QtCore.pyqtSignal()
 
-    def __init__(self, configuration, telescope, mark_processed, debug=False):
+    def __init__(self, configuration, mark_processed, debug=False):
         """
         Initialize the camera object.
         
         :param configuration: object containing parameters set by the user
-        :param telescope: encapsulates telescope control via ASCOM
         :param mark_processed: a method in moon_panorama_maker which marks tiles as processed
         :param debug: if True, the socket_client (FireCapture connection) is replaced with a
         mockup object with the same interface. It does not capture videos, but returns the
@@ -59,14 +58,10 @@ class Camera(QtCore.QThread):
         QtCore.QThread.__init__(self)
 
         self.configuration = configuration
-        self.telescope = telescope
 
         # Register method in StartQT5 (module moon_panorama_maker) for marking tile as processed.
         self.mark_processed = mark_processed
 
-        # Avoid too much compute power consumption due to idle looping
-        self.lookup_polling_interval = (
-            self.configuration.conf.getfloat("ASCOM", "polling interval"))
         # The "triggered" flag is set to True in "workflow" to start an exposure.
         self.triggered = False
         # The "active" flag is looked up in "workflow" to find out if a video is being acquired.
@@ -97,10 +92,8 @@ class Camera(QtCore.QThread):
                     Miscellaneous.protocol("Camera: Connection to FireCapture program established")
 
     def run(self):
-        while True:
-            if self.terminate:
-                break
-            elif self.triggered:
+        while not self.terminate:
+            if self.triggered:
                 self.triggered = False
                 self.active = True
                 # Acquire "repetition_count" videos by triggering FireCapture through the socket.
@@ -143,8 +136,8 @@ class Camera(QtCore.QThread):
                     Miscellaneous.protocol("Camera, all videos for tile " + str(
                         self.active_tile_number) + " captured, signal (tile processed) emitted")
                 self.active = False
-
-            time.sleep(self.lookup_polling_interval)
+            # Insert a wait time to keep the CPU usage low.
+            time.sleep(self.configuration.conf.getfloat("ASCOM", "polling interval"))
 
         self.mysocket.close()
         if self.configuration.protocol_level > 0:
