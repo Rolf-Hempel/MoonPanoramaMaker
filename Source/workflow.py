@@ -26,7 +26,6 @@ from datetime import datetime
 from math import degrees
 
 from PyQt5 import QtCore
-import matplotlib.pyplot as plt
 
 from alignment import Alignment
 from camera import Camera
@@ -34,7 +33,6 @@ from miscellaneous import Miscellaneous
 from moon_ephem import MoonEphem
 from telescope import Telescope
 from tile_constructor import TileConstructor
-from tile_visualization import TileVisualization
 
 
 class Workflow(QtCore.QThread):
@@ -186,14 +184,6 @@ class Workflow(QtCore.QThread):
             # visualization window.
             elif self.new_tesselation_flag:
                 self.new_tesselation_flag = False
-                # If a tesselation is active already, disable it and close the Matplotlib window.
-                if self.tesselation_created:
-                    try:
-                        self.workflow.tv.close_tile_visualization()
-                        self.tesselation_created = False
-                        time.sleep(4. * self.gui.configuration.conf.get('ASCOM', 'polling interval'))
-                    except AttributeError:
-                        pass
 
                 # Initialize some instance variables.
                 self.active_tile_number = -1
@@ -214,8 +204,6 @@ class Workflow(QtCore.QThread):
                 # Compute the tesselation of the sunlit moon phase.
                 self.tc = TileConstructor(self.gui.configuration, de_center, m_diameter, phase_angle,
                                           pos_angle)
-                # Open the Matplotlib window which displays the tesselation.
-                self.tv = TileVisualization(self.gui.configuration, self.tc)
 
                 # Write the initialization message to stdout / file:
                 if self.gui.configuration.protocol:
@@ -512,8 +500,7 @@ class Workflow(QtCore.QThread):
                 self.reset_key_status_signal.emit()
 
             # Sleep time inserted to limit CPU consumption by idle looping.
-            t = float(self.gui.configuration.conf.get('ASCOM', 'polling interval'))
-            time.sleep(t)
+            time.sleep(float(self.gui.configuration.conf.get('ASCOM', 'polling interval')))
             # print ("End of main loop")
 
         # The "exiting" flag is set (by gui method "CloseEvent"). Terminate the telescope first.

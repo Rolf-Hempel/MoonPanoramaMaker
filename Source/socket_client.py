@@ -21,10 +21,10 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import socket
-import time
 import warnings
 from os import listdir
 from struct import unpack
+import time
 
 import PIL.Image as Image
 import matplotlib.pyplot as plt

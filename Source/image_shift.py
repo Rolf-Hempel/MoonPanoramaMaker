@@ -23,7 +23,6 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 import datetime
 import os
 import shutil
-import time
 from math import atan
 
 import cv2
@@ -103,7 +102,7 @@ class ImageShift:
             except:
                 if self.configuration.protocol_level > 1:
                     Miscellaneous.protocol("Warning: In imageShift, mkdir failed, retrying...")
-                time.sleep(0.1)
+                plt.pause(0.1)
         # Raise a runtime error if all loop iterations were unsuccessful.
         if not success:
             raise RuntimeError
