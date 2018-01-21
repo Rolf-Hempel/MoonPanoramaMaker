@@ -447,7 +447,7 @@ class Workflow(QtCore.QThread):
                     guiding_rate_ra += self.al.drift_ra
                     guiding_rate_de += self.al.drift_de
                 self.telescope.start_guiding(guiding_rate_ra, guiding_rate_de)
-                if self.gui.camera_automation:
+                if self.gui.configuration.conf.getboolean("Workflow", "camera automation"):
                     # Wait a little until telescope pointing has stabilized.
                     time.sleep(self.gui.configuration.conf.getfloat("Workflow", "camera trigger delay"))
                     # Send tile number to camera (for inclusion in video file name) and start

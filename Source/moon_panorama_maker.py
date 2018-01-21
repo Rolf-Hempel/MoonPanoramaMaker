@@ -712,7 +712,7 @@ class StartQT5(QtWidgets.QMainWindow):
         self.ui.autoalignment.setEnabled(self.configuration.conf.getboolean("Workflow",
                                                                             "camera automation"))
         # When the camera orientation has changed, all tiles are marked "unprocessed"
-        self.workflow.tv.mark_all_unprocessed()
+        self.tv.mark_all_unprocessed()
         self.workflow.active_tile_number = -1
         # Update the status bar and display message.
         self.set_statusbar()
