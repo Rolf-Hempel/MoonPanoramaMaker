@@ -21,8 +21,8 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import sys
-import time
 from math import degrees
+import matplotlib.pyplot as plt
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from compute_drift_rate import ComputeDriftRate
@@ -32,6 +32,7 @@ from miscellaneous import Miscellaneous
 from qtgui import Ui_MainWindow
 from show_landmark import ShowLandmark
 from tile_number_input_dialog import Ui_TileNumberInputDialog
+from tile_visualization import TileVisualization
 from workflow import Workflow
 
 
@@ -125,7 +126,7 @@ class StartQT5(QtWidgets.QMainWindow):
 
         # Start the workflow thread.
         self.workflow = Workflow(self)
-        time.sleep(2.)
+        plt.pause(2.)
 
         # The workflow thread sends signals when a task is finished. Connect those signals with
         # the appropriate GUI activity.
@@ -298,6 +299,14 @@ class StartQT5(QtWidgets.QMainWindow):
         '''
         print("in MPM: initialize tesselation")
         if self.new_tesselation_flag:
+            # If a tesselation is active already, disable it and close the Matplotlib window.
+            if self.workflow.tesselation_created:
+                try:
+                    self.tv.close_tile_visualization()
+                    self.workflow.tesselation_created = False
+                    plt.pause(4. * self.configuration.conf.get('ASCOM', 'polling interval'))
+                except AttributeError:
+                    pass
             self.workflow.new_tesselation_flag = True
         else:
             self.start_workflow()
@@ -309,6 +318,9 @@ class StartQT5(QtWidgets.QMainWindow):
         
         :return: -
         """
+
+        # Open the Matplotlib window which displays the tesselation.
+        self.tv = TileVisualization(self.configuration, self.workflow.tc)
 
         # Just in case: reset autoalignment.
         self.reset_autoalignment()
@@ -848,7 +860,7 @@ class StartQT5(QtWidgets.QMainWindow):
         # video.
         else:
             self.workflow.active_tile_number = next_tile_index
-            self.workflow.tv.mark_active(self.workflow.active_tile_number)
+            self.tv.mark_active(self.workflow.active_tile_number)
             if self.configuration.conf.getboolean("Workflow", "camera automation"):
                 self.camera_interrupted = False
             self.workflow.slew_to_tile_and_record_flag = True
@@ -920,7 +932,7 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         """
 
-        self.workflow.tv.mark_processed([self.workflow.active_tile_number])
+        self.tv.mark_processed([self.workflow.active_tile_number])
         # After successful exposure, put active tile on list of tiles processed since last
         # auto-align. This list will be reset to unprocessed later if the error in the next
         # auto-align is too large.
@@ -941,9 +953,9 @@ class StartQT5(QtWidgets.QMainWindow):
             # visualization window. Otherwise mark it as processed.
             if (self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
                     'processed'] == False):
-                self.workflow.tv.mark_unprocessed([self.workflow.active_tile_number])
+                self.tv.mark_unprocessed([self.workflow.active_tile_number])
             else:
-                self.workflow.tv.mark_processed([self.workflow.active_tile_number])
+                self.tv.mark_processed([self.workflow.active_tile_number])
         # Open the dialog for selecting a tile number. Class TileNumberInput (in this module, see
         # below) extends the TileNumberInputDialog in module tile_number_input_dialog. Set the
         # context to "workflow", so that on dialog closing the selected value will be stored in
@@ -969,7 +981,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         # Initialize the list with (potentially) selected tiles in visualization window.
-        self.selected_tile_numbers = self.workflow.tv.get_selected_tile_numbers()
+        self.selected_tile_numbers = self.tv.get_selected_tile_numbers()
         # If empty, check if there is a non-trivial active_tile_number.
         if len(self.selected_tile_numbers) == 0 and self.workflow.active_tile_number != -1:
             self.selected_tile_numbers.append(self.workflow.active_tile_number)
@@ -992,7 +1004,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         # The action is performed in class TileVisualization.
-        self.workflow.tv.mark_unprocessed(self.selected_tile_numbers)
+        self.tv.mark_unprocessed(self.selected_tile_numbers)
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol(
                 "Tile(s) " + self.selected_tile_numbers_string + " are marked unprocessed.")
@@ -1012,7 +1024,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         # Initialize the list with (potentially) selected tiles in visualization window.
-        self.selected_tile_numbers = self.workflow.tv.get_selected_tile_numbers()
+        self.selected_tile_numbers = self.tv.get_selected_tile_numbers()
         # If empty, check if there is a non-trivial active_tile_number.
         if len(self.selected_tile_numbers) == 0 and self.workflow.active_tile_number != -1:
             self.selected_tile_numbers.append(self.workflow.active_tile_number)
@@ -1035,7 +1047,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         # The action is performed in class TileVisualization.
-        self.workflow.tv.mark_processed(self.selected_tile_numbers)
+        self.tv.mark_processed(self.selected_tile_numbers)
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol(
                 "Tile(s) " + self.selected_tile_numbers_string + " are marked processed.")
@@ -1064,7 +1076,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         # Perform the task in class TileVisualization.
-        self.workflow.tv.mark_all_unprocessed()
+        self.tv.mark_all_unprocessed()
         self.all_tiles_recorded = False
         # Reset the active tile number. Processing will start from the beginning.
         self.workflow.active_tile_number = -1
@@ -1094,7 +1106,7 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         """
 
-        self.workflow.tv.mark_all_processed()
+        self.tv.mark_all_processed()
         # Mark the recording process as finished. No more tiles to record.
         self.all_tiles_recorded = True
         self.workflow.active_tile_number = -1
@@ -1116,7 +1128,7 @@ class StartQT5(QtWidgets.QMainWindow):
             Miscellaneous.protocol(
                 "Goto selected tile number " + str(self.workflow.active_tile_number))
         # Mark the tile active in the tile visualization window, refresh the status bar.
-        self.workflow.tv.mark_active(self.workflow.active_tile_number)
+        self.tv.mark_active(self.workflow.active_tile_number)
         self.set_statusbar()
         # De-activate all keys while the operation is in progress.
         self.save_key_status()
@@ -1139,7 +1151,7 @@ class StartQT5(QtWidgets.QMainWindow):
         if self.workflow.active_tile_number > -1:
             if (self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
                     'processed'] == False):
-                self.workflow.tv.mark_unprocessed([self.workflow.active_tile_number])
+                self.tv.mark_unprocessed([self.workflow.active_tile_number])
             else:
                 self.mark_processed()
         self.workflow.active_tile_number = -1
@@ -1410,7 +1422,7 @@ class StartQT5(QtWidgets.QMainWindow):
             self.configuration.conf.set('Hidden Parameters', 'main window y0', str(y0))
             try:
                 # The tile visualization window geometry is saved as well before closing the window.
-                self.workflow.tv.close_tile_visualization()
+                self.tv.close_tile_visualization()
             except AttributeError:
                 pass
             # Write the whole configuration back to disk.
@@ -1418,7 +1430,7 @@ class StartQT5(QtWidgets.QMainWindow):
             # Stop the workflow thread. This will terminate the camera thread and close the protocol
             # file.
             self.workflow.exiting = True
-            time.sleep(4. * self.configuration.conf.get('ASCOM', 'polling interval'))
+            plt.pause(4. * self.configuration.conf.get('ASCOM', 'polling interval'))
         else:
             # No confirmation by the user: Don't stop program execution.
             evnt.ignore()

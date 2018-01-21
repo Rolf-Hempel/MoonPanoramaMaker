@@ -114,8 +114,8 @@ class LandmarkSelection:
             latitude = radians(self.landmarks[landmark][1])
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol("New Landmark selected: " + landmark +
-                    ", selenographic longitude: " + str(degrees(longitude)) + ", latitude: " +
-                    str(degrees(latitude)))
+                    ", selenographic longitude: " + str(round(degrees(longitude), 3)) + ", latitude: " +
+                    str(round(degrees(latitude), 3)))
             # Perform the coordinate transformation and return the offsets (in radians)
             return self.coord_translation(me, longitude, latitude)
         except:
