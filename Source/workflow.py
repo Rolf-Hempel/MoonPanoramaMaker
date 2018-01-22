@@ -142,7 +142,7 @@ class Workflow(QtCore.QThread):
                 # If a telescope driver is active, first terminate it:
                 if self.telescope_connected:
                     self.telescope.terminate()
-                    time.sleep(4 * self.gui.configuration.conf.get('ASCOM', 'polling interval'))
+                    time.sleep(4. * float(self.gui.configuration.conf.get('ASCOM', 'polling interval')))
                     self.telescope_connected = False
                 # Connect the telescope driver specified in configuration.
                 try:
@@ -163,7 +163,7 @@ class Workflow(QtCore.QThread):
                 # If the camera is connected, disconnect it now.
                 if self.camera_connected:
                     self.camera.terminate = True
-                    time.sleep(4 * self.gui.configuration.conf.get('ASCOM', 'polling interval'))
+                    time.sleep(4. * float(self.gui.configuration.conf.get('ASCOM', 'polling interval')))
                     self.camera_connected = False
                 # If camera automation is on, create a Camera object and connect the camera.
                 if self.gui.configuration.conf.getboolean("Workflow", "camera automation"):
@@ -488,7 +488,7 @@ class Workflow(QtCore.QThread):
             elif self.escape_pressed_flag:
                 self.escape_pressed_flag = False
                 # Wait while camera is active.
-                if self.gui.camera_automation:
+                if self.gui.configuration.conf.getboolean("Workflow", "camera automation"):
                     delay = float(self.gui.configuration.conf.get('ASCOM', 'polling interval'))
                     while (self.camera.active):
                         time.sleep(delay)
@@ -506,7 +506,7 @@ class Workflow(QtCore.QThread):
         # The "exiting" flag is set (by gui method "CloseEvent"). Terminate the telescope first.
         self.telescope.terminate()
         # If camera automation is active, set termination flag in camera and wait a short while.
-        if self.gui.camera_automation:
+        if self.gui.configuration.conf.getboolean("Workflow", "camera automation"):
             self.camera.terminate = True
         time.sleep(self.gui.configuration.conf.get('ASCOM', 'polling interval'))
         # If stdout was re-directed to a file: Close the file and reset stdout to original value.

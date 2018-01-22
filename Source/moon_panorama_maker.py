@@ -185,14 +185,16 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         editor = ConfigurationEditor(self.configuration)
         editor.exec_()
-        if editor.configuration_changed:
-            self.output_channel_initialization_flag = editor.output_channel_changed
-            self.telescope_initialization_flag = editor.telescope_changed
-            self.camera_initialization_flag = editor.camera_automation_changed
-            self.new_tesselation_flag = editor.tesselation_changed
-            # The focus can be set on a surface area or a star, depending on a configuration
-            # parameter. Adjust the text on the GUI buttons according to the current choice.
-            self.set_focus_button_labels()
+
+        # Select which parts of the initialization chain have to be executed.
+        self.output_channel_initialization_flag = editor.output_channel_changed
+        self.telescope_initialization_flag = editor.telescope_changed
+        self.camera_initialization_flag = editor.camera_automation_changed
+        self.new_tesselation_flag = editor.tesselation_changed
+        # The focus can be set on a surface area or a star, depending on a configuration
+        # parameter. Adjust the text on the GUI buttons according to the current choice.
+        self.set_focus_button_labels()
+
         # The initialization chain starts with "redirect_stdout". When the chain is finished, the
         # workflow is started with "start_workflow".
         self.redirect_stdout()
@@ -208,6 +210,21 @@ class StartQT5(QtWidgets.QMainWindow):
         self.gui_context = "restart"
         self.set_text_browser("Do you really want to restart? "
                               "Confirm with 'enter', otherwise press 'esc'.")
+
+    def restart_acknowledged(self):
+        """
+        This method is executed when the user has hit the "Enter" key to acknowledge a restart.
+        The only purpose of the method is to write a comment in the output file before the restart
+        is executed.
+
+        :return: -
+        """
+
+        if self.configuration.protocol_level > 0:
+            print("")
+            Miscellaneous.protocol("The user requested a restart. Rebuild the execution environment.")
+
+        self.do_restart()
 
     def do_restart(self):
         """
@@ -240,6 +257,7 @@ class StartQT5(QtWidgets.QMainWindow):
         print("in MPM: initialize stdout")
         if self.output_channel_initialization_flag:
             self.workflow.output_channel_initialization_flag = True
+            self.output_channel_initialization_flag = False
         else:
             self.initialize_telescope()
 
@@ -253,6 +271,7 @@ class StartQT5(QtWidgets.QMainWindow):
         print ("in MPM: initialize telescope")
         if self.telescope_initialization_flag:
             self.workflow.telescope_initialization_flag = True
+            self.telescope_initialization_flag = False
         else:
             self.initialize_camera()
 
@@ -276,6 +295,8 @@ class StartQT5(QtWidgets.QMainWindow):
                                       "Confirm with 'enter', otherwise press 'esc'.")
             else:
                 self.camera_connect_request_answered()
+        else:
+            self.initialize_tesselation()
 
     def camera_connect_request_answered(self):
         """
@@ -288,6 +309,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         print("in MPM: camera connect request answered")
         self.workflow.camera_initialization_flag = True
+        self.camera_initialization_flag = False
 
     def initialize_tesselation(self):
         '''
@@ -304,7 +326,7 @@ class StartQT5(QtWidgets.QMainWindow):
                 try:
                     self.tv.close_tile_visualization()
                     self.workflow.tesselation_created = False
-                    plt.pause(4. * self.configuration.conf.get('ASCOM', 'polling interval'))
+                    plt.pause(4. * float(self.configuration.conf.get('ASCOM', 'polling interval')))
                 except AttributeError:
                     pass
             self.workflow.new_tesselation_flag = True
@@ -319,8 +341,10 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         """
 
-        # Open the Matplotlib window which displays the tesselation.
-        self.tv = TileVisualization(self.configuration, self.workflow.tc)
+        # If a new tesselation is computed, display it in a new Matplotlib window.
+        if self.new_tesselation_flag:
+            self.tv = TileVisualization(self.configuration, self.workflow.tc)
+            self.new_tesselation_flag = False
 
         # Just in case: reset autoalignment.
         self.reset_autoalignment()
@@ -875,10 +899,10 @@ class StartQT5(QtWidgets.QMainWindow):
         :return:
         """
 
-        self.reset_key_status()  # Überprüfen, ob das hier richtig hingehört (war sonst im else-Block.
         if self.camera_interrupted:
             self.camera_interrupted = False
         else:
+            self.reset_key_status()
             self.start_continue_recording()
 
     def find_next_unprocessed_tile(self):
@@ -1239,7 +1263,7 @@ class StartQT5(QtWidgets.QMainWindow):
             if event.key() == 16777220:  # Enter key
                 if self.gui_context == "restart":
                     self.gui_context = ""
-                    self.do_restart()
+                    self.restart_acknowledged()
                 elif self.gui_context == "camera connect request":
                     self.gui_context = ""
                     self.camera_connect_request_answered()
