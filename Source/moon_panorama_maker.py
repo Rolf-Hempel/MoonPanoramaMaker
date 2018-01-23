@@ -367,6 +367,8 @@ class StartQT5(QtWidgets.QMainWindow):
         # If a new tesselation is computed, display it in a new Matplotlib window.
         if self.new_tesselation_flag:
             self.tv = TileVisualization(self.configuration, self.workflow.tc)
+            # Initialize all tiles as unprocessed.
+            self.tv.mark_all_unprocessed()
             self.new_tesselation_flag = False
 
         # Just in case: reset autoalignment.
@@ -887,8 +889,11 @@ class StartQT5(QtWidgets.QMainWindow):
             self.workflow.telescope.stop_guiding()
         # Check if the currently active tile is marked "processed", change its display in the
         # tile visualization window accordingly. It will not be marked as "active" any more.
-        if self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number]['processed']:
-            self.mark_processed()
+        if self.workflow.active_tile_number > -1:
+            t = self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number]
+            tp = t['processed']
+            if self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number]['processed']:
+                self.mark_processed()
         # Look for the next unprocessed tile.
         (self.next_tile, next_tile_index) = self.workflow.tc.find_next_unprocessed_tile(self.workflow)
 
