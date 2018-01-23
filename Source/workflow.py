@@ -171,7 +171,6 @@ class Workflow(QtCore.QThread):
                         self.camera = Camera(self.gui.configuration, self.gui.mark_processed,
                                              debug=self.gui.configuration.camera_debug)
                         self.camera.start()
-                        self.camera.camera_signal.connect(self.gui.signal_from_camera)
                         self.camera_connected = True
                     except Exception:
                         if self.gui.configuration.protocol_level > 0:

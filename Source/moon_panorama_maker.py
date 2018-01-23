@@ -124,7 +124,9 @@ class StartQT5(QtWidgets.QMainWindow):
             editor = ConfigurationEditor(self.configuration)
             editor.exec_()
 
-        # Start the workflow thread.
+        # Start the workflow thread. It controls the computations and control of external devices.
+        # By decoupling those activities from the main thread, the GUI is kept from freezing during
+        # long-running activities.
         self.workflow = Workflow(self)
         plt.pause(2.)
 
@@ -144,6 +146,9 @@ class StartQT5(QtWidgets.QMainWindow):
         self.workflow.set_statusbar_signal.connect(self.set_statusbar)
         self.workflow.reset_key_status_signal.connect(self.reset_key_status)
         self.workflow.set_text_browser_signal.connect(self.set_text_browser)
+        # An additional signal (from the camera object) is connected dynamically in method
+        # "initialize_tesselation". This is necessary because the camera object is created and
+        # destroyed at runtime.
 
         # Set status flags.
         self.initialized = False
@@ -248,9 +253,9 @@ class StartQT5(QtWidgets.QMainWindow):
         action is performed. When finished, the workflow thread sends a signal back to the GUI and
         triggers the next initialization step.
 
-        If the flag is set, trigger the workflow thread to re-direct stdout to a file, if the
-        corresponding parameter is set in the configuration object. After completion, the workflow
-        thread will trigger the "initialize_telescope" method below.
+        If the output_channel_initialization_flag is set, trigger the workflow thread to re-direct
+        stdout to a file, if the corresponding parameter is set in the configuration object. After
+        completion, the workflow thread will trigger the "initialize_telescope" method below.
 
         :return: -
         '''
@@ -263,8 +268,9 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def initialize_telescope(self):
         '''
-        If the flag is set, trigger the workflow thread to connect the telescope driver. After
-        completion, the workflow thread will trigger the "initialize_camera" method below.
+        If the telescope_initialization_flag is set, trigger the workflow thread to connect the
+        telescope driver. After completion, the workflow thread will trigger the "initialize_camera"
+        method below.
 
         :return: -
         '''
@@ -277,10 +283,10 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def initialize_camera(self):
         '''
-        If the flag is set, trigger the workflow thread to disconnect an existing connection to
-        FireCapture. If camera automation is switched on in the configuration object, re-establish
-        the connection to FireCapture. After completion, the workflow thread will trigger the
-        "initialize_tesselation" method below.
+        If the camera_initialization_flag is set, trigger the workflow thread to disconnect an
+        active connection to FireCapture. If camera automation is switched on in the configuration
+        object, re-establish the connection to FireCapture. After completion, the workflow thread
+        will trigger the "initialize_tesselation" method below.
 
         :return: -
         '''
@@ -290,6 +296,9 @@ class StartQT5(QtWidgets.QMainWindow):
                 # Pressing the "Enter" key in this context will invoke method
                 # "camera_connect_request_answered"
                 self.gui_context = "camera connect request"
+                # If camera automation is switched on, first prompt the user to start the external
+                # FireCapture program. Execution will continue only after the user has hit the
+                # "Enter" key.
                 self.set_text_browser("Make sure that FireCapture is started, and that "
                                       "'MoonPanoramaMaker' is selected in the PreProcessing section. "
                                       "Confirm with 'enter', otherwise press 'esc'.")
@@ -308,17 +317,31 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         """
         print("in MPM: camera connect request answered")
+        # The workflow activity is triggered even if camera automation is set to false. The reason:
+        # A camera connection (which was established before the configuration was changed) is
+        # disconnected.
         self.workflow.camera_initialization_flag = True
-        self.camera_initialization_flag = False
 
     def initialize_tesselation(self):
         '''
-        If the flag is set, first trigger the workflow thread to close an existing tile
-        visualization window. Then compute a new tesselation of the moon phase. After completion,
-        the workflow thread will trigger the "start_workflow" method below.
+        Before dealing with the tesselation and its visualization, first connect the camera with
+        the "signal_from_camera" GUI method (if a new camera object was created in the workflow
+        thread).
+
+        If the new_tesselation_flag is set, first close an existing tile visualization window. Then
+        trigger the workflow thread to compute a new tesselation of the moon phase. After
+        completion, the workflow thread will trigger the "start_workflow" method below.
 
         :return: -
         '''
+
+        # If camera automation is on and a new camera has been connected in the workflow thread,
+        # connect the signal by which the camera signalizes the completion of a video with the
+        # corresponding GUI method.
+        if self.camera_initialization_flag and self.configuration.conf.getboolean("Workflow", "camera automation"):
+            self.workflow.camera.camera_signal.connect(self.signal_from_camera)
+        self.camera_initialization_flag = False
+
         print("in MPM: initialize tesselation")
         if self.new_tesselation_flag:
             # If a tesselation is active already, disable it and close the Matplotlib window.
@@ -841,7 +864,8 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         Record the next video. Identify the next tile to be recorded. If there is one left,
         trigger the workflow thread to move the telescope to the tile's location and record the
-        video.
+        video. Otherwise issue a message that all tiles have been recorded, and stop the video
+        acquisition loop.
         
         This method is invoked from three places:
         - Manually by pressing the GUI button "Start / Continue Recording"
@@ -866,7 +890,7 @@ class StartQT5(QtWidgets.QMainWindow):
         if self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number]['processed']:
             self.mark_processed()
         # Look for the next unprocessed tile.
-        (self.next_tile, next_tile_index) = self.find_next_unprocessed_tile()
+        (self.next_tile, next_tile_index) = self.workflow.tc.find_next_unprocessed_tile(self.workflow)
 
         # There is no unprocessed tile left, set the "all_tiles_recorded" flag, display a message,
         # re-activate GUI keys and exit the viceo acquisition loop
@@ -904,48 +928,6 @@ class StartQT5(QtWidgets.QMainWindow):
         else:
             self.reset_key_status()
             self.start_continue_recording()
-
-    def find_next_unprocessed_tile(self):
-        """
-        Find the next tile to be recorded, i.e. which is not marked as "processed". Start searching
-        with the index following the current "active_tile_number".
-        
-        A special case is when an auto-alignment error is too large. Then the videos taken since
-        the previous auto-alignment are discarded and have to be repeated. In this case, go back to
-        the first of these tiles and continue from there.
-        
-        :return: (next tile, index of next tile), or (None, -1) if no "unprocessed" tile is left.
-        """
-
-        # Initialize an index vector, starting with 0. Its length is the total number of tiles.
-        indices = list(range(len(self.workflow.tc.list_of_tiles_sorted)))
-
-        # After failure in auto-alignment, let the index vector start with index "repeat_from_here",
-        # and wrap around.
-        if self.workflow.repeat_from_here != -1:
-            indices_shifted = indices[self.workflow.repeat_from_here:] + indices[
-                                        0:self.workflow.repeat_from_here]
-            self.workflow.repeat_from_here = -1
-        # Let the index vector start with index "active_tile_number", and wrap around.
-        elif self.workflow.active_tile_number != -1:
-            indices_shifted = indices[self.workflow.active_tile_number:] + indices[
-                                        0:self.workflow.active_tile_number]
-        # No "repeat from here" and no "active_tile_number" set: Keep the tiles in original order.
-        else:
-            indices_shifted = indices
-
-        # Look for first "unprocessed" tile in shifted order. Leave the loop when the first is
-        # found.
-        next_tile = None
-        next_tile_index = -1
-        for i in indices_shifted:
-            tile = self.workflow.tc.list_of_tiles_sorted[i]
-            if not tile['processed']:
-                next_tile = tile
-                next_tile_index = i
-                break
-
-        return (next_tile, next_tile_index)
 
     def mark_processed(self):
         """

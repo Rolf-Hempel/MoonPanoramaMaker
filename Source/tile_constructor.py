@@ -192,6 +192,49 @@ class TileConstructor:
             Miscellaneous.rotate(self.pos_angle, self.de_center, self.scale_factor, self.flip_x,
                                  self.flip_y, self.m_radius, 0.))
 
+    def find_next_unprocessed_tile(self, workflow):
+        """
+        Find the next tile to be recorded, i.e. which is not marked as "processed". Start searching
+        with the index following the current "active_tile_number".
+
+        A special case is when an auto-alignment error is too large. Then the videos taken since
+        the previous auto-alignment are discarded and have to be repeated. In this case, go back to
+        the first of these tiles and continue from there.
+
+        :param workflow: object which encapsulates the workflow thread. It is created in the GUI
+                         thread at the beginning of execution.
+        :return: (next tile, index of next tile), or (None, -1) if no "unprocessed" tile is left.
+        """
+
+        # Initialize an index vector, starting with 0. Its length is the total number of tiles.
+        indices = list(range(len(self.list_of_tiles_sorted)))
+
+        # After failure in auto-alignment, let the index vector start with index "repeat_from_here",
+        # and wrap around.
+        if workflow.repeat_from_here != -1:
+            indices_shifted = indices[workflow.repeat_from_here:] + indices[
+                                                                         0:workflow.repeat_from_here]
+            workflow.repeat_from_here = -1
+        # Let the index vector start with index "active_tile_number", and wrap around.
+        elif workflow.active_tile_number != -1:
+            indices_shifted = indices[workflow.active_tile_number:] + indices[
+                                                                           0:workflow.active_tile_number]
+        # No "repeat from here" and no "active_tile_number" set: Keep the tiles in original order.
+        else:
+            indices_shifted = indices
+
+        # Look for first "unprocessed" tile in shifted order. Leave the loop when the first is
+        # found.
+        next_tile = None
+        next_tile_index = -1
+        for i in indices_shifted:
+            tile = self.list_of_tiles_sorted[i]
+            if not tile['processed']:
+                next_tile = tile
+                next_tile_index = i
+                break
+
+        return (next_tile, next_tile_index)
 
 if __name__ == "__main__":
     from math import radians, degrees
