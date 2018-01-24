@@ -194,8 +194,8 @@ class ImageShift:
         """
 
         dt = str(datetime.datetime.now())
-        return (self.image_dir + "\\" + dt[11:13] + "-" + dt[14:16] + "-" + \
-                dt[17:19] + "_")
+        timestring = dt[11:13] + "-" + dt[14:16] + "-" + dt[17:19] + "_"
+        return os.path.join(self.image_dir, timestring)
 
     def shift_vs_reference(self):
         """

@@ -136,8 +136,8 @@ class Configuration:
         # The config file for persistent parameter storage is located in the user's home
         # directory, as is the detailed MoonPanoramaMaker logfile.
         home = os.path.expanduser("~")
-        self.config_filename = home + "\\.MoonPanoramaMaker.ini"
-        self.protocol_filename = home + "\\MoonPanoramaMaker.log"
+        self.config_filename = os.path.join(home, ".MoonPanoramaMaker.ini")
+        self.protocol_filename = os.path.join(home, ".MoonPanoramaMaker.log")
 
         self.config_file_exists = os.path.isfile(self.config_filename)
         self.file_identical = False

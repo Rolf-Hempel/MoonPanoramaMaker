@@ -20,6 +20,7 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import sys
 from math import sin, cos
 from datetime import datetime
 
@@ -35,6 +36,7 @@ class Miscellaneous():
     @staticmethod
     def protocol(string):
         print(str(datetime.now())[11:21], string)
+        sys.stdout.flush()
 
     @staticmethod
     def testfloat(string, lower_bound, upper_bound):

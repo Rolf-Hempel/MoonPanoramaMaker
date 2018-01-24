@@ -44,7 +44,7 @@ class ShowLandmark(QtWidgets.QDialog, Ui_DisplayLandmark):
         # Get the name of the currently selected landmark from the LandmarkSelection object.
         self.landmark = ls.selected_landmark
         # The landmark pictures are stored in subdirectory "landmark_pictures".
-        self.picture_dir = os.getcwd() + '\\landmark_pictures\\'
+        self.picture_dir = os.path.join(os.getcwd(), 'landmark_pictures', '')
         self.setupUi(self)
         # Write the name of the landmark under the picture in the gui.
         self.landmark_name.setText("Landmark selected: " + self.landmark)
