@@ -137,7 +137,7 @@ class Configuration:
         # directory, as is the detailed MoonPanoramaMaker logfile.
         home = os.path.expanduser("~")
         self.config_filename = os.path.join(home, ".MoonPanoramaMaker.ini")
-        self.protocol_filename = os.path.join(home, ".MoonPanoramaMaker.log")
+        self.protocol_filename = os.path.join(home, "MoonPanoramaMaker.log")
 
         self.config_file_exists = os.path.isfile(self.config_filename)
         self.file_identical = False
