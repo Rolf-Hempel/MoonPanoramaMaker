@@ -1441,7 +1441,7 @@ class StartQT5(QtWidgets.QMainWindow):
             # Stop the workflow thread. This will terminate the camera thread and close the protocol
             # file.
             self.workflow.exiting = True
-            plt.pause(4. * self.configuration.conf.get('ASCOM', 'polling interval'))
+            plt.pause(4. * float(self.configuration.conf.get('ASCOM', 'polling interval')))
         else:
             # No confirmation by the user: Don't stop program execution.
             evnt.ignore()
