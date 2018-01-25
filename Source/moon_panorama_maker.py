@@ -95,8 +95,11 @@ class StartQT5(QtWidgets.QMainWindow):
         self.ui.set_tile_processed.clicked.connect(self.set_tile_processed)                   # 16
         self.button_list.append(self.ui.set_tile_processed)
 
-        # Read in or (if no config file is found) create all configuration parameters.
+        # Read in or (if no config file is found) create all configuration parameters. If a new
+        # configuration has been created, write it to disk.
         self.configuration = Configuration()
+        if self.configuration.file_new:
+            self.configuration.write_config()
 
         # Look up the location and size of the main GUI. Replace the location parameters with those
         # stored in the configuration file when the GUI was closed last time. This way, the GUI

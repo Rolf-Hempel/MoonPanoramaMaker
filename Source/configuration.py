@@ -139,12 +139,12 @@ class Configuration:
         self.config_filename = os.path.join(home, ".MoonPanoramaMaker.ini")
         self.protocol_filename = os.path.join(home, "MoonPanoramaMaker.log")
 
-        self.config_file_exists = os.path.isfile(self.config_filename)
+        self.file_new = not os.path.isfile(self.config_filename)
         self.file_identical = False
         self.file_compatible = False
         
         # If an existing config file is found, read it in.
-        if self.config_file_exists:
+        if not self.file_new:
             self.conf = configparser.ConfigParser()
             self.conf.read(self.config_filename)
             # Set flag to indicate that parameters were read from file.
@@ -153,7 +153,7 @@ class Configuration:
             # If file could not be made compatible, do not use the old config file.
             self.file_identical, self.file_compatible = self.check_for_compatibility()
 
-        if not self.config_file_exists or not self.file_compatible:
+        if self.file_new or not self.file_compatible:
             # Code to set standard config info. The "Hidden Parameters" are not displayed in the
             # configuration GUI. Most of them are for placing GUI windows where they had been at
             # the previous session.
