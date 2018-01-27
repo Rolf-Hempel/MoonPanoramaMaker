@@ -262,7 +262,8 @@ class StartQT5(QtWidgets.QMainWindow):
 
         :return: -
         '''
-        print("in MPM: initialize stdout")
+
+        # print("in MPM: initialize stdout")
         if self.output_channel_initialization_flag:
             self.workflow.output_channel_initialization_flag = True
             self.output_channel_initialization_flag = False
@@ -277,7 +278,8 @@ class StartQT5(QtWidgets.QMainWindow):
 
         :return: -
         '''
-        print ("in MPM: initialize telescope")
+
+        # print ("in MPM: initialize telescope")
         if self.telescope_initialization_flag:
             self.workflow.telescope_initialization_flag = True
             self.telescope_initialization_flag = False
@@ -293,7 +295,8 @@ class StartQT5(QtWidgets.QMainWindow):
 
         :return: -
         '''
-        print("in MPM: initialize camera")
+
+        # print("in MPM: initialize camera")
         if self.camera_initialization_flag:
             if self.configuration.conf.getboolean("Workflow", "camera automation"):
                 # Pressing the "Enter" key in this context will invoke method
@@ -319,7 +322,8 @@ class StartQT5(QtWidgets.QMainWindow):
 
         :return: -
         """
-        print("in MPM: camera connect request answered")
+
+        # print("in MPM: camera connect request answered")
         # The workflow activity is triggered even if camera automation is set to false. The reason:
         # A camera connection (which was established before the configuration was changed) is
         # disconnected.
@@ -345,7 +349,7 @@ class StartQT5(QtWidgets.QMainWindow):
             self.workflow.camera.camera_signal.connect(self.signal_from_camera)
         self.camera_initialization_flag = False
 
-        print("in MPM: initialize tesselation")
+        # print("in MPM: initialize tesselation")
         if self.new_tesselation_flag:
             # If a tesselation is active already, disable it and close the Matplotlib window.
             if self.workflow.tesselation_created:
@@ -465,8 +469,8 @@ class StartQT5(QtWidgets.QMainWindow):
         self.reset_active_tile()
         # Update status bar to show that telescope is not aimed at any tile.
         self.set_statusbar()
-        print("")
         if self.configuration.protocol_level > 0:
+            print("")
             Miscellaneous.protocol("Preparing for alignment.")
         # Trigger telescope slewing in workflow thread.
         self.workflow.slew_to_alignment_point_flag = True
@@ -583,8 +587,8 @@ class StartQT5(QtWidgets.QMainWindow):
         self.set_text_browser("Slewing telescope to alignment point, please wait.")
         self.reset_active_tile()
         self.set_statusbar()
-        print("")
         if self.configuration.protocol_level > 0:
+            print("")
             Miscellaneous.protocol("Preparing for auto-alignment.")
         self.workflow.slew_to_alignment_point_flag = True
 

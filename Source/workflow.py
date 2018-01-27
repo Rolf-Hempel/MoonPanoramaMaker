@@ -132,7 +132,7 @@ class Workflow(QtCore.QThread):
                             self.output_redirected = True
                         except IOError:
                             pass
-                print ("Signal the main GUI that the output channel is initialized.")
+                # print ("Signal the main GUI that the output channel is initialized.")
                 # Signal the main GUI that the output channel is initialized.
                 self.output_channel_initialized_signal.emit()
 
@@ -153,7 +153,7 @@ class Workflow(QtCore.QThread):
                 except Exception:
                     if self.gui.configuration.protocol_level > 0:
                         Miscellaneous.protocol("Telescope initialization failed.")
-                print ("Signal the main GUI that the telescope driver is initialized.")
+                # print ("Signal the main GUI that the telescope driver is initialized.")
                 # Signal the main GUI that the telescope driver is initialized.
                 self.telescope_initialized_signal.emit()
 
@@ -175,7 +175,7 @@ class Workflow(QtCore.QThread):
                     except Exception:
                         if self.gui.configuration.protocol_level > 0:
                             Miscellaneous.protocol("Camera initialization failed.")
-                print ("Signal the main GUI that the camera is initialized.")
+                # print ("Signal the main GUI that the camera is initialized.")
                 # Signal the main GUI that the camera is initialized.
                 self.camera_initialized_signal.emit()
 
@@ -225,7 +225,7 @@ class Workflow(QtCore.QThread):
                                     str(round(degrees(self.me.rate_de) * 216000., 3)))
 
                 self.tesselation_created = True
-                print ("Signal the main GUI that the tesselation is initialized.")
+                # print ("Signal the main GUI that the tesselation is initialized.")
                 # Signal the main GUI that the tesselation is initialized.
                 self.tesselation_initialized_signal.emit()
 
@@ -293,6 +293,7 @@ class Workflow(QtCore.QThread):
                 (ra, de) = self.al.center_offset_to_telescope_coordinates(
                     self.tc.delta_ra_limb_center, self.tc.delta_de_limb_center)
                 if self.gui.configuration.protocol_level > 0:
+                    print("")
                     Miscellaneous.protocol("Moving telescope to Moon limb.")
                 self.telescope.slew_to(ra, de)
                 # Signal success to gui, start method "prompt_camera_rotated_acknowledged" in gui.
@@ -374,11 +375,11 @@ class Workflow(QtCore.QThread):
                                                 self.gui.max_seconds_between_autoaligns) + " seconds.")
                                     # Videos since last auto-alignment have to be repeated.
                                     if len(self.tile_indices_since_last_autoalign) > 0:
-                                        self.tv.mark_unprocessed(
+                                        self.gui.tv.mark_unprocessed(
                                             self.tile_indices_since_last_autoalign)
                                         # Reset list of tiles since last auto-align (a fresh
                                         # auto-align has been just performed). Save the lowest index of
-                                        # the invalidated tiles. When the gui method
+                                        # the invalidated tiles. When the TileConstructor method
                                         # "find_next_unprocessed_tile" will look for the
                                         # next unprocessed tile, it will start with this one.
                                         self.repeat_from_here = min(self.tile_indices_since_last_autoalign)
