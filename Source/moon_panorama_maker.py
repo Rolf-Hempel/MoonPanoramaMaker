@@ -105,8 +105,8 @@ class StartQT5(QtWidgets.QMainWindow):
         # stored in the configuration file when the GUI was closed last time. This way, the GUI
         # memorizes its location between MPM invocations.
         (x0, y0, width, height) = self.geometry().getRect()
-        x0 = int(self.configuration.conf.get('Hidden Parameters', 'main window x0'))
-        y0 = int(self.configuration.conf.get('Hidden Parameters', 'main window y0'))
+        x0 = self.configuration.conf.getint('Hidden Parameters', 'main window x0')
+        y0 = self.configuration.conf.getint('Hidden Parameters', 'main window y0')
         self.setGeometry(x0, y0, width, height)
         # Set the button labels for focus area / focus star according to the configuration.
         self.set_focus_button_labels()
@@ -372,7 +372,7 @@ class StartQT5(QtWidgets.QMainWindow):
                 try:
                     self.tv.close_tile_visualization()
                     self.workflow.tesselation_created = False
-                    plt.pause(4. * float(self.configuration.conf.get('ASCOM', 'polling interval')))
+                    plt.pause(4. * self.configuration.conf.getfloat('ASCOM', 'polling interval'))
                 except AttributeError:
                     pass
             self.workflow.new_tesselation_flag = True
@@ -1465,7 +1465,7 @@ class StartQT5(QtWidgets.QMainWindow):
             # Stop the workflow thread. This will terminate the camera thread and close the protocol
             # file.
             self.workflow.exiting = True
-            plt.pause(4. * float(self.configuration.conf.get('ASCOM', 'polling interval')))
+            plt.pause(4. * self.configuration.conf.getfloat('ASCOM', 'polling interval'))
         else:
             # No confirmation by the user: Don't stop program execution.
             evnt.ignore()
