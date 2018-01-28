@@ -73,8 +73,8 @@ class TileVisualization:
         self.mngr = plt.get_current_fig_manager()
         (x0, y0, width, height) = self.mngr.window.geometry().getRect()
         # look up stored position of upper left window corner:
-        x0 = int(self.configuration.conf.get('Hidden Parameters', 'tile window x0'))
-        y0 = int(self.configuration.conf.get('Hidden Parameters', 'tile window y0'))
+        x0 = self.configuration.conf.getint('Hidden Parameters', 'tile window x0')
+        y0 = self.configuration.conf.getint('Hidden Parameters', 'tile window y0')
         # move the tile visualization window to the stored position:
         self.mngr.window.setGeometry(x0, y0, width, height)
 
