@@ -266,7 +266,7 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         '''
 
-        print("in MPM: initialize stdout")
+        # print("in MPM: initialize stdout")
         if self.output_channel_initialization_flag:
             self.workflow.output_channel_initialization_flag = True
             self.output_channel_initialization_flag = False
@@ -282,7 +282,7 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         '''
 
-        print ("in MPM: initialize telescope")
+        # print ("in MPM: initialize telescope")
         if self.telescope_initialization_flag:
             self.workflow.telescope_initialization_flag = True
             self.telescope_initialization_flag = False
@@ -299,7 +299,7 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         '''
 
-        print("in MPM: initialize camera")
+        # print("in MPM: initialize camera")
         # If during the previous initialization the FireCapture connect request was not answered yet
         # and the user started a new initialization by opening the configuration editor, reactivate
         # camera initialization.
@@ -333,7 +333,7 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         """
 
-        print("in MPM: camera connect request answered")
+        # print("in MPM: camera connect request answered")
         # The workflow activity is triggered even if camera automation is set to false. The reason:
         # A camera connection (which was established before the configuration was changed) is
         # disconnected.
@@ -365,7 +365,7 @@ class StartQT5(QtWidgets.QMainWindow):
             self.workflow.camera.camera_signal.connect(self.signal_from_camera)
         self.camera_initialization_flag = False
 
-        print("in MPM: initialize tesselation")
+        # print("in MPM: initialize tesselation")
         if self.new_tesselation_flag:
             # If a tesselation is active already, disable it and close the Matplotlib window.
             if self.workflow.tesselation_created:
