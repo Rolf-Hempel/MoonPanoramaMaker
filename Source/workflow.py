@@ -101,6 +101,10 @@ class Workflow(QtCore.QThread):
         self.camera_connected = False
         self.tesselation_created = False
 
+        # Initialize some instance variables.
+        self.active_tile_number = -1
+        self.all_tiles_recorded = False
+
         self.start()
 
     def run(self):
@@ -504,10 +508,12 @@ class Workflow(QtCore.QThread):
             # print ("End of main loop")
 
         # The "exiting" flag is set (by gui method "CloseEvent"). Terminate the telescope first.
-        self.telescope.terminate()
+        if self.telescope_connected:
+            self.telescope.terminate()
         # If camera automation is active, set termination flag in camera and wait a short while.
-        if self.gui.configuration.conf.getboolean("Workflow", "camera automation"):
-            self.camera.terminate = True
+        if self.camera_connected:
+            if self.gui.configuration.conf.getboolean("Workflow", "camera automation"):
+                self.camera.terminate = True
         time.sleep(self.gui.configuration.conf.get('ASCOM', 'polling interval'))
         # If stdout was re-directed to a file: Close the file and reset stdout to original value.
         if self.gui.configuration.conf.getboolean('Workflow', 'protocol to file'):
