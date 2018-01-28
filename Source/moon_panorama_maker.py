@@ -158,6 +158,8 @@ class StartQT5(QtWidgets.QMainWindow):
         self.camera_rotated = False
         self.focus_area_set = False
         self.autoalign_enabled = False
+        self.camera_initalization_pending = False
+
         # Before GUI buttons are de-activated, the activation status of all keys is saved for later
         # restoration. At the moment, no key status is saved.
         self.key_status_saved = False
@@ -198,7 +200,7 @@ class StartQT5(QtWidgets.QMainWindow):
         self.output_channel_initialization_flag = editor.output_channel_changed
         self.telescope_initialization_flag = editor.telescope_changed
         self.camera_initialization_flag = editor.camera_automation_changed
-        self.new_tesselation_flag = editor.tesselation_changed
+        self.new_tesselation_flag = not self.tesselation_ready or editor.tesselation_changed
         # The focus can be set on a surface area or a star, depending on a configuration
         # parameter. Adjust the text on the GUI buttons according to the current choice.
         self.set_focus_button_labels()
@@ -246,6 +248,7 @@ class StartQT5(QtWidgets.QMainWindow):
         self.telescope_initialization_flag = True
         self.camera_initialization_flag = True
         self.new_tesselation_flag = True
+        self.tesselation_ready = False
 
         self.redirect_stdout()
 
@@ -263,7 +266,7 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         '''
 
-        # print("in MPM: initialize stdout")
+        print("in MPM: initialize stdout")
         if self.output_channel_initialization_flag:
             self.workflow.output_channel_initialization_flag = True
             self.output_channel_initialization_flag = False
@@ -279,7 +282,7 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         '''
 
-        # print ("in MPM: initialize telescope")
+        print ("in MPM: initialize telescope")
         if self.telescope_initialization_flag:
             self.workflow.telescope_initialization_flag = True
             self.telescope_initialization_flag = False
@@ -296,7 +299,13 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         '''
 
-        # print("in MPM: initialize camera")
+        print("in MPM: initialize camera")
+        # If during the previous initialization the FireCapture connect request was not answered yet
+        # and the user started a new initialization by opening the configuration editor, reactivate
+        # camera initialization.
+        if self.camera_initalization_pending:
+            self.camera_initialization_flag = True
+
         if self.camera_initialization_flag:
             if self.configuration.conf.getboolean("Workflow", "camera automation"):
                 # Pressing the "Enter" key in this context will invoke method
@@ -308,6 +317,7 @@ class StartQT5(QtWidgets.QMainWindow):
                 self.set_text_browser("Make sure that FireCapture is started, and that "
                                       "'MoonPanoramaMaker' is selected in the PreProcessing section. "
                                       "Confirm with 'enter', otherwise press 'esc'.")
+                self.camera_initalization_pending = True
             else:
                 self.camera_connect_request_answered()
         else:
@@ -323,7 +333,7 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         """
 
-        # print("in MPM: camera connect request answered")
+        print("in MPM: camera connect request answered")
         # The workflow activity is triggered even if camera automation is set to false. The reason:
         # A camera connection (which was established before the configuration was changed) is
         # disconnected.
@@ -342,6 +352,12 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         '''
 
+        # Set camera initialization to non pending. It is pending when the GUI shows the request to
+        # start FireCapture, and the user has not hit the "Enter" key yet. If at that time the user
+        # opens the Configuration editor, on closing MPM has to remember that the camera
+        # initialization was not done yet.
+        self.camera_initalization_pending = False
+
         # If camera automation is on and a new camera has been connected in the workflow thread,
         # connect the signal by which the camera signalizes the completion of a video with the
         # corresponding GUI method.
@@ -349,7 +365,7 @@ class StartQT5(QtWidgets.QMainWindow):
             self.workflow.camera.camera_signal.connect(self.signal_from_camera)
         self.camera_initialization_flag = False
 
-        # print("in MPM: initialize tesselation")
+        print("in MPM: initialize tesselation")
         if self.new_tesselation_flag:
             # If a tesselation is active already, disable it and close the Matplotlib window.
             if self.workflow.tesselation_created:
@@ -377,6 +393,7 @@ class StartQT5(QtWidgets.QMainWindow):
             # Initialize all tiles as unprocessed.
             self.tv.mark_all_unprocessed()
             self.new_tesselation_flag = False
+            self.tesselation_ready = True
 
         # Just in case: reset autoalignment.
         self.reset_autoalignment()
