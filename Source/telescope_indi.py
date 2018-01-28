@@ -147,11 +147,15 @@ class OperateTelescopeINDI(threading.Thread):
         self.direction_east = 2
         self.direction_west = 3
 
+        self.indiclnt = None
+        self.telescope = None
         self.device_telescope = None
+        self.telescope_on_coord_set = None
         self.telescope_connect = None
         self.telescope_radec = None
         self.telescope_guideNS = None
         self.telescope_guideWE = None
+
 
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol("OperateTelescope thread initialized")
@@ -180,7 +184,6 @@ class OperateTelescopeINDI(threading.Thread):
 
         # wait CONNECTION property be defined for telescope
         while not self.telescope_connect:
-            print("Connect to %s" % self.telescope)
             time.sleep(0.5)
             self.telescope_connect = self.device_telescope.getSwitch("CONNECTION")
 
@@ -199,12 +202,12 @@ class OperateTelescopeINDI(threading.Thread):
         while not self.telescope_on_coord_set:
             time.sleep(0.5)
             self.telescope_on_coord_set = self.device_telescope.getSwitch("ON_COORD_SET")
-        # # the order below is defined in the property vector, look at the standard Properties page
-        #        # or enumerate them in the Python shell when you're developing your program
-        #        self.telescope_on_coord_set[0].s=PyIndi.ISS_ON  # TRACK
-        #        self.telescope_on_coord_set[1].s=PyIndi.ISS_OFF # SLEW
-        #        self.telescope_on_coord_set[2].s=PyIndi.ISS_OFF # SYNC
-        #        self.indiclnt.sendNewSwitch(self.telescope_on_coord_set)
+        # the order below is defined in the property vector, look at the standard Properties page
+        # or enumerate them in the Python shell when you're developing your program
+        self.telescope_on_coord_set[0].s = PyIndi.ISS_ON  # TRACK
+        self.telescope_on_coord_set[1].s = PyIndi.ISS_OFF  # SLEW
+        self.telescope_on_coord_set[2].s = PyIndi.ISS_OFF  # SYNC
+        self.indiclnt.sendNewSwitch(self.telescope_on_coord_set)
 
         # get coordinate object
         while not self.telescope_radec:
@@ -246,22 +249,13 @@ class OperateTelescopeINDI(threading.Thread):
                 elif instruction['name'] == "lookup tel position":
                     # wait until the scope has finished moving
                     while self.telescope_radec.s == PyIndi.IPS_BUSY:
-                        if self.configuration.protocol_level > 2:
-                            Miscellaneous.protocol("Scope Moving  RA: " +
-                                                   str(round(self.telescope_radec[0].value * 15., 5)) +
-                                                   ", DE: " + str(round(self.telescope_radec[1].value, 5)) +
-                                                   " (degrees)")
-                        time.sleep(self.configuration.conf.getfloat("INDI", "wait interval"))
+                        time.sleep(self.confgetfloat("wait interval"))
 
                     # Stationary state reached, copy measured position (in radians) into dict.
-                    instruction['ra'] = radians(self.telescope_radec[0].value)
+                    instruction['ra'] = radians(self.telescope_radec[0].value * 15)
                     instruction['de'] = radians(self.telescope_radec[1].value)
                     # Signal that the instruction is finished.
                     instruction['finished'] = True
-                    if self.configuration.protocol_level > 2:
-                        Miscellaneous.protocol(
-                            "Position looked-up: RA: " + str(round(self.telescope_radec[0].value * 15., 5)) +
-                            ", DE: " + str(round(self.telescope_radec[1].value, 5)) + " (degrees)")
 
                 # Find out which mount directions correspond to directions in the sky.
                 elif instruction['name'] == "calibrate":
@@ -304,10 +298,10 @@ class OperateTelescopeINDI(threading.Thread):
 
                     time.sleep(calibrate_pulse_length / 500.)
 
-                    self.telescope_on_coord_set[0].s = PyIndi.ISS_ON  # TRACK
-                    self.telescope_on_coord_set[1].s = PyIndi.ISS_OFF  # SLEW
-                    self.telescope_on_coord_set[2].s = PyIndi.ISS_OFF  # SYNC
-                    self.indiclnt.sendNewSwitch(self.telescope_on_coord_set)
+                    # self.telescope_on_coord_set[0].s = PyIndi.ISS_ON  # TRACK
+                    # self.telescope_on_coord_set[1].s = PyIndi.ISS_OFF  # SLEW
+                    # self.telescope_on_coord_set[2].s = PyIndi.ISS_OFF  # SYNC
+                    # self.indiclnt.sendNewSwitch(self.telescope_on_coord_set)
 
                     # Now the direction variables correspond to true coordinates in the sky.
                     instruction['finished'] = True
@@ -358,10 +352,10 @@ class OperateTelescopeINDI(threading.Thread):
                         if direction_ra == 2:
                             self.telescope_guideWE[0].value = 0
                             self.telescope_guideWE[1].value = int(
-                                self.configuration.conf.getfloat("INDI", "guiding interval") * 1000.)
+                                self.confgetfloat("guiding interval") * 1000.)
                         else:
                             self.telescope_guideWE[0].value = int(
-                                self.configuration.conf.getfloat("INDI", "guiding interval") * 1000.)
+                                self.confgetfloat("guiding interval") * 1000.)
                             self.telescope_guideWE[1].value = 0
                         self.indiclnt.sendNewNumber(self.telescope_guideWE)
 
@@ -372,15 +366,15 @@ class OperateTelescopeINDI(threading.Thread):
                         if direction_de == 1:
                             self.telescope_guideNS[0].value = 0
                             self.telescope_guideNS[1].value = int(
-                                self.configuration.conf.getfloat("INDI", "guiding interval") * 1000.)
+                                self.confgetfloat("guiding interval") * 1000.)
                         else:
                             self.telescope_guideNS[0].value = int(
-                                self.configuration.conf.getfloat("INDI", "guiding interval") * 1000.)
+                                self.confgetfloat("guiding interval") * 1000.)
                             self.telescope_guideNS[1].value = 0
                         self.indiclnt.sendNewNumber(self.telescope_guideNS)
                     # Re-insert this instruction into the queue.
                     self.instructions.insert(0, instruction)
-                    time.sleep(self.configuration.conf.getfloat("INDI", "guiding interval"))
+                    time.sleep(self.confgetfloat("guiding interval"))
 
                 # Stop guiding by removing all instructions of type "continue guiding" from the
                 # queue.
@@ -390,21 +384,16 @@ class OperateTelescopeINDI(threading.Thread):
 
                 # These instructions are used when the user presses one of the arrow keys.
                 elif instruction['name'] == "start moving north":
-                    if self.configuration.protocol_level > 2:
-                        Miscellaneous.protocol("Start North")
                     # Issue a PulseGuide in the specified direction.
-                    self.telescope_guideNS[0].value = self.configuration.conf.getfloat("INDI",
-                                                                                       "polling interval") * 1000.
+                    self.telescope_guideNS[0].value = self.confgetfloat("polling interval") * 1000.
                     self.telescope_guideNS[1].value = 0
                     self.indiclnt.sendNewNumber(self.telescope_guideNS)
                     # Re-insert this instruction into the queue, and wait a short time.
                     self.instructions.insert(0, instruction)
-                    time.sleep(self.configuration.conf.getfloat("INDI", "polling interval"))
+                    time.sleep(self.confgetfloat("polling interval"))
 
                 # This instruction is used when the "arrow up" key is released.
                 elif instruction['name'] == "stop moving north":
-                    if self.configuration.protocol_level > 2:
-                        Miscellaneous.protocol("Stop North")
                     # Remove all "start moving north" instructions from the queue.
                     self.remove_instruction(self.start_moving_north)
                     instruction['finished'] = True
@@ -413,11 +402,10 @@ class OperateTelescopeINDI(threading.Thread):
                 # other coordinate directions.
                 elif instruction['name'] == "start moving south":
                     self.telescope_guideNS[0].value = 0
-                    self.telescope_guideNS[1].value = self.configuration.conf.getfloat("INDI",
-                                                                                       "polling interval") * 1000.
+                    self.telescope_guideNS[1].value = self.confgetfloat("polling interval") * 1000.
                     self.indiclnt.sendNewNumber(self.telescope_guideNS)
                     self.instructions.insert(0, instruction)
-                    time.sleep(self.configuration.conf.getfloat("INDI", "polling interval"))
+                    time.sleep(self.confgetfloat("polling interval"))
 
                 elif instruction['name'] == "stop moving south":
                     self.remove_instruction(self.start_moving_south)
@@ -425,23 +413,21 @@ class OperateTelescopeINDI(threading.Thread):
 
                 elif instruction['name'] == "start moving east":
                     self.telescope_guideWE[0].value = 0
-                    self.telescope_guideWE[1].value = self.configuration.conf.getfloat("INDI",
-                                                                                       "polling interval") * 1000.
+                    self.telescope_guideWE[1].value = self.confgetfloat("polling interval") * 1000.
                     self.indiclnt.sendNewNumber(self.telescope_guideWE)
                     self.instructions.insert(0, instruction)
-                    time.sleep(self.configuration.conf.getfloat("INDI", "polling interval"))
+                    time.sleep(self.confgetfloat("polling interval"))
 
                 elif instruction['name'] == "stop moving east":
                     self.remove_instruction(self.start_moving_east)
                     instruction['finished'] = True
 
                 elif instruction['name'] == "start moving west":
-                    self.telescope_guideWE[0].value = self.configuration.conf.getfloat("INDI",
-                                                                                       "polling interval") * 1000.
+                    self.telescope_guideWE[0].value = self.confgetfloat("polling interval") * 1000.
                     self.telescope_guideWE[1].value = 0
                     self.indiclnt.sendNewNumber(self.telescope_guideWE)
                     self.instructions.insert(0, instruction)
-                    time.sleep(self.configuration.conf.getfloat("INDI", "polling interval"))
+                    time.sleep(self.confgetfloat("polling interval"))
 
                 elif instruction['name'] == "stop moving west":
                     self.remove_instruction(self.start_moving_west)
@@ -478,7 +464,7 @@ class OperateTelescopeINDI(threading.Thread):
                     break
             # If no instruction is in the queue, wait a short time.
             else:
-                time.sleep(self.configuration.conf.getfloat("INDI", "polling interval"))
+                time.sleep(self.confgetfloat("polling interval"))
 
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol("Ending OperateTelescope thread")
