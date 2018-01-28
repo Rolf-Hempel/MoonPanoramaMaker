@@ -48,7 +48,8 @@ class EditLandmarks(QtWidgets.QDialog, Ui_ViewLandmarks):
         QtWidgets.QDialog.__init__(self, parent)
         self.selected_landmark = selected_landmark
         # For each landmark a picture is stored in subdirectory "landmark_pictures".
-        self.picture_dir = os.path.join(os.getcwd(), 'landmark_pictures', '')
+        dirname, filename = os.path.split(os.path.abspath(__file__))
+        self.picture_dir = os.path.join(dirname, 'landmark_pictures', '')
         self.setupUi(self)
         self.landmarks = landmarks
         # Compute the range of selenographic longitudes of the sunlit part of the moon. A
