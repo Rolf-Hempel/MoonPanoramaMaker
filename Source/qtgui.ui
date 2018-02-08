@@ -37,10 +37,10 @@
        <string>Restart the whole workflow (new tile layout)</string>
       </property>
       <property name="text">
-       <string>Restart - R</string>
+       <string>(Re-)Start - S</string>
       </property>
       <property name="shortcut">
-       <string>R</string>
+       <string>S</string>
       </property>
      </widget>
     </item>
@@ -159,10 +159,10 @@
        <string>Continue recording with next unprocessed tile</string>
       </property>
       <property name="text">
-       <string>Start / continue recording - S</string>
+       <string>Start / continue recording - R</string>
       </property>
       <property name="shortcut">
-       <string>S</string>
+       <string>R</string>
       </property>
      </widget>
     </item>

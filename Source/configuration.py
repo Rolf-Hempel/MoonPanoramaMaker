@@ -53,7 +53,7 @@ class Configuration:
         self.camera_debug = False
         # If camera is emulated, insert a delay (in seconds) before sending the acknowledgement
         # message (to emulate exposure time).
-        self.camera_delay = 2.
+        self.camera_debug_delay = 2.
         #
         # Debug mode for auto-alignment visualization:
         self.alignment_debug = False
@@ -298,68 +298,64 @@ class Configuration:
                                    current version. Otherwise return False.
         """
 
+        # Old versions for which configuration file import is supported.
+        self.old_versions = {"MoonPanoramaMaker 0.9.3": 0, "MoonPanoramaMaker 0.9.5": 1}
 
         version_read = self.conf.get('Hidden Parameters', 'version')
         if version_read == self.version:
             # Configuration file matches current format. Nothing to be done.
             file_identical = True
             file_compatible = True
-            
-        elif version_read == "MoonPanoramaMaker 0.9.5":
-            # Update the version number.
-            self.conf.set('Hidden Parameters', 'version', self.version)
-            # Up to version 0.9.5 the ASCOM telescope driver was selected via a chooser GUI. Now
-            # the name of the ASCOM driver is given by a configuration parameter. Take the name
-            # of the ASCOM telescope hub for the telescope driver and remove the old configuration
-            # parameter names.
-            self.conf.set('ASCOM', 'telescope driver', self.conf.get('ASCOM', 'hub'))
-            self.conf.remove_option('ASCOM', 'chooser')
-            self.conf.remove_option('ASCOM', 'hub')
-            file_identical = False
-            file_compatible = True
-            
-        elif version_read == "MoonPanoramaMaker 0.9.3":
-            # The update support starts for version 0.9.3. Before that one, not many users had
-            # installed MoonPanoramaMaker. Update the version number.
-            self.conf.set('Hidden Parameters', 'version', self.version)
-            # Up to version 0.9.5 the ASCOM telescope driver was selected via a chooser GUI. Now
-            # the name of the ASCOM driver is given by a configuration parameter. Take the name
-            # of the ASCOM telescope hub for the telescope driver and remove the old configuration
-            # parameter names.
-            self.conf.set('ASCOM', 'telescope driver', self.conf.get('ASCOM', 'hub'))
-            self.conf.remove_option('ASCOM', 'chooser')
-            self.conf.remove_option('ASCOM', 'hub')
-            # The handling of session protocol has changed.
-            wp = self.conf.getboolean('Workflow', 'protocol')
-            if wp:
-                self.conf.set('Workflow', 'protocol level', '2')
-            else:
-                self.conf.set('Workflow', 'protocol level', '0')
-            self.conf.remove_option('Workflow', 'protocol')
-            # Add the parameter "focus on star" which was introduced with version 0.9.5.
-            self.conf.set('Workflow', 'focus on star', 'False')
-            # Add the "Alignment" section which was introduced with version 0.9.5.
-            self.conf.add_section('Alignment')
-            self.conf.set('Alignment', 'min autoalign interval', '30.')
-            self.conf.set('Alignment', 'max autoalign interval', '300.')
-            self.conf.set('Alignment', 'max alignment error', '50.')
-            # Set the repetition count parameter for each camera. This camera parameter was
-            # introduced with version 0.9.5., too. The parameter is in section "Camera" as well
-            # as in all parameter sets of supported camera models.
-            self.conf.set('Camera', 'repetition count', '1')
-            camlist = self.get_camera_list()
-            for cam in camlist:
-                self.conf.set('Camera ' + cam, 'repetition count', '1')
-            file_identical = False
-            file_compatible = True
-            
-        else:
-            # Parameter file cannot be made compatible.
+
+        elif version_read not in self.old_versions:
+            # Parameter file cannot be imported.
             file_identical = False
             file_compatible = False
 
-        # Set the "protocol_level" variable. This will control the amount of protocol output.
-        self.set_protocol_level()
+        else:
+            # File can be imported. Conversions are necessary, possibly in several steps.
+            if self.old_versions[version_read] < 1:
+                # Changes for file version 0.9.3:
+                #
+                # The handling of session protocol has changed.
+                wp = self.conf.getboolean('Workflow', 'protocol')
+                if wp:
+                    self.conf.set('Workflow', 'protocol level', '2')
+                else:
+                    self.conf.set('Workflow', 'protocol level', '0')
+                self.conf.remove_option('Workflow', 'protocol')
+                # Add the parameter "focus on star" which was introduced with version 0.9.5.
+                self.conf.set('Workflow', 'focus on star', 'False')
+                # Add the "Alignment" section which was introduced with version 0.9.5.
+                self.conf.add_section('Alignment')
+                self.conf.set('Alignment', 'min autoalign interval', '30.')
+                self.conf.set('Alignment', 'max autoalign interval', '300.')
+                self.conf.set('Alignment', 'max alignment error', '50.')
+                # Set the repetition count parameter for each camera. This camera parameter was
+                # introduced with version 0.9.5., too. The parameter is in section "Camera" as well
+                # as in all parameter sets of supported camera models.
+                self.conf.set('Camera', 'repetition count', '1')
+                camlist = self.get_camera_list()
+                for cam in camlist:
+                    self.conf.set('Camera ' + cam, 'repetition count', '1')
+
+            elif self.old_versions[version_read] < 2:
+                # Changes for file version 0.9.5 or earlier:
+                #
+                # The ASCOM telescope driver was selected via a chooser GUI. Now the name of the
+                # ASCOM driver is given by a configuration parameter. Take the name of the ASCOM
+                # telescope hub for the telescope driver and remove the old configuration
+                # parameter names.
+                self.conf.set('ASCOM', 'telescope driver', self.conf.get('ASCOM', 'hub'))
+                self.conf.remove_option('ASCOM', 'chooser')
+                self.conf.remove_option('ASCOM', 'hub')
+
+            # The configuration file could be imported, but the contents may not be up to date.
+            file_identical = False
+            file_compatible = True
+            # Update the version number.
+            self.conf.set('Hidden Parameters', 'version', self.version)
+
         return (file_identical, file_compatible)
 
     def set_protocol_level(self):

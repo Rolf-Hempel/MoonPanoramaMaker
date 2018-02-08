@@ -310,7 +310,7 @@ if __name__ == "__main__":
     configuration = Configuration()
     host = 'localhost'
     port = 9820
-    mysocket = SocketClientDebug(host, port, configuration.camera_delay)
+    mysocket = SocketClientDebug(host, port, configuration.camera_debug_delay)
     print("Client: socket connected")
     iso = ImageShift(configuration, mysocket, debug=configuration.alignment_debug)
     try:

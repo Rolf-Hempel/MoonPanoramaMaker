@@ -116,7 +116,8 @@ class StartQT5(QtWidgets.QMainWindow):
              self.ui.set_focus_area, self.ui.goto_focus_area, self.ui.start_continue_recording,
              self.ui.select_tile, self.ui.move_to_selected_tile, self.ui.set_tile_unprocessed,
              self.ui.set_all_tiles_unprocessed, self.ui.set_all_tiles_processed,
-             self.ui.show_landmark, self.ui.autoalignment, self.ui.set_tile_processed])
+             self.ui.new_landmark_selection, self.ui.show_landmark, self.ui.autoalignment,
+             self.ui.set_tile_processed])
         # Write the program version into the window title.
         self.setWindowTitle(self.configuration.version)
 
@@ -167,7 +168,18 @@ class StartQT5(QtWidgets.QMainWindow):
         # example, the "Enter" key was pressed.
         self.gui_context = ""
 
-        self.do_restart()
+        # The program workflow will do a fresh start next time the (Re-)Start button is pressed.
+        self.first_start = True
+
+        # All initialization steps have to be executed.
+        self.output_channel_initialization_flag = True
+        self.telescope_initialization_flag = True
+        self.camera_initialization_flag = True
+        self.new_tesselation_flag = True
+
+        self.set_text_browser("Press:\n - 'Edit configuration - C'  to set/review configuration "
+                              "parameters first, or\n - '(Re-)Start - S'  to start the workflow "
+                              "directly, using the parameters from previous session.")
 
     def setChildrenFocusPolicy(self, policy):
         """
@@ -192,6 +204,7 @@ class StartQT5(QtWidgets.QMainWindow):
 
         :return: -
         """
+
         editor = ConfigurationEditor(self.configuration)
         editor.exec_()
 
@@ -214,15 +227,30 @@ class StartQT5(QtWidgets.QMainWindow):
 
     def restart(self):
         """
-        This method is invoked with the "restart" GUI button. Set the context and write a
-        confirmation message to the text browser. If "Enter" is pressed (in this context), the
-        do_restart method (above) is called.
+        This method is invoked with the "(Re-)Start" GUI button. At the first invocation just start
+        the workflow.
+
+        If the button is pressed later in the workflow, ask the user for confirmation.
+        In this case, set the context and write a confirmation message to the text browser.
+        If "Enter" is pressed (in this context), the do_restart method is called.
 
         :return: -
         """
-        self.gui_context = "restart"
-        self.set_text_browser("Do you really want to restart? "
-                              "Confirm with 'enter', otherwise press 'esc'.")
+
+        if self.first_start:
+            self.first_start = False
+            if self.configuration.protocol_level > 0:
+                Miscellaneous.protocol(
+                    "Program start: Build the execution environment.")
+
+            # Begin environment setup with redirecting the output channel if requeseted. All steps
+            # will be executed bcause the corresponding flags have been set to True in __init__.
+            self.redirect_stdout()
+        else:
+            # Ask the user if he/she really wants to do a restart.
+            self.gui_context = "restart"
+            self.set_text_browser("Do you really want to restart? "
+                                  "Confirm with 'enter', otherwise press 'esc'.")
 
     def restart_acknowledged(self):
         """
@@ -233,24 +261,15 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         """
 
-        if self.configuration.protocol_level > 0:
-            print("")
-            Miscellaneous.protocol("The user requested a restart. Rebuild the execution environment.")
-
-        self.do_restart()
-
-    def do_restart(self):
-        """
-        Do a program restart. Initialize output channel redirection, telescope driver and camera
-        connections, and do a new tesselation. Then re-start the workflow.
-
-        :return: -
-        """
-
+        # Rebuild the whole execution environment.
         self.output_channel_initialization_flag = True
         self.telescope_initialization_flag = True
         self.camera_initialization_flag = True
         self.new_tesselation_flag = True
+
+        if self.configuration.protocol_level > 0:
+            print("")
+            Miscellaneous.protocol("The user requested a restart. Rebuild the execution environment.")
 
         self.redirect_stdout()
 
@@ -397,8 +416,10 @@ class StartQT5(QtWidgets.QMainWindow):
                 self.alignment_performed()
             else:
                 self.wait_for_alignment()
-        # During the first pass, a new landmark has to be selected.
+        # During the first pass, a new landmark has to be selected. Enable the "Select new landmark"
+        # button for later changes of this selection.
         else:
+            self.ui.new_landmark_selection.setEnabled(True)
             self.select_new_landmark()
 
     def prompt_new_landmark_selection(self):
