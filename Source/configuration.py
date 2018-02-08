@@ -339,7 +339,7 @@ class Configuration:
                 for cam in camlist:
                     self.conf.set('Camera ' + cam, 'repetition count', '1')
 
-            elif self.old_versions[version_read] < 2:
+            if self.old_versions[version_read] < 2:
                 # Changes for file version 0.9.5 or earlier:
                 #
                 # The ASCOM telescope driver was selected via a chooser GUI. Now the name of the

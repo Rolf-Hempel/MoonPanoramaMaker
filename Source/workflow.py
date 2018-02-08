@@ -224,9 +224,6 @@ class Workflow(QtCore.QThread):
                                         " ('), phase_angle: " + str(round(degrees(phase_angle), 2)) +
                                         ", pos_angle: " + str(round(degrees(pos_angle), 2)) +
                                         " (degrees)")
-                        Miscellaneous.protocol("Moon speed (arc min./hour), RA: " +
-                                    str(round(degrees(self.me.rate_ra) * 216000., 3)) + ", DE: " +
-                                    str(round(degrees(self.me.rate_de) * 216000., 3)))
 
                 self.tesselation_created = True
                 # print ("Signal the main GUI that the tesselation is initialized.")
@@ -300,6 +297,10 @@ class Workflow(QtCore.QThread):
                     print("")
                     Miscellaneous.protocol("Moving telescope to Moon limb.")
                 self.telescope.slew_to(ra, de)
+                if self.gui.configuration.protocol_level > 1:
+                    Miscellaneous.protocol("Moon speed (arc min./hour), RA: " + str(
+                        round(degrees(self.me.rate_ra) * 216000., 1)) + ", DE: " + str(
+                        round(degrees(self.me.rate_de) * 216000., 1)))
                 # Signal success to gui, start method "prompt_camera_rotated_acknowledged" in gui.
                 self.moon_limb_centered_signal.emit()
 
