@@ -1137,7 +1137,7 @@ class StartQT4(QtGui.QMainWindow):
         # To keep apart the various activities which are specified by pressing "Enter", the
         # gui_context variable carries the context where the program waits for the "Enter" event.
         # The context variable is reset and a specific action is triggered.
-        if type(event) == QtGui.QKeyEvent and event.isAutoRepeat() == False:
+        if type(event) == QtGui.QKeyEvent and not event.isAutoRepeat():
             if event.key() == 16777220:  # Enter key
                 if self.gui_context == "restart":
                     self.gui_context = ""
@@ -1224,7 +1224,7 @@ class StartQT4(QtGui.QMainWindow):
         :param event: event object
         :return: -
         """
-        if type(event) == QtGui.QKeyEvent and event.isAutoRepeat() == False:
+        if type(event) == QtGui.QKeyEvent and not event.isAutoRepeat():
             if event.key() == QtCore.Qt.Key_Down:
                 self.workflow.telescope.stop_move_south()
             if event.key() == QtCore.Qt.Key_Up:
