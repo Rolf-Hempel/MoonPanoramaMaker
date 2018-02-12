@@ -195,10 +195,14 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
         :return: -
         """
 
-        for ax in [self.ui.mplwidget.plotrect, self.ui.mplwidget.plotdecl]:
-			for line in ax.lines:
-				if line.get_label() == 'drift':
-					ax.lines.remove(line)
+        ax = self.ui.mplwidget.plotrect
+        for line in ax.lines:
+            if line.get_label() == 'drift':
+                ax.lines.remove(line)
+        ax = self.ui.mplwidget.plotdecl
+        for line in ax.lines:
+            if line.get_label() == 'drift':
+                ax.lines.remove(line)
         self.ui.mplwidget.plotDataPoints(self.time_offsets, self.ra_corrections,
                                          self.de_corrections,
                                          int(self.ui.spinBoxFirstIndex.text()) - 1,
