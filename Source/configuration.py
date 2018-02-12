@@ -299,7 +299,7 @@ class Configuration:
         """
 
         # Old versions for which configuration file import is supported.
-        self.old_versions = {"MoonPanoramaMaker 0.9.3": 0, "MoonPanoramaMaker 0.9.5": 1}
+        self.old_versions = ["MoonPanoramaMaker 0.9.3", "MoonPanoramaMaker 0.9.5"]
 
         version_read = self.conf.get('Hidden Parameters', 'version')
         if version_read == self.version:
@@ -314,7 +314,7 @@ class Configuration:
 
         else:
             # File can be imported. Conversions are necessary, possibly in several steps.
-            if self.old_versions[version_read] < 1:
+            if self.old_versions.index(version_read) == 0:
                 # Changes for file version 0.9.3:
                 #
                 # The handling of session protocol has changed.
@@ -339,7 +339,7 @@ class Configuration:
                 for cam in camlist:
                     self.conf.set('Camera ' + cam, 'repetition count', '1')
 
-            if self.old_versions[version_read] < 2:
+            if self.old_versions.index(version_read) < 2:
                 # Changes for file version 0.9.5 or earlier:
                 #
                 # The ASCOM telescope driver was selected via a chooser GUI. Now the name of the
@@ -431,12 +431,14 @@ if __name__ == "__main__":
     editor.show()
     app.exec_()
 
-    print("Current version: ", c.version)
+    print ("Current version: ", c.version)
+    print ("Configuration read from file: " + str(c.configuration_read))
+    print ("File identical: " + str(c.file_identical))
+    print ("File compatible: " + str(c.file_compatible))
+
     longitude = c.conf.getfloat("Geographical Position", "longitude")
     print("longitude: ", longitude)
 
-    if c.configuration_read:
-        print ("Configuration read from file.")
     if editor.output_channel_changed:
         print ("Output channel changed.")
     if editor.telescope_changed:
