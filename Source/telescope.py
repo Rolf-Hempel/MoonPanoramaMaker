@@ -256,7 +256,7 @@ class OperateTelescope(threading.Thread):
                     current_time = time.mktime(datetime.now().timetuple())
                     current_ra = radians(self.tel.RightAscension * 15.)
                     current_de = radians(self.tel.Declination)
-                    # Compute whre the telescope should be aimed at this time.
+                    # Compute where the telescope should be aimed at this time.
                     target_ra = start_ra + rate_ra * (current_time - start_time)
                     target_de = start_de + rate_de * (current_time - start_time)
                     # The telescope has been moved too little in RA. Issue a PulseGuide.
