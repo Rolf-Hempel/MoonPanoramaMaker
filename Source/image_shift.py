@@ -207,8 +207,8 @@ class ImageShift:
         keypoints with consistent shift values, number of outliers
         """
 
-        filename_appendix = "alignment_image-" + "{0:0>3}".format(
-            self.alignment_image_counter) + ".pgm"
+        filename_appendix = "alignment_image-{0:0>3}.pgm".format(
+            self.alignment_image_counter)
 
         try:
             if self.configuration.camera_debug:
