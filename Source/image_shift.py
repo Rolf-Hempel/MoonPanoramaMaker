@@ -43,17 +43,17 @@ class ImageShift:
     of the telescope. At initialization time, a reference picture is taken (at this time the user
     has brought the landmark under the camera cross hairs). During auto-alignment operations, new
     images are taken and their offset versus the reference frame is determined.
-    
+
     ImageShift uses the ORB keypoint detection mechanism from OpenCV. For outlier detection in
     shift computation it uses the DBSCAN clustering algorithm from scikit-learn.
-    
+
     """
 
     def __init__(self, configuration, camera_socket, debug=False):
         """
         Initialize the ImageShift object, capture the reference frame and find keypoints in the
         reference frame.
-        
+
         :param configuration: object containing parameters set by the user
         :param camera_socket: the socket_client object used by the camera
         :param debug: if set to True, display keypoints and matches in Matplotlib windows.
@@ -156,8 +156,8 @@ class ImageShift:
         """
         For an image array (as produced by the camera), optimize brightness and contrast. Store the
         image in the reference image directory. Then use ORB for keypoint detection and descriptor
-        computation. 
-        
+        computation.
+
         :param image_array: Numpy array with image as produced by the camera object.
         :param filename_appendix: String to be appended to filename. The filename begins with
         the current time (hours, minutes, seconds) for later reference.
@@ -190,7 +190,7 @@ class ImageShift:
         """
         Create the filename for an alignment image. The name begins with time info
         (hour-minutes-seconds), followed by an underscore.
-        
+
         :return: filename
         """
 
@@ -202,13 +202,13 @@ class ImageShift:
         """
         Take an image through the camera_socket, normalize and analyze it, and compute the shift
         (linear translation) of this image as compared to the reference frame.
-        
+
         :return: A tuple of four objects: shift in x (radians), shift in y (radians), number of
         keypoints with consistent shift values, number of outliers
         """
 
-        filename_appendix = "alignment_image-" + "{0:0>3}".format(
-            self.alignment_image_counter) + ".pgm"
+        filename_appendix = "alignment_image-{0:0>3}.pgm".format(
+            self.alignment_image_counter)
 
         try:
             if self.configuration.camera_debug:

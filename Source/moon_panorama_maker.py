@@ -43,13 +43,13 @@ class StartQT4(QtGui.QMainWindow):
     This class is the main class of the MoonPanoramaMaker software. It implements the main gui and
     through it communicates with the user. It creates the workflow thread which asynchronously
     controls all program activities.
-    
+
     """
 
     def __init__(self, parent=None):
         """
         Initialize the MoonPanoramaMaker environment.
-        
+
         :param parent: None
         """
 
@@ -159,7 +159,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         This method is needed so that arrow key events are associated with this object. The arrow
         keys are used to make pointing corrections to the telescope mount.
-        
+
         :param policy: focus policy to be used
         :return: -
         """
@@ -176,7 +176,7 @@ class StartQT4(QtGui.QMainWindow):
         This method is invoked with the "configuration" gui button. Open the configuration editor.
         If the configuration is changed, close the tile visualization window and restart the
         workflow.
-        
+
         :return: -
         """
         editor = ConfigurationEditor(self.configuration)
@@ -193,7 +193,7 @@ class StartQT4(QtGui.QMainWindow):
     def do_restart(self):
         """
         Do a program restart. First close the tile visualization window. Then restart the workflow.
-        
+
         :return: -
         """
 
@@ -208,7 +208,7 @@ class StartQT4(QtGui.QMainWindow):
         This method is invoked with the "restart" gui button. Set the context and write a
         confirmation message to the text browser. If "Enter" is pressed (in this context), the
         do_restart method (above) is called.
-        
+
         :return: -
         """
         self.gui_context = "restart"
@@ -221,7 +221,7 @@ class StartQT4(QtGui.QMainWindow):
         Then check if camera automation is selected in the configuration. If so, remind the user
         to start the FireCapture program. If camera automation is de-selected, skip this reminder,
         and proceed with method "camera_connect_request_answered".
-        
+
         :return: -
         """
 
@@ -250,9 +250,9 @@ class StartQT4(QtGui.QMainWindow):
     def camera_connect_request_answered(self):
         """
         Start camera initialization in workflow thread, if camera automation is active. This method
-        is either invoked directly from method "start_workflow", or by hitting the "Enter" key 
+        is either invoked directly from method "start_workflow", or by hitting the "Enter" key
         within the "camera connect request".
-        
+
         :return: -
         """
 
@@ -263,7 +263,7 @@ class StartQT4(QtGui.QMainWindow):
         This method is started by the workflow thread when camera initialization is finished.
         Set status flags and compute the optimal coverage of the sunlit part of the moon with
         camera tiles.
-        
+
         :param de_center: declination of the moon center
         :param m_diameter: diameter (angle) of the moon
         :param phase_angle: phase angle of the sunlit moon phase. 0 corresponds to new moon, and
@@ -294,7 +294,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         This method is invoked by pressing the gui button "New Landmark Selection". Before doing
         so, ask the user for acknowledgement. Hitting "Enter" leads to method "select_new_landmark".
-        
+
         :return: -
         """
 
@@ -308,7 +308,7 @@ class StartQT4(QtGui.QMainWindow):
         observation workflow and ask the user to select a new landmark. When the selection is done,
         compute the offset of the landmark relative to the moon center and enable further gui
         activities.
-        
+
         :return: -
         """
 
@@ -340,7 +340,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         The "Alignment" gui button is pressed. Ask the user for acknowledgement before a new
         alignment is done.
-        
+
         :return: -
         """
 
@@ -352,7 +352,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         Either the "Enter" key is pressed for acknowledgement, or "select_new_landmark" has been
         executed. Slew the telescope to the expected position of the alignment point in the sky.
-        
+
         :return: -
         """
 
@@ -374,7 +374,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         The workflow thread has sent the "alignment_point_reached_signal". Prompt the user to center
         the landmark in the camera live view.
-        
+
         :return: -
         """
 
@@ -394,7 +394,7 @@ class StartQT4(QtGui.QMainWindow):
     def perform_alignment(self):
         """
         The user has centered the landmark. Now take the alignment point.
-        
+
         :return: -
         """
 
@@ -404,7 +404,7 @@ class StartQT4(QtGui.QMainWindow):
     def alignment_performed(self):
         """
         Triggered by the workflow thread when the alignment point has been processed.
-        
+
         :return: -
         """
 
@@ -428,7 +428,7 @@ class StartQT4(QtGui.QMainWindow):
         auxiliary method resets the button to its original (not triggered) state and reconnects it
         with the method which is invoked to start autoalignment. Finally, flags which indicate
         autoalignment to be active are reset to their original state.
-        
+
         :return: -
         """
 
@@ -447,7 +447,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         The auto-alignment button is pressed. Prompt the user for acknowledgement and set the
         context for the "Enter" key.
-        
+
         :return: -
         """
 
@@ -459,7 +459,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         The user has acknowledged that auto-alignment is to be switched on. Change the appearance of
         the gui button and slew to the alignment point.
-        
+
         :return: -
         """
 
@@ -494,7 +494,7 @@ class StartQT4(QtGui.QMainWindow):
         When the user has acknowledged that the landmark is properly centered, the reference frame
         still image is captured. In later alignment operations the shift relative to this reference
         frame is measured and used to determine the misalignment angles.
-        
+
         :return: -
         """
 
@@ -508,7 +508,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         The "Enter" key was pressed in context "autoalignment_point_reached". Trigger the workflow
         thread to initialize autoalignment.
-        
+
         :return: -
         """
 
@@ -521,7 +521,7 @@ class StartQT4(QtGui.QMainWindow):
         Triggered by the "autoalignment_performed_signal" in the workflow thread. Auto-alignment
         initialization might have failed, e.g. if the reference frame captured was too blurry. In
         this case de-activate auto-alignment and re-activate manual alignment.
-        
+
         :param success: True if auto-alignment initialization was successful, False otherwise.
         :return: -
         """
@@ -554,7 +554,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         Connected to the "Auto-Align off" gui button while auto-alignment is active. Ask the user
         before really switching back to manual alignment.
-        
+
         :return: -
         """
 
@@ -567,7 +567,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         Invoked either automatically (auto-alignment failed) or by the user. Switch back to
         manual alignment and reset auto-alignment button.
-        
+
         :return: -
         """
 
@@ -586,7 +586,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         The "Correct for Drift" button is pressed. Open a gui dialog for displaying available
         alignment points and selecting points used for drift determination.
-        
+
         :return: -
         """
 
@@ -598,7 +598,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         The "Camera Orientation" button is pressed. Prompt the user for acknowledgement, because
         in the middle of video acquisition this operation has severe consequences.
-        
+
         :return: -
         """
 
@@ -612,7 +612,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         Invoked either automatically after first alignment (method "alignment_performed") or on
         user request.
-        
+
         :return: -
         """
 
@@ -634,7 +634,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         Triggered by the workflow thread ("moon_limb_centered_signal") when the telescope has
         reached the moon limb midpoint. Prompt the user to turn the camera properly.
-        
+
         :return: -
         """
 
@@ -648,7 +648,7 @@ class StartQT4(QtGui.QMainWindow):
         The user has rotated the camera and acknowledged by pressing "Enter". The system is now
         ready for video acquisition. Activate the buttons of the record group and display an
         info message in the text browser.
-        
+
         :return: -
         """
 
@@ -678,7 +678,7 @@ class StartQT4(QtGui.QMainWindow):
         manually to an appropriate location for focus checking, and to confirm the position with
         pressing "Enter". This position is stored. The telescope can be moved back to this point
         later by pressing "Goto Focus Area".
-        
+
         :return: -
         """
 
@@ -699,7 +699,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         The user has acknowledged the position of the focus area. Trigger the workflow thread to
         capture the position.
-        
+
         :return: -
         """
 
@@ -714,7 +714,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         Triggered by the "focus_area_set_signal" from the workflow thread. The focus area position
         is captured. Now the user may proceed with video acquisition.
-        
+
         :return: -
         """
 
@@ -729,7 +729,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         Triggered by pressing the "Goto Focus Area" button. Move the telescope to the recorded
         position where camera focus can be checked.
-        
+
         :return: -
         """
 
@@ -747,7 +747,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         The user can choose to focus on a star or on a surface feature. Set the button labels
         accordingly.
-        
+
         :return: -
         """
 
@@ -767,12 +767,12 @@ class StartQT4(QtGui.QMainWindow):
         Record the next video. Identify the next tile to be recorded. If there is one left,
         trigger the workflow thread to move the telescope to the tile's location and record the
         video.
-        
+
         This method is invoked from three places:
         - Manually by pressing the gui button "Start / Continue Recording"
         - In manual camera mode, by pressing the enter key when the user has taken a video.
         - In automatic camera mode, when the "signal_from_camera" method is executed.
-        
+
         :return: -
         """
 
@@ -818,11 +818,11 @@ class StartQT4(QtGui.QMainWindow):
         """
         Find the next tile to be recorded, i.e. which is not marked as "processed". Start searching
         with the index following the current "active_tile_number".
-        
+
         A special case is when an auto-alignment error is too large. Then the videos taken since
         the previous auto-alignment are discarded and have to be repeated. In this case, go back to
         the first of these tiles and continue from there.
-        
+
         :return: (next tile, index of next tile), or (None, -1) if no "unprocessed" tile is left.
         """
 
@@ -861,7 +861,7 @@ class StartQT4(QtGui.QMainWindow):
         Change the color of the currently "active_tile_number" in the tile visualization window to
         indicate that it is "processed". If auto-alignment is active, keep a list of tiles processed
         since last alignment point (for later rollback).
-        
+
         :return: -
         """
 
@@ -877,7 +877,7 @@ class StartQT4(QtGui.QMainWindow):
         Triggered by pressing the "Select Tile" bui button. Open a gui for selecting a tile index.
         Then enable the "Move to Selected Tile" button which can be used to drive the mount to the
         tile's position.
-        
+
         :return: -
         """
 
@@ -906,7 +906,7 @@ class StartQT4(QtGui.QMainWindow):
         window, or by the variable "active_tile_number" of the workflow object not being set to -1.
         First, check if one mechanism results in an non-empty list. If so, present the list to the
         user and ask for acknowledgement that these tiles should be marked as unprocessed.
-        
+
         :return: -
         """
 
@@ -929,7 +929,7 @@ class StartQT4(QtGui.QMainWindow):
         The user has confirmed that the selected tile numbers should be marked unprocessed. Method
         "mark_unprocessed" in class "TileVisualization" both sets the corresponding flags and
         changes the color of the tiles in the visualization window.
-        
+
         :return: -
         """
 
@@ -947,7 +947,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         Triggered by pressing the "Set All Tiles Unprocessed" button. Set the context for the
         "Enter" key and ask the user for confirmation.
-        
+
         :return: -
         """
 
@@ -961,7 +961,7 @@ class StartQT4(QtGui.QMainWindow):
         The user has confirmed that all tiles should be set unprocessed by pressing the "Enter" key.
         Method "mark_all_unprocessed" in class "TileVisualization" both sets the corresponding flags
         and changes the color of the tiles in the visualization window.
-        
+
         :return: -
         """
 
@@ -978,7 +978,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         Triggered by pressing the "Set All Tiles Processed" button. Set the context for the
         "Enter" key and ask the user for confirmation.
-        
+
         :return: -
         """
 
@@ -992,7 +992,7 @@ class StartQT4(QtGui.QMainWindow):
         The user has confirmed that all tiles should be set processed by pressing the "Enter" key.
         Method "mark_all_processed" in class "TileVisualization" both sets the corresponding flags
         and changes the color of the tiles in the visualization window.
-        
+
         :return: -
         """
 
@@ -1008,7 +1008,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         Triggered by the gui button "Move to Selected Tile". Mark the tile active in the tile
         visualization window and trigger the workflow thread to move the telescope to the tile.
-        
+
         :return: -
         """
 
@@ -1029,7 +1029,7 @@ class StartQT4(QtGui.QMainWindow):
         If a tile has been selected as active, but then it is not processed, it can be reset with
         this method. It is marked as unprocessed in the TileConstructor object and in the tile
         visualization window, and the currently "active_tile_number" is reset to -1.
-        
+
         :return: -
         """
 
@@ -1046,7 +1046,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         For all buttons of the main gui: save the current state (enabled / disabled), then disable
         all buttons. The saved state is restored with method "reset_key_status".
-        
+
         :return: -
         """
 
@@ -1066,7 +1066,7 @@ class StartQT4(QtGui.QMainWindow):
         This method is used if in such a situation the saved status of a button must be changed. At
         the next call of "reset_key_status" this button will then be changed to this new status
         insted to the one saved originally.
-        
+
         :param button: button object in self.button_list
         :param new_status: new saved status of this button. True if "isEnabled", otherwise False.
         :return: -
@@ -1079,7 +1079,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         Reverse operation to save_key_status: Restore the status of all gui buttons and reset the
         flag "key_status_saved" to False.
-        
+
         :return: -
         """
 
@@ -1090,7 +1090,7 @@ class StartQT4(QtGui.QMainWindow):
     def disable_keys(self, button_list):
         """
         Disable a specific list of gui buttons.
-        
+
         :param button_list: list with selected gui buttons
         :return: -
         """
@@ -1115,8 +1115,8 @@ class StartQT4(QtGui.QMainWindow):
         acquisition is finished. (The signal is connected with this method in the workflow thread.)
         If in the meantime the "Esc" key was pressed, stop the video acquisition loop. Otherwise
         continue with method "start_continue_recording".
-        
-        :return: 
+
+        :return:
         """
 
         if self.camera_interrupted:
@@ -1129,7 +1129,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         Define activities to be performed when specific keyboard keys are pressed. This method
         overrides the standard activity of the main window class.
-        
+
         :param event: event object
         :return: -
         """
@@ -1137,7 +1137,7 @@ class StartQT4(QtGui.QMainWindow):
         # To keep apart the various activities which are specified by pressing "Enter", the
         # gui_context variable carries the context where the program waits for the "Enter" event.
         # The context variable is reset and a specific action is triggered.
-        if type(event) == QtGui.QKeyEvent and event.isAutoRepeat() == False:
+        if type(event) == QtGui.QKeyEvent and not event.isAutoRepeat():
             if event.key() == 16777220:  # Enter key
                 if self.gui_context == "restart":
                     self.gui_context = ""
@@ -1220,11 +1220,11 @@ class StartQT4(QtGui.QMainWindow):
         """
         The telescope moves as long as an arrow key is pressed. When it is released, tell the
         telescope thread to stop the motion.
-        
+
         :param event: event object
         :return: -
         """
-        if type(event) == QtGui.QKeyEvent and event.isAutoRepeat() == False:
+        if type(event) == QtGui.QKeyEvent and not event.isAutoRepeat():
             if event.key() == QtCore.Qt.Key_Down:
                 self.workflow.telescope.stop_move_south()
             if event.key() == QtCore.Qt.Key_Up:
@@ -1238,7 +1238,7 @@ class StartQT4(QtGui.QMainWindow):
         """
         Display a text in the text browser field of the main gui. This is used for messages to the
         user and for prompts for user actions.
-        
+
         :param text: string to be displayed in the text browser
         :return: -
         """
@@ -1252,7 +1252,7 @@ class StartQT4(QtGui.QMainWindow):
         not be available. Read out flags to decide which infos to present. The status information
         is concatenated into a single "status_text" which eventually is written into the main gui
         status bar.
-        
+
         :return: -
         """
 
@@ -1300,8 +1300,8 @@ class StartQT4(QtGui.QMainWindow):
     def closeEvent(self, evnt):
         """
         When the user asks to close the main gui, a dialog is presented asking for confirmation.
-        In case the user confirms, do cleanup activities before closing the main gui. 
-        
+        In case the user confirms, do cleanup activities before closing the main gui.
+
         :param evnt: event object
         :return: -
         """
@@ -1339,13 +1339,13 @@ class TileNumberInput(QtGui.QDialog, Ui_TileNumberInputDialog):
     """
     This class extends the (generated) class Ui_TileNumberInputDialog. Methods __init__ and accept
     override their parent versions.
-    
+
     """
 
     def __init__(self, start_value, value_context, parent=None):
         """
         Initialization of the TileNumberInputDialog.
-        
+
         :param start_value: the spinBox is preset at this particular start value.
         :param value_context: name of an object where the entered spinBox value is to be stored.
         """
@@ -1359,7 +1359,7 @@ class TileNumberInput(QtGui.QDialog, Ui_TileNumberInputDialog):
     def accept(self):
         """
         On exit from the dialog, save the selected tile number.
-        
+
         :return: -
         """
 

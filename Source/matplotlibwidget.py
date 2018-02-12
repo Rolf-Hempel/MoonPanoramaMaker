@@ -29,7 +29,7 @@ class MatplotlibWidget(Canvas):
     """
     This widget creates the two plots of alignment shifts in RA and DE for the compute_drift_rate
     dialog.
-    
+
     """
     def __init__(self, parent=None, hold=False):
         super(MatplotlibWidget, self).__init__(Figure())
@@ -61,7 +61,7 @@ class MatplotlibWidget(Canvas):
                        first_index, last_index):
         """
         Plot alignment data points.
-        
+
         :param al_point_numbers: number of available alignment points
         :param ra_corrections: list with corrections in RA for all alignment points (in arc minutes)
         :param de_corrections: list with corrections in DE for all alignment points (in arc minutes)

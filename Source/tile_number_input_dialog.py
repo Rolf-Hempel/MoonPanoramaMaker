@@ -50,4 +50,3 @@ class Ui_TileNumberInputDialog(object):
     def retranslateUi(self, TileNumberInputDialog):
         TileNumberInputDialog.setWindowTitle(QtGui.QApplication.translate("TileNumberInputDialog", "Tile Chooser", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("TileNumberInputDialog", "Enter tile number:", None, QtGui.QApplication.UnicodeUTF8))
-

@@ -62,4 +62,3 @@ class Ui_ViewLandmarks(object):
     def retranslateUi(self, ViewLandmarks):
         ViewLandmarks.setWindowTitle(_translate("ViewLandmarks", "Select Landmark", None))
         self.OKButton.setText(_translate("ViewLandmarks", "OK", None))
-

@@ -34,14 +34,14 @@ class SocketClient:
     video and still image acquisition through FireCapture. For video acquisition the blocking method
     acquire_video is provided. Non-blocking video acquisition may be coded by using the lower-level
     send and receive methods directly.
-     
+
     """
 
     def __init__(self, host, port):
         """
         Initialization: create a socket connection to the socket server in the MoonPanoramaMaker
         plugin in FireCapture.
-        
+
         :param host: host id for the socket connection
         :param port: port id on which the socket server is listening
         """
@@ -53,7 +53,7 @@ class SocketClient:
         """
         Send a string over the socket connection. If a failure occurs, a RuntimeError exception is
         raised.
-        
+
         :param msg: message to be sent (string)
         :return: number of bytes sent
         """
@@ -67,7 +67,7 @@ class SocketClient:
         Receive a message (string) through the socket connection. If the socket connection is
         interrupted during the operation, a RuntimeException is raised. Please note that this
         method blocks if less bytes than recv_count are to be received.
-        
+
         :param recv_count: number of bytes to be received
         :return: message (string) received
         """
@@ -96,7 +96,7 @@ class SocketClient:
     def myreceive_int(self, length):
         """
         Receive an integer value through the socket.
-        
+
         :param length: length of the integer to be received (in bytes, usually 4, can be shorter)
         :return: the value (int) of the integer received
         """
@@ -117,7 +117,7 @@ class SocketClient:
         character string File_name_appendix is used to encode detailed info (e.g. MPM tile numbers)
         into the names of the video files. It is appended to the file name by FireCapture. The
         string must be 9 characters long and can be anything except "terminate" or "still_pic".
-        
+
         :param file_name_appendix: character string to be appended to the filename by FireCapture
         :return: character returned by FireCapture as acknowledgement
         """
@@ -132,7 +132,7 @@ class SocketClient:
         the image can be either 8 or 16 bit. The full-scale camera image is reduced in size both
         in x and y by parameter "compression_factor" (max. 2 digits). The size reduction is done on
         the FireCapture side to reduce network traffic.
-        
+
         :param compression_factor: factor by which pixel counts are to be reduced in both x and y
         :return: tuple with four items: the image_array (numpy style), the width and height of the
         image in pixels, and the dynamic depth of the image (1 for 8bit, 2 for 16bit).
@@ -169,7 +169,7 @@ class SocketClient:
     def close(self):
         """
         Close the socket connection.
-        
+
         :return: -
         """
 
@@ -191,7 +191,7 @@ class SocketClientDebug:
         read. Since there will be no socket communication, parameters host and port are not used.
         Instead of using the camera to capture still images, images are read from a local
         subdirectory.
-        
+
         :param host: host id for the socket connection (ignored)
         :param port: port id on which the socket server is listening (ignored)
         :param delay: delay (seconds) before acknowledgement message is sent
@@ -209,7 +209,7 @@ class SocketClientDebug:
     def mysend(self, text):
         """
         Dummy method: do not do anything.
-        
+
         :param text: text of the message (ignored)
         :return: -
         """
@@ -220,7 +220,7 @@ class SocketClientDebug:
         """
         Dummy method: no receive operation is performed. A faked message of the expected length is
         returned.
-        
+
         :param recv_count: number of bytes to be received
         :return: message (string) received (faked) of length recv_count
         """
@@ -232,7 +232,7 @@ class SocketClientDebug:
     def acquire_video(self, file_name_appendix):
         """
         Dummy method: no video acquisition is triggered. Just return the acknowledgement character.
-        
+
         :param file_name_appendix: character string to be appended to the filename (ignored)
         :return: character "a" as acknowledgement
         """
@@ -247,7 +247,7 @@ class SocketClientDebug:
         be reduced in size by specifying a "comression_factor" > 1. Make sure not to call this
         method more often than there are images in the directory. Otherwise a RuntimeExecption is
         raised.
-        
+
         :param compression_factor: factor by which pixel counts are to be reduced in both x and y
         :return: tuple with four items: the image_array (numpy style), the width and height of the
         image in pixels, and the dynamic depth of the image (1 for 8bit).
@@ -276,7 +276,7 @@ class SocketClientDebug:
     def close(self):
         """
         Dummy method for closing the socket.
-        
+
         :return: -
         """
 

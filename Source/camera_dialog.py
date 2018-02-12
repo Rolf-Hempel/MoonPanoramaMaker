@@ -174,4 +174,3 @@ class Ui_CameraDialog(object):
         self.pixel_horizontal.setText(_translate("CameraDialog", "Pixel count horizontal", None))
         self.repetition_count.setText(_translate("CameraDialog", "Repetition count", None))
         self.buttonBox.setToolTip(_translate("CameraDialog", "Save or discard new input", None))
-

@@ -565,4 +565,3 @@ class Ui_ConfigurationDialog(object):
         self.max_alignment_error.setText(_translate("ConfigurationDialog", "Max alignment error (%)", None))
         self.foxus_on_star.setText(_translate("ConfigurationDialog", "Focus on a star (True / False)", None))
         self.buttonBox.setToolTip(_translate("ConfigurationDialog", "Save all parameters to configuration file or discard all changes", None))
-
