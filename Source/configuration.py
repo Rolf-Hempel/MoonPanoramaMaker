@@ -376,9 +376,9 @@ class Configuration:
         :return: -
         """
 
-        config_file = open(self.config_filename, 'w')
-        self.conf.write(config_file)
-        config_file.close()
+        with open(self.config_filename, 'w') as config_file:
+            self.conf.write(config_file)
+
 
 
 if __name__ == "__main__":
