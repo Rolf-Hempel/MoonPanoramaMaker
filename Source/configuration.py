@@ -338,10 +338,7 @@ class Configuration:
         :return: list of all available camera names (strings)
         """
 
-        camera_list = []
-        for name in self.conf.sections():
-            if name[:7] == 'Camera ':
-                camera_list.append(name[7:])
+        camera_list = [name[7:] for name in self.conf.sections() if name[:7] == 'Camera ']
         return camera_list
 
     def copy_camera_configuration(self, name):
