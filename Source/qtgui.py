@@ -169,4 +169,3 @@ class Ui_MainWindow(object):
         self.autoalignment.setToolTip(_translate("MainWindow", "Switch on / off auto-alignment", None))
         self.autoalignment.setText(_translate("MainWindow", "Auto-Alignment on - B", None))
         self.autoalignment.setShortcut(_translate("MainWindow", "B", None))
-

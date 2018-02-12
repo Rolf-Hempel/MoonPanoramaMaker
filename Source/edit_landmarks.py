@@ -34,12 +34,12 @@ class EditLandmarks(QtGui.QDialog, Ui_ViewLandmarks):
     of available landmarks. If the user selects a landmark from the combobox, the corresponding
     picture of the landmark is displayed. The user acknowledges the landmark selection with pressing
     the OK button.
-    
+
     """
 
     def __init__(self, selected_landmark, landmarks, colong, parent=None):
         """
-        
+
         :param selected_landmark: start value for the selected landmark name (string)
         :param landmarks: dictionary with landmark names and selenographic coordinates
         :param colong: current selenographic co-longitude of the sun
@@ -77,7 +77,7 @@ class EditLandmarks(QtGui.QDialog, Ui_ViewLandmarks):
     def combobox(self):
         """
         Populate the comboBox with the sunlit landmarks.
-        
+
         :return: list with names of sunlit landmarks.
         """
 
@@ -100,7 +100,7 @@ class EditLandmarks(QtGui.QDialog, Ui_ViewLandmarks):
     def refresh(self):
         """
         When the comboBox index changes, get the picture of the selected landmark and display it.
-        
+
         :return: -
         """
 
@@ -111,7 +111,7 @@ class EditLandmarks(QtGui.QDialog, Ui_ViewLandmarks):
     def ok(self):
         """
         Store the name of the landmark eventually selected and close the gui.
-        
+
         :return: -
         """
         self.selected_landmark = self.combobox_filename

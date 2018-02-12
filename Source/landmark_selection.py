@@ -38,14 +38,14 @@ class LandmarkSelection:
     This class keeps a list of landmark features on the moon and provides methods for selecting
     a specific landmark as well as coordinate transformations which eventually give the offsets in
     RA and DE relative to the moon center.
-    
+
     """
     def __init__(self, me, configuration):
         """
         Initialization of the landmark list. For each landmark there must be a file "landmark.png"
         in the subdirectory "landmark_pictures". This picture shows a section of the moon with
         arrows pointing at the selected landmark.
-        
+
         :param me: object with positions of the sun and moon, including libration info
         :param configuration: object containing parameters set by the user
         """
@@ -81,7 +81,7 @@ class LandmarkSelection:
         selection. If the user has selected a landmark, compute true topocentric offset angles in
         (RA, DE) for the landmark relative to the moon center and set the "landmark_selected" flag
         to True. If no landmark is selected, set the flag to False.
-        
+
         :param date_time: Datetime object with current time information
         :return: Offsets in (RA, DE) of landmark relative to the center of the moon
         """
@@ -102,7 +102,7 @@ class LandmarkSelection:
         """
         Compute offsets in (RA, DE) relative to the moon center for the landmark feature. Take into
         account topocentric parallax and libration.
-        
+
         :param landmark: name of the landmark (String)
         :return: offset (radians) in (RA, DE) of landmark relative to moon center
         """
@@ -126,7 +126,7 @@ class LandmarkSelection:
         """
         Translate selenographic coordinates on the moon into true topocentric displacements in
         (RA, DE).
-        
+
         :param long: selenographic longitude of landmark
         :param lat: selenographic latitude of landmark
         :return: offset (radians) in (RA, DE) of landmark relative to moon center

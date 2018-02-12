@@ -62,4 +62,3 @@ class Ui_DisplayLandmark(object):
     def retranslateUi(self, DisplayLandmark):
         DisplayLandmark.setWindowTitle(_translate("DisplayLandmark", "Show Selected Landmark", None))
         self.landmark_name.setText(_translate("DisplayLandmark", "TextLabel", None))
-

@@ -39,16 +39,16 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
     """
     Update the parameters used by MoonPanoramaMaker which are stored in the configuration object.
     The interaction with the user is through the ConfigurationDialog class.
-    
+
     """
 
     def __init__(self, configuration, parent=None):
         """
         Initialize the text fields in the gui based on the configuration object, and connect
         gui signals with methods to update the configuration object entries.
-        
+
         :param configuration: object containing parameters set by the user
-        :param parent: 
+        :param parent:
         """
 
         QtGui.QDialog.__init__(self, parent)
@@ -138,7 +138,7 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
     def longitude_write(self):
         """
         If the parameter has been changed, set the configuration_changed flag to True.
-        
+
         :return: -
         """
 
@@ -436,7 +436,7 @@ class ConfigurationEditor(QtGui.QDialog, Ui_ConfigurationDialog):
         """
         If the OK button is clicked and the configuration has been changed, test all parameters for
         validity. In case an out-of-bound value is entered, open an error correction dialog window.
-        
+
         :return: -
         """
 

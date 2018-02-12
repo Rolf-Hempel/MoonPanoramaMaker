@@ -30,14 +30,14 @@ class CameraConfigurationEditor(QtGui.QDialog, Ui_CameraDialog):
     """
     Update the info stored for a specific camera model in the configuration object. The
     interaction with the user is through the camera_dialog.ui gui.
-    
+
     """
 
     def __init__(self, configuration, camera_name, parent=None):
         """
         Read the current camera information from the configuration object and populate the text
         fields of the editor gui.
-        
+
         :param configuration: object containing parameters set by the user
         :param camera_name: String with the name of the camera
         """
@@ -101,7 +101,7 @@ class CameraConfigurationEditor(QtGui.QDialog, Ui_CameraDialog):
         This method is invoked when the OK button is pressed. If at least one parameter has been
         changed, all text fields are tested for valid input data. Valid data are stored in the
         configuration object. If a test fails, a dialog prompts the user for correction.
-        
+
         :return: -
         """
         if self.configuration_changed:

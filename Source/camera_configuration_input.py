@@ -35,7 +35,7 @@ class CameraConfigurationInput(QtGui.QDialog, Ui_CameraDialog):
     def __init__(self, configuration, parent=None):
         """
         Open an editor gui for entering parameters for a new camera model.
-        
+
         :param configuration: object containing parameters set by the user
         """
 
@@ -85,7 +85,7 @@ class CameraConfigurationInput(QtGui.QDialog, Ui_CameraDialog):
         This method is invoked when the OK button is pressed. If at least one parameter has been
         changed, all text fields are tested for valid input data. Valid data are stored in the
         configuration object. If a test fails, a dialog prompts the user for correction.
-        
+
         :return: -
         """
 

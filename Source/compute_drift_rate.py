@@ -33,14 +33,14 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
     This class implements the logic behind the drift_rate_dialog gui which controls how the mount
     drift rate is to be determined. In particular, the rules for selecting the first and last
     alignment points to be used for drift rate computation are set.
-    
+
     """
 
     def __init__(self, configuration, al, parent=None):
         """
         Initialize drift computation and produce a table and plots for showing the available
         alignment points for drift computation.
-        
+
         :param configuration: object containing parameters set by the user
         :param al: alignment object (instance of class Alignment)
         """
@@ -130,7 +130,7 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
     def toggle_default_first_radio_button(self):
         """
         For the first alignment point, toggle on/off the default choice (first available data point)
-        
+
         :return: -
         """
 
@@ -145,7 +145,7 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
     def toggle_default_last_radio_button(self):
         """
         For the last alignment point, toggle on/off the default choice (last available data point)
-        
+
         :return: -
         """
 
@@ -160,7 +160,7 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
     def toggle_no_radio_button(self):
         """
         Toggle on/off if drift correction should be included in computing telescope coordinates
-        
+
         :return: -
         """
 
@@ -191,7 +191,7 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
         In the Matplotlib plots of RA and DE drift, the first and last alignment points are
         connected with a red line. Repeat plotting these lines when the first point changes
         because the user chooses another point index.
-        
+
         :return: -
         """
 
@@ -211,7 +211,7 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
     def last_index_changed(self):
         """
         Same as above if the end point of the drift computation interval changes.
-        
+
         :return: -
         """
 
@@ -233,7 +233,7 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
         In case the user chooses an alignment point with index>0 for the beginning of drift
         computation, make sure that the spin box for selecting the end point starts with the
         next higher index.
-        
+
         :return: -
         """
 
@@ -244,7 +244,7 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
         The corresponding reduction of range for the selection of the first alignment point index
         in case the user has not chosen the last available index for the end of the drift
         computation interval.
-        
+
         :return: -
         """
 
@@ -253,7 +253,7 @@ class ComputeDriftRate(QtGui.QDialog, Ui_DriftRateDialog):
     def compute_drift(self):
         """
         Compute new values for telescope drift in RA and DE
-        
+
         :return: -
         """
 

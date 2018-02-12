@@ -37,7 +37,7 @@ def toggle_selector(event):
 
 class TileVisualization:
     """
-    This class visualizes the tesselation of the sunlit phase of the moon computed by the 
+    This class visualizes the tesselation of the sunlit phase of the moon computed by the
     TileConstructor. It provides methods for MPM to show the state of different tiles, or for the
     user to select regions of tiles which then can be marked processed / uprocessed collectively.
 
@@ -47,7 +47,7 @@ class TileVisualization:
         """
         Initialization, creation of the "Tile Visualization" window and creation of the tile
         display in that window.
-        
+
         :param configuration: object containing parameters set by the user
         :param tc: TileConstructor object with information on the tesselation
         """
@@ -127,7 +127,7 @@ class TileVisualization:
         """
         Callback function, called when a rectangle has been drawn with the mouse. It draws a light
         grey rectangle on the Window to highlight the selected region.
-        
+
         :param eclick: event object created when mouse button was clicked
         :param erelease: event object created when mouse button was released
         :return: -
@@ -159,7 +159,7 @@ class TileVisualization:
     def reset_selection_rectangle(self):
         """
         Reset the selection_rectangle.
-        
+
         :return: -
         """
 
@@ -177,7 +177,7 @@ class TileVisualization:
     def get_selected_tile_numbers(self):
         """
         When a selection_rectangle is drawn, determine which tiles are completely contained in it.
-        
+
         :return: list with the indices of all tiles (completely) contained in selection rectangle
         """
 
@@ -200,7 +200,7 @@ class TileVisualization:
     def __MoonPhase__(self):
         """
         Internal method: Draw the current sunlit phase of the moon to a given resolution.
-        
+
         :return: list of vertices which outline the moon phase.
         """
 
@@ -222,9 +222,9 @@ class TileVisualization:
     def mark_active(self, index):
         """
         Mark tile with index "index" as active. Set its color to "blue" and redraw the window.
-        
-        :param index: 
-        :return: 
+
+        :param index:
+        :return:
         """
 
         # Memorize this tile as "active_tile".
@@ -236,7 +236,7 @@ class TileVisualization:
         """
         Mark all tiles of a list as processed. Change the "processed" field in their descriptor,
         and set their color to "skyblue" in the visualization window.
-        
+
         :param index_list: list of tile indices.
         :return: -
         """
@@ -250,7 +250,7 @@ class TileVisualization:
         """
         Mark all tiles as processed, both in the TileConstructor list and in the visualization
         window.
-        
+
         :return: -
         """
 
@@ -292,8 +292,8 @@ class TileVisualization:
         """
         Save the current position of the tile visualization window in configuration and close the
         window.
-        
-        :return: 
+
+        :return:
         """
 
         (x0, y0, width, height) = self.mngr.window.geometry().getRect()

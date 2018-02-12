@@ -31,12 +31,12 @@ class ShowLandmark(QtGui.QDialog, Ui_DisplayLandmark):
     """
     This class implements the gui which presents the user the currently selected landmark. It is
     invoked by pressing the "Show Landmark - K" button.
-    
+
     """
 
     def __init__(self, ls, parent=None):
         """
-        
+
         :param ls: The LandmarkSelection object (from module landmark_selection)
         """
 
@@ -56,7 +56,7 @@ class ShowLandmark(QtGui.QDialog, Ui_DisplayLandmark):
     def ok(self):
         """
         Acknowledgement by the user, close the gui.
-        
+
         :return: -
         """
 

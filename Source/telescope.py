@@ -37,18 +37,18 @@ class OperateTelescope(threading.Thread):
     This module contains two classes: This class "OperateTelescope" provides the low-level interface
     to the ASCOM driver of the telescope mount. It keeps a queue of instructions which is handled by
     an independent thread.
-    
+
     Class Telescope provides the interface to the outside world. Its methods put instructions into
     the OperateTelescope queue. Some of its methods block until the OperateTelescope thread has
     acknowledged completion. Others are non-blocking.
-    
+
     """
 
     def __init__(self, configuration):
         """
         Look up configuration parameters (section ASCOM), initialize the instruction queue and
         define instruction types.
-        
+
         :param configuration: object containing parameters set by the user
         """
 
@@ -124,7 +124,7 @@ class OperateTelescope(threading.Thread):
     def run(self):
         """
         Execute the thread which serves the telescope instruction queue.
-        
+
         :return: -
         """
 
@@ -349,7 +349,7 @@ class OperateTelescope(threading.Thread):
     def remove_instruction(self, instruction):
         """
         Remove all instructions of type "instruction" from the queue.
-        
+
         :param instruction: instruction object
         :return: -
         """
@@ -364,13 +364,13 @@ class Telescope:
     """
     This class provides the interface to the low-level class "OperateTelescope". The methods of
     class "Telescope" are used by MoonPanoramaMaker to handle telescope operations.
-    
+
     """
 
     def __init__(self, configuration):
         """
         Look up configuration parameters and initialize some instance variables.
-        
+
         :param configuration: object containing parameters set by the user
         """
 
@@ -390,7 +390,7 @@ class Telescope:
         """
         Check if movements in RA,DE are mirror-reversed. Directions will be corrected in future
         instructions. This method blocks until the low-level instruction is finished.
-        
+
         :return: -
         """
 
@@ -423,7 +423,7 @@ class Telescope:
         """
         Move the telescope to a given position (ra, de) in the sky. This method blocks until the
         position is reached.
-        
+
         :param ra: Target right ascension (radians)
         :param de: Target declination (radians)
         :return: -
@@ -454,7 +454,7 @@ class Telescope:
         Look up the current telescope position. Block until the low-level instruction is finished
         and return its results. The result is not corrected for the potential mismatch between
         slew-to and look-up coordinates.
-        
+
         :return: (RA, DE) where the telescope is currently pointing (coordinates in radians).
         """
 
@@ -467,7 +467,7 @@ class Telescope:
 
     def lookup_tel_position(self):
         """
-        Look up the current telescope position. Block until the low-level instruction is 
+        Look up the current telescope position. Block until the low-level instruction is
         finished and return its results. If a slew-to operation was performed before calling this
         method, the result is corrected for the potential mismatch between slew-to and look-up
         coordinates.
@@ -483,7 +483,7 @@ class Telescope:
     def start_guiding(self, rate_ra, rate_de):
         """
         Start guiding a moving target with given rates in (RA, DE). This method does not block.
-        
+
         :param rate_ra: speed of the object in right ascension (in radians/sec.)
         :param rate_de: speed of the object in declination (in radians/sec.)
         :return: -
@@ -506,7 +506,7 @@ class Telescope:
         """
         Stop guiding the moving target. This method blocks until an acknowledgement is received
         from the OperateTelescope thread.
-        
+
         :return: -
         """
 
@@ -525,7 +525,7 @@ class Telescope:
         """
         Start to move the telescope north. This method is non-blocking. The motion will end only
         when the "stop_move_north" method is called.
-        
+
         :return: -
         """
 
@@ -534,7 +534,7 @@ class Telescope:
     def stop_move_north(self):
         """
         Stop moving the telescope north. This method blocks until the motion is ended.
-        
+
         :return: -
         """
 
@@ -547,7 +547,7 @@ class Telescope:
 
     def move_south(self):
         """
-        Start to move the telescope south. This method is non-blocking. The motion will 
+        Start to move the telescope south. This method is non-blocking. The motion will
         end only when the "stop_move_south" method is called.
 
         :return: -
@@ -571,7 +571,7 @@ class Telescope:
 
     def move_east(self):
         """
-        Start to move the telescope east. This method is non-blocking. The motion will 
+        Start to move the telescope east. This method is non-blocking. The motion will
         end only when the "stop_move_east" method is called.
 
         :return: -
@@ -595,7 +595,7 @@ class Telescope:
 
     def move_west(self):
         """
-        Start to move the telescope west. This method is non-blocking. The motion will 
+        Start to move the telescope west. This method is non-blocking. The motion will
         end only when the "stop_move_west" method is called.
 
         :return: -
@@ -622,7 +622,7 @@ class Telescope:
         Issue a pulse correction of given length into a given direction. If the "calibrate" method
         was called before, the direction is corrected for a potential mirror-reversal in the mount.
         The method blocks until the pulse correction is finished.
-        
+
         :param direction: one of 0, 1 ,2, 3 for north, south, east, west
         :param pulse_length: length (in milliseconds)
         :return: -
@@ -640,8 +640,8 @@ class Telescope:
         """
         Insert a "terminate" instruction into the queue, wait for the OperateTelescope thread to
         finish and write a message to the protocol file.
-        
-        :return: 
+
+        :return:
         """
 
         if self.configuration.protocol_level > 0:

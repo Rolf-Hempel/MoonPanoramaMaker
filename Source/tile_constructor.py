@@ -31,17 +31,17 @@ class TileConstructor:
     This class compute the optimal coverage of the sunlit part of the moon with video "tiles". A
     minimal overlap between tiles can be specified as well as the minimal width of the empty space
     around the moon panorama.
-    
+
     The tile construction is done in a "normalized" orientation where the connection line between
     the horns of the sunlit phase is vertical and the sunlit limb points towards the right. Please
     note that in this orientation a waning phase is standing south up.
-    
+
     """
 
     def __init__(self, configuration, de_center, m_diameter, phase_angle, pos_angle):
         """
         Read out parameters from the configuration object and compute the optimal tile coverage.
-        
+
         :param configuration: object containing parameters set by the user
         :param de_center: declination of the moon's center (radians)
         :param m_diameter: diameter of the moon (radians)

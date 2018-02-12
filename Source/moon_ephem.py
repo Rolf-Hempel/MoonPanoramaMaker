@@ -35,13 +35,13 @@ class MoonEphem:
     The MoonEphem class computes the positions of the sun and the moon in the sky, the position
     angles of the sunlit phase and of the rotational axis, and the topocentric libration angles in
     longitude and latitude. For algorithmic details refer to the user's manual.
-    
+
     """
 
     def __init__(self, configuration, date_time, debug=False):
         """
         Initialize the MoonEphem object.
-        
+
         :param configuration: object containing parameters set by the user
         :param date_time: datetime object of the time for which coordinates are to be computed
         :param debug: if debug=True, the value of date_time is ignored and a fixed time
@@ -73,7 +73,7 @@ class MoonEphem:
         """
         Compute the angle at the moon's center between equatorial North and the sun. The angle is
         counted counterclockwise.
-        
+
         :return: the sun's position angle (radians)
         """
 
@@ -85,8 +85,8 @@ class MoonEphem:
     def local_time_to_utc(self, date_time):
         """
         Convert local time to UTC.
-        
-        :param date_time: local datetime object 
+
+        :param date_time: local datetime object
         :return: UTC datetime object
         """
         loc_dt = self.tz.localize(date_time)
@@ -97,7 +97,7 @@ class MoonEphem:
         Compute accurate topocentric positions of sun and moon, the moon's phase angle and the
         position angle of its sunlit phase. If a previous position was stored for a time within the
         last two hours, the speed of the moon in (RA,DE) is computed as finite difference values.
-        
+
         :param date_time: datetime object of current time
         :return: -
         """
@@ -169,7 +169,7 @@ class MoonEphem:
     def compute_libration(self):
         """
         Compute topocentric libration angles and the position angle of the moon's rotational axis.
-        
+
         :return: -
         """
 
