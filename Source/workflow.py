@@ -288,7 +288,7 @@ class Workflow(QtCore.QThread):
                         print ""
                         Miscellaneous.protocol("Trying to perform auto-alignment.")
                     self.set_text_browser_signal.emit("Trying to perform auto-alignment.")
-                    # For test puuposes only! Repeat alignments several times. In production mode
+                    # For test purposes only! Repeat alignments several times. In production mode
                     # set repetition count to 1 (in configuration).
                     auto_alignment_disabled = False
                     for repetition_index in range(self.gui.configuration.align_repetition_count):
