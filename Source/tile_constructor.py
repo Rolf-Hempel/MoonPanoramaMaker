@@ -259,19 +259,15 @@ if __name__ == "__main__":
 
     print(" ")
     print("Sorted list of ", len(tc.list_of_tiles_sorted), " tiles:")
-    tile_no = 0
-    for tile in tc.list_of_tiles_sorted:
+    for tile_no, tile in enumerate(tc.list_of_tiles_sorted):
         print(("Tile no: ", tile_no, ", Row index: ", tile['row_index'], ", Column index: ",
                tile['column_index'], ", (x,y): ", tile['x_center'], tile['y_center'],
                ", (dRA,dDe): ", degrees(tile['delta_ra_center']), degrees(tile['delta_de_center'])))
-        tile_no += 1
 
-    tile_no = 0
-    for tile in tc.list_of_tiles_sorted:
+    for tile_no, tile in enumerate(tc.list_of_tiles_sorted):
         ra_center = 23.4861097 + degrees(tile['delta_ra_center'])
         de_center = 6.736112 + degrees(tile['delta_de_center'])
         print("Tile no: ", tile_no, ", (RA,DE Center): ", ra_center, de_center)
-        tile_no += 1
 
     print(" ")
     print((

@@ -111,7 +111,7 @@ class Camera(QtCore.QThread):
                     try:
                         # The tile number is encoded in the message. The FireCapture plugin appends
                         # this message to the video file names (to keep the files apart later).
-                        msg = "_Tile-" + "{0:0>3}".format(self.active_tile_number)
+                        msg = "_Tile-{0:0>3}".format(self.active_tile_number)
                         self.mysocket.mysend(msg)
                     except Exception as e:
                         if self.configuration.protocol_level > 0:
