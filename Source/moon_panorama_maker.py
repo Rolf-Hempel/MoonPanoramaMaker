@@ -243,8 +243,8 @@ class StartQT5(QtWidgets.QMainWindow):
                 Miscellaneous.protocol(
                     "Program start: Build the execution environment.")
 
-            # Begin environment setup with redirecting the output channel if requeseted. All steps
-            # will be executed bcause the corresponding flags have been set to True in __init__.
+            # Begin environment setup with redirecting the output channel if requested. All steps
+            # will be executed because the corresponding flags have been set to True in __init__.
             self.redirect_stdout()
         else:
             # Ask the user if he/she really wants to do a restart.
