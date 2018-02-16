@@ -335,8 +335,7 @@ class Configuration:
                 # introduced with version 0.9.5., too. The parameter is in section "Camera" as well
                 # as in all parameter sets of supported camera models.
                 self.conf.set('Camera', 'repetition count', '1')
-                camlist = self.get_camera_list()
-                for cam in camlist:
+                for cam in self.get_camera_list():
                     self.conf.set('Camera ' + cam, 'repetition count', '1')
 
             if self.old_versions.index(version_read) < 2:

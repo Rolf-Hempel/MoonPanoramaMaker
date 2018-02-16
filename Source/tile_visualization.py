@@ -157,7 +157,7 @@ class TileVisualization:
         height = self.select_rect_y_max - self.select_rect_y_min
 
         # Not a point selected: remove previous selection_rectangle and draw a new one.
-        if self.selection_rectangle != None:
+        if self.selection_rectangle is not None:
             self.ax.patches.remove(self.selection_rectangle)
         self.selection_rectangle = Rectangle((self.select_rect_x_min, self.select_rect_y_min),
                                              width, height, color='lightgrey', alpha=0.4)
@@ -177,7 +177,7 @@ class TileVisualization:
         self.select_rect_y_min = -2.
         self.select_rect_y_max = -2.
         # If there is an active selection rectangle: Remove it.
-        if self.selection_rectangle != None:
+        if self.selection_rectangle is not None:
             self.ax.patches.remove(self.selection_rectangle)
         self.selection_rectangle = None
 

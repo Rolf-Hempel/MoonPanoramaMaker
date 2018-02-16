@@ -39,21 +39,17 @@ class MatplotlibWidget(Canvas):
         self.plotrect = self.figure.add_subplot(2, 1, 1)
         self.plotrect.set_title('Drift in RA and DE', fontsize=12)
         self.plotrect.set_ylabel("RA (')", fontsize=10)
-        labels_x = self.plotrect.get_xticklabels()
-        labels_y = self.plotrect.get_yticklabels()
-        for xlabel in labels_x:
+        for xlabel in self.plotrect.get_xticklabels():
             xlabel.set_fontsize(8)
-        for ylabel in labels_y:
+        for ylabel in self.plotrect.get_yticklabels():
             ylabel.set_fontsize(8)
         self.plotdecl = self.figure.add_subplot(2, 1, 2)
         self.plotdecl.set_xlabel('Minutes since first alignment', fontsize=10)
         self.plotdecl.set_ylabel("DE (')", fontsize=10)
         self.figure.subplots_adjust(left=0.13, right=0.96, bottom=0.12)
-        labels_x = self.plotdecl.get_xticklabels()
-        labels_y = self.plotdecl.get_yticklabels()
-        for xlabel in labels_x:
+        for xlabel in self.plotdecl.get_xticklabels():
             xlabel.set_fontsize(8)
-        for ylabel in labels_y:
+        for ylabel in self.plotdecl.get_yticklabels():
             ylabel.set_fontsize(8)
         plt.close()
 
