@@ -27,6 +27,7 @@ from math import degrees
 
 from PyQt5 import QtCore
 
+from exceptions import ASCOMException
 from alignment import Alignment
 from camera import Camera
 from miscellaneous import Miscellaneous
@@ -47,6 +48,7 @@ class Workflow(QtCore.QThread):
     # Define the list of signals with which this thread communicates with the main gui.
     output_channel_initialized_signal = QtCore.pyqtSignal()
     telescope_initialized_signal = QtCore.pyqtSignal()
+    telescope_failed_signal = QtCore.pyqtSignal(str)
     camera_initialized_signal = QtCore.pyqtSignal()
     tesselation_initialized_signal = QtCore.pyqtSignal()
     alignment_point_reached_signal = QtCore.pyqtSignal()
@@ -154,12 +156,13 @@ class Workflow(QtCore.QThread):
                     # Register new telescope object with the alignment object.
                     self.al.set_telescope(self.telescope)
                     self.telescope_connected = True
-                except Exception:
+                    # Signal the main GUI that the telescope driver is initialized.
+                    self.telescope_initialized_signal.emit()
+                except ASCOMException as e:
+                    # The telescope driver does not work properly. Signal the main GUI.
                     if self.gui.configuration.protocol_level > 0:
-                        Miscellaneous.protocol("Telescope initialization failed.")
-                # print ("Signal the main GUI that the telescope driver is initialized.")
-                # Signal the main GUI that the telescope driver is initialized.
-                self.telescope_initialized_signal.emit()
+                        Miscellaneous.protocol("Telescope initialization failed: " + str(e))
+                    self.telescope_failed_signal.emit(str(e))
 
             # Initialize the camera object.
             elif self.camera_initialization_flag:

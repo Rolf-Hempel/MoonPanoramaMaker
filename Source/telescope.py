@@ -28,7 +28,7 @@ from math import degrees, radians
 import numpy
 import pythoncom
 import win32com.client
-
+from exceptions import ASCOMException, ASCOMConnectException, ASCOMPropertyException
 from miscellaneous import Miscellaneous
 
 
@@ -56,6 +56,11 @@ class OperateTelescope(threading.Thread):
 
         # Copy location of configuration object.
         self.configuration = configuration
+
+        # The following flag is set to True at the end of the driver initialization phase. If during
+        # initialization an error occurs, the message is stored as "self.initialization_error".
+        self.initialized = False
+        self.initialization_error = ""
 
         # Initialize an empty instruction queue.
         self.instructions = []
@@ -112,7 +117,59 @@ class OperateTelescope(threading.Thread):
         self.direction_west = 3
 
         if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("OperateTelescope thread initialized")
+            Miscellaneous.protocol("OperateTelescope thread initialized.")
+
+    def connect_and_test_telescope(self, driver_name):
+        """
+        Access the telescope driver as a Win32Com object, connect to it, and find out if it supports
+        the functions required by MoonPanoramaMaker.
+
+        :param driver_name: Name of the telescope driver, as returned by the ASCOM chooser.
+        :return: telescope driver object supporting ASCOM methods and properties.
+        """
+
+        # Try to get access to the Win32Com object.
+        try:
+            telescope_driver = win32com.client.Dispatch(driver_name)
+        except:
+            raise ASCOMConnectException("Unable to access telescope driver")
+
+        # Check if the driver is already connected to the telescope. If not, try to establish the
+        # connection.
+        try:
+            if telescope_driver.Connected:
+                if self.configuration.protocol_level > 1:
+                    Miscellaneous.protocol("The Telescope was already connected.")
+            else:
+                telescope_driver.Connected = True
+                if telescope_driver.Connected:
+                    if self.configuration.protocol_level > 1:
+                        Miscellaneous.protocol("The Telescope is connected now.")
+                else:
+                    raise ASCOMConnectException("Unable to connect to telescope driver")
+        except:
+            # The "Connected" property of the driver cannot be accessed properly.
+            raise ASCOMPropertyException(
+                "Unable to access the 'Connected' property of the telescope driver")
+
+        # Check the availability of fundamental driver properties needed by MoonPanoramaMaker. Raise
+        # an exception if one property is missing.
+        try:
+            if not telescope_driver.CanSlew:
+                raise ASCOMPropertyException("The telescope driver is not able to slew to RA/DE")
+            elif not telescope_driver.CanSetTracking:
+                raise ASCOMPropertyException("The telescope driver cannot be set to track in RA/DE")
+            elif not telescope_driver.CanPulseGuide:
+                raise ASCOMPropertyException(
+                    "The telescope driver is not able to do pulse guide corrections")
+            elif not telescope_driver.CanSetGuideRates:
+                raise ASCOMPropertyException("The telescope driver is not able to set guide rates")
+        except:
+            raise ASCOMConnectException(
+                "Telescope driver does not support required property lookups")
+
+        # Return a reference to the driver object.
+        return telescope_driver
 
     def run(self):
         """
@@ -124,22 +181,21 @@ class OperateTelescope(threading.Thread):
         # This is necessary because Windows COM objects are shared between threads.
         pythoncom.CoInitialize()
 
-        # Connect to the ASCOM telescope driver.
-        self.tel = win32com.client.Dispatch(
-            self.configuration.conf.get("ASCOM", "telescope driver"))
-
-        # Check if the telescope was already connected to the hub. If not, establish the connection.
-        if self.tel.Connected:
-            if self.configuration.protocol_level > 1:
-                Miscellaneous.protocol("The Telescope was already connected.")
-        else:
-            self.tel.Connected = True
-            if self.tel.Connected:
-                if self.configuration.protocol_level > 1:
-                    Miscellaneous.protocol("The Telescope is connected now.")
-            else:
-                if self.configuration.protocol_level > 0:
-                    Miscellaneous.protocol("Unable to connect with telescope, expect exception")
+        # Connect to the ASCOM telescope driver and check if it is working properly.
+        try:
+            self.tel = self.connect_and_test_telescope(self.configuration.conf.get("ASCOM", "telescope driver"))
+            # After successful connection to the telescope driver, mark the interface initialized.
+            if self.configuration.protocol_level > 0:
+                Miscellaneous.protocol("OperateTelescope: telescope driver is working properly.")
+            self.initialized = True
+        except ASCOMException as e:
+            # Save the error message to be looked up by high-level telescope thread.
+            self.initialization_error = str(e)
+            # Clean up the low-level telescope thread and exit.
+            pythoncom.CoUninitialize()
+            if self.configuration.protocol_level > 0:
+                Miscellaneous.protocol("Ending OperateTelescope thread")
+            return
 
         # Serve the instruction queue, until the "terminate" instruction is encountered.
         while True:
@@ -372,6 +428,14 @@ class Telescope:
         # Instantiate the OperateTelescope object and start the thread.
         self.optel = OperateTelescope(self.configuration)
         self.optel.start()
+
+        # Wait for the low-level thread to be initialized. Meanwhile check for error messages.
+        while not self.optel.initialized:
+            if self.optel.initialization_error != "":
+                raise ASCOMException(self.optel.initialization_error)
+            time.sleep(self.configuration.conf.getfloat("ASCOM", "polling interval"))
+        if self.configuration.protocol_level > 2:
+            Miscellaneous.protocol("High-level telescope interface initialized properly.")
 
         self.readout_correction_ra = 0.
         self.readout_correction_de = 0.

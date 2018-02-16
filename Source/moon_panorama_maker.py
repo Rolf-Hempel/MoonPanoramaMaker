@@ -138,6 +138,7 @@ class StartQT5(QtWidgets.QMainWindow):
         # the appropriate GUI activity.
         self.workflow.output_channel_initialized_signal.connect(self.initialize_telescope)
         self.workflow.telescope_initialized_signal.connect(self.initialize_camera)
+        self.workflow.telescope_failed_signal.connect(self.telescope_connection_failed)
         self.workflow.camera_initialized_signal.connect(self.initialize_tesselation)
         self.workflow.tesselation_initialized_signal.connect(self.start_workflow)
         self.workflow.alignment_point_reached_signal.connect(self.alignment_point_reached)
@@ -309,6 +310,18 @@ class StartQT5(QtWidgets.QMainWindow):
             self.telescope_initialization_flag = False
         else:
             self.initialize_camera()
+
+    def telescope_connection_failed(self, message):
+        '''
+        There is a problem with the ASCOM telescope driver. Prompt the user to check the ASCOM
+        configuration and restart the workflow.
+
+        :param message: Detailed error message from low-level telescope interface.
+        :return: -
+        '''
+
+        self.set_text_browser("The telescope driver does not work properly. Check the interface "
+                              "configuration and re-start the workflow.")
 
     def initialize_camera(self):
         '''
