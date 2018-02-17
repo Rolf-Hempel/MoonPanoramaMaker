@@ -28,6 +28,7 @@ sys.path.insert(0, basePath)
 
 from PyQt5 import QtWidgets
 from pytz import timezone
+from ascom_configuration_editor import AscomConfigurationEditor
 from configuration_dialog import Ui_ConfigurationDialog
 from camera_configuration_editor import CameraConfigurationEditor
 from camera_configuration_input import CameraConfigurationInput
@@ -74,6 +75,11 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.camera_chooser.setCurrentIndex(self.camlist.index(self.c.conf.get("Camera", "name")))
 
         self.input_focal_length.setText(self.c.conf.get("Telescope", "focal length"))
+        # Prepare for alternative telescope interfaces (e.g. INDI).
+        self.interface_list = ["ASCOM", "INDI"]
+        self.mount_interface_chooser.addItems(self.interface_list)
+        self.mount_interface_chooser.setCurrentIndex(self.interface_list.index(
+            self.c.conf.get("Telescope", "interface type")))
 
         self.input_protocol_level.setText(self.c.conf.get("Workflow", "protocol level"))
         self.input_protocol_to_file.setText(self.c.conf.get("Workflow", "protocol to file"))
@@ -89,12 +95,11 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.input_label_font_size.setText(self.c.conf.get("Tile Visualization", "label fontsize"))
         self.input_label_shift.setText(self.c.conf.get("Tile Visualization", "label shift"))
 
-        self.input_telescope_driver.setText(self.c.conf.get("ASCOM", "telescope driver"))
-        self.input_guiding_interval.setText(self.c.conf.get("ASCOM", "guiding interval"))
-        self.input_wait_interval.setText(self.c.conf.get("ASCOM", "wait interval"))
-        self.input_polling_interval.setText(self.c.conf.get("ASCOM", "polling interval"))
-        self.input_telescope_lookup_precision.setText(
-            self.c.conf.get("ASCOM", "telescope lookup precision"))
+        # self.input_telescope_driver.setText(self.c.conf.get("ASCOM", "telescope driver"))
+        # self.input_guiding_interval.setText(self.c.conf.get("ASCOM", "guiding interval"))
+        # self.input_wait_interval.setText(self.c.conf.get("ASCOM", "wait interval"))
+        # self.input_telescope_lookup_precision.setText(
+        #     self.c.conf.get("ASCOM", "telescope lookup precision"))
 
         self.input_min_autoalign_interval.setText(
             self.c.conf.get("Alignment", "min autoalign interval"))
@@ -114,6 +119,11 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.delete_camera.clicked.connect(self.start_delete_camera_dialog)
 
         self.input_focal_length.textChanged.connect(self.focal_length_write)
+        self.mount_interface_chooser.currentIndexChanged.connect(self.mount_interface_changed)
+        if str(self.mount_interface_chooser.currentText()) == "ASCOM":
+            self.configure_mount_interface.clicked.connect(self.start_ascom_dialog)
+        elif str(self.mount_interface_chooser.currentText()) == "INDI":
+            pass
 
         self.input_protocol_level.textChanged.connect(self.protocol_level_write)
         self.input_protocol_to_file.textChanged.connect(self.protocol_to_file_write)
@@ -126,12 +136,11 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.input_label_font_size.textChanged.connect(self.label_font_size_write)
         self.input_label_shift.textChanged.connect(self.label_shift_write)
 
-        self.input_telescope_driver.textChanged.connect(self.telescope_driver_write)
-        self.input_guiding_interval.textChanged.connect(self.guiding_interval_write)
-        self.input_wait_interval.textChanged.connect(self.wait_interval_write)
-        self.input_polling_interval.textChanged.connect(self.polling_interval_write)
-        self.input_telescope_lookup_precision.textChanged.connect(
-            self.telescope_lookup_precision_write)
+        # self.input_telescope_driver.textChanged.connect(self.telescope_driver_write)
+        # self.input_guiding_interval.textChanged.connect(self.guiding_interval_write)
+        # self.input_wait_interval.textChanged.connect(self.wait_interval_write)
+        # self.input_telescope_lookup_precision.textChanged.connect(
+        #    self.telescope_lookup_precision_write)
 
         self.input_min_autoalign_interval.textChanged.connect(self.min_autoalign_interval_write)
         self.input_max_autoalign_interval.textChanged.connect(self.max_autoalign_interval_write)
@@ -266,6 +275,41 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.tesselation_changed = True
         self.configuration_changed = True
 
+    def mount_interface_changed(self):
+        """
+        If the mount interface type has changed, set the appropriate configuration change flags to
+        True.
+
+        :return: -
+        """
+
+        if str(self.mount_interface_chooser.currentText()) == "ASCOM":
+            self.configure_mount_interface.clicked.connect(self.start_ascom_dialog)
+        elif str(self.mount_interface_chooser.currentText()) == "INDI":
+            self.configure_mount_interface.clicked.disconnect()
+
+        self.telescope_changed = True
+        self.configuration_changed = True
+
+    def start_ascom_dialog(self):
+        """
+        The "configure" button has been clicked for the ASCOM telescope interface:
+        Open the ASCOM dialog.
+
+        :return: -
+        """
+
+        self.ascomeditor = AscomConfigurationEditor(self.c)
+        # Start the GUI.
+        self.ascomeditor.exec_()
+        # Check if the configuration has changed.
+        if self.ascomeditor.configuration_changed:
+            # Mark the configuration object as changed.
+            self.configuration_changed = True
+        if self.ascomeditor.telescope_changed:
+            # Mark the telescope driver as changed.
+            self.telescope_changed = True
+
     def protocol_level_write(self):
         """
         If the parameter has been changed, set the appropriate configuration change flags to True.
@@ -375,42 +419,6 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.telescope_changed = True
         self.configuration_changed = True
 
-    def guiding_interval_write(self):
-        """
-        If the parameter has been changed, set the appropriate configuration change flags to True.
-
-        :return: -
-        """
-
-        self.configuration_changed = True
-
-    def wait_interval_write(self):
-        """
-        If the parameter has been changed, set the appropriate configuration change flags to True.
-
-        :return: -
-        """
-
-        self.configuration_changed = True
-
-    def polling_interval_write(self):
-        """
-        If the parameter has been changed, set the appropriate configuration change flags to True.
-
-        :return: -
-        """
-
-        self.configuration_changed = True
-
-    def telescope_lookup_precision_write(self):
-        """
-        If the parameter has been changed, set the appropriate configuration change flags to True.
-
-        :return: -
-        """
-
-        self.configuration_changed = True
-
     def min_autoalign_interval_write(self):
         """
         If the parameter has been changed, set the appropriate configuration change flags to True.
@@ -502,6 +510,8 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
                 Miscellaneous.show_input_error("Focal length", "4670.")
                 return
 
+            self.c.conf.set("Telescope", "interface type", str(self.mount_interface_chooser.currentText()))
+
             input_string = str(self.input_protocol_level.text())
             if Miscellaneous.testint(input_string, 0, 3) is not None:
                 self.c.conf.set("Workflow", "protocol level", str(self.input_protocol_level.text()))
@@ -574,34 +584,6 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
                 self.c.conf.set("Tile Visualization", "label shift", input_string)
             else:
                 Miscellaneous.show_input_error("Label shift parameter", "0.8")
-                return
-
-            input_string = str(self.input_guiding_interval.text())
-            if Miscellaneous.testfloat(input_string, 0., 3.):
-                self.c.conf.set("ASCOM", "guiding interval", input_string)
-            else:
-                Miscellaneous.show_input_error("Guide pulse duration", "0.2")
-                return
-
-            input_string = str(self.input_wait_interval.text())
-            if Miscellaneous.testfloat(input_string, 0., 20.):
-                self.c.conf.set("ASCOM", "wait interval", input_string)
-            else:
-                Miscellaneous.show_input_error("Wait interval", "1.")
-                return
-
-            input_string = str(self.input_polling_interval.text())
-            if Miscellaneous.testfloat(input_string, 0., 1.):
-                self.c.conf.set("ASCOM", "polling interval", input_string)
-            else:
-                Miscellaneous.show_input_error("Polling interval", "0.1")
-                return
-
-            input_string = str(self.input_telescope_lookup_precision.text())
-            if Miscellaneous.testfloat(input_string, 0.1, 10.):
-                self.c.conf.set("ASCOM", "telescope lookup precision", input_string)
-            else:
-                Miscellaneous.show_input_error("Telescope position lookup precision", "0.5")
                 return
 
             input_string = str(self.input_min_autoalign_interval.text())

@@ -187,6 +187,7 @@ class Configuration:
 
             self.conf.add_section('Telescope')
             self.conf.set('Telescope', 'focal length', '2800.')
+            self.conf.set('Telescope', 'interface type', 'ASCOM')
 
             self.conf.add_section('Tile Visualization')
             self.conf.set('Tile Visualization', 'figsize horizontal', '7.')
@@ -206,7 +207,7 @@ class Configuration:
             self.conf.set('ASCOM', 'telescope driver', 'POTH.Telescope')
             self.conf.set('ASCOM', 'guiding interval', '0.2')
             self.conf.set('ASCOM', 'wait interval', '1.')
-            self.conf.set('ASCOM', 'polling interval', '0.1')
+            self.conf.set('ASCOM', 'pulse guide speed', '0.01')
             self.conf.set('ASCOM', 'telescope lookup precision', '0.5')
 
             self.conf.add_section('Alignment')
@@ -355,7 +356,9 @@ class Configuration:
                 # ASCOM driver is given by a configuration parameter. Take the name of the ASCOM
                 # telescope hub for the telescope driver and remove the old configuration
                 # parameter names.
+                self.conf.set('Telescope', 'interface type', 'ASCOM')
                 self.conf.set('ASCOM', 'telescope driver', self.conf.get('ASCOM', 'hub'))
+                self.conf.set('ASCOM', 'pulse guide speed', '0.01')
                 self.conf.remove_option('ASCOM', 'chooser')
                 self.conf.remove_option('ASCOM', 'hub')
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>879</width>
-    <height>933</height>
+    <height>849</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,51 +43,22 @@
         <x>0</x>
         <y>0</y>
         <width>857</width>
-        <height>880</height>
+        <height>796</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <layout class="QGridLayout" name="gridLayout">
-         <item row="27" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_telescope_lookup_precision">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="8" column="0">
-          <widget class="QLabel" name="telescope">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Telescope</string>
-           </property>
-          </widget>
-         </item>
-         <item row="27" column="0">
-          <widget class="QLabel" name="telescope_lookup_precision">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Required precision (&quot;) for lookup of telescope position. Must be between 0.1 and 10.</string>
-           </property>
-           <property name="text">
-            <string>Telescope position lookup precision (&quot;)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="16" column="2" colspan="4">
+         <property name="leftMargin">
+          <number>9</number>
+         </property>
+         <property name="rightMargin">
+          <number>9</number>
+         </property>
+         <property name="bottomMargin">
+          <number>5</number>
+         </property>
+         <item row="17" column="2" colspan="4">
           <widget class="QLineEdit" name="input_camera_trigger_delay">
            <property name="font">
             <font>
@@ -96,69 +67,7 @@
            </property>
           </widget>
          </item>
-         <item row="14" column="0">
-          <widget class="QLabel" name="limb_first">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>True, if tiles at the bright Moon limb should be recorded first, False if to start at terminator</string>
-           </property>
-           <property name="text">
-            <string>Limb first (True / False)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="26" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_polling_interval">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item row="18" column="0">
-          <widget class="QLabel" name="fig_size_horizontal">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Horizontal dimension of tile visualization window in inches. Must be between 0. and 25.</string>
-           </property>
-           <property name="text">
-            <string>Figure size horizontal (inch)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="17" column="0">
-          <widget class="QLabel" name="tile_visualization">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Tile Visualization</string>
-           </property>
-          </widget>
-         </item>
-         <item row="14" column="2" colspan="4">
+         <item row="15" column="2" colspan="4">
           <widget class="QLineEdit" name="input_limb_first">
            <property name="font">
             <font>
@@ -167,16 +76,52 @@
            </property>
           </widget>
          </item>
-         <item row="15" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_camera_automation">
+         <item row="6" column="0">
+          <widget class="QLabel" name="name">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
            </property>
+           <property name="toolTip">
+            <string>Any text to represent camera, must be unique in list</string>
+           </property>
+           <property name="text">
+            <string>Brand / Name</string>
+           </property>
           </widget>
          </item>
-         <item row="15" column="0">
+         <item row="1" column="0">
+          <widget class="QLabel" name="longitude">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Geographical longitude, counted from Greenwich, in degrees plus decimal fraction. Must be between -360. and 360.</string>
+           </property>
+           <property name="text">
+            <string>Longitude (degrees, east positiv)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="timezone">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Daylight saving time is accounted for automatically</string>
+           </property>
+           <property name="text">
+            <string>Timezone (e.g. Europe/Berlin)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="16" column="0">
           <widget class="QLabel" name="camera_automation">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -197,78 +142,187 @@
            </property>
           </widget>
          </item>
-         <item row="26" column="0">
-          <widget class="QLabel" name="polling_interval">
+         <item row="8" column="0">
+          <widget class="QLabel" name="telescope">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
             </font>
            </property>
-           <property name="toolTip">
-            <string>Time interval between processing of two external device instructions, e.g. 0.1. Must be between 0. and 1.</string>
-           </property>
            <property name="text">
-            <string>Polling interval</string>
+            <string>Telescope</string>
            </property>
           </widget>
          </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="timezone">
+         <item row="15" column="0">
+          <widget class="QLabel" name="limb_first">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
            </property>
            <property name="toolTip">
-            <string>Daylight saving time is accounted for automatically</string>
+            <string>True, if tiles at the bright Moon limb should be recorded first, False if to start at terminator</string>
            </property>
            <property name="text">
-            <string>Timezone (e.g. Europe/Berlin)</string>
+            <string>Limb first (True / False)</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="longitude">
+         <item row="16" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_camera_automation">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
-           </property>
-           <property name="toolTip">
-            <string>Geographical longitude, counted from Greenwich, in degrees plus decimal fraction. Must be between -360. and 360.</string>
-           </property>
-           <property name="text">
-            <string>Longitude (degrees, east positiv)</string>
            </property>
           </widget>
          </item>
-         <item row="6" column="0">
-          <widget class="QLabel" name="name">
+         <item row="19" column="0">
+          <widget class="QLabel" name="fig_size_horizontal">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
            </property>
            <property name="toolTip">
-            <string>Any text to represent camera, must be unique in list</string>
+            <string>Horizontal dimension of tile visualization window in inches. Must be between 0. and 25.</string>
            </property>
            <property name="text">
-            <string>Brand / Name</string>
+            <string>Figure size horizontal (inch)</string>
            </property>
           </widget>
          </item>
-         <item row="23" column="0">
-          <widget class="QLabel" name="telescope_driver">
+         <item row="18" column="0">
+          <widget class="QLabel" name="tile_visualization">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Tile Visualization</string>
+           </property>
+          </widget>
+         </item>
+         <item row="25" column="0">
+          <widget class="QLabel" name="min_autoalign_interval">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
            </property>
            <property name="toolTip">
-            <string>Name of the ASCOM telescope driver (or ASCOM telescope hub). Example: POTH.Telescope</string>
+            <string>Minimum time between auto-alignments (s). Must be between 20. and 1800.</string>
            </property>
            <property name="text">
-            <string>Telescope driver</string>
+            <string>Minimum auto-alignment interval (s)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="20" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_fig_size_vertical">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_elevation">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item row="27" column="0">
+          <widget class="QLabel" name="max_alignment_error">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Maximum allowed auto-alignment error (% of overlap width). Must be between 10. and 60.</string>
+           </property>
+           <property name="text">
+            <string>Max alignment error (%)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="14" column="0">
+          <widget class="QLabel" name="focus_on_star">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>True, if focus is adjusted on a star. False, if a moon surface detail is used</string>
+           </property>
+           <property name="text">
+            <string>Focus on a star (True / False)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="19" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_fig_size_horizontal">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item row="12" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_protocol_level">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item row="13" column="0">
+          <widget class="QLabel" name="protocol_to_file">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Append session protocol to file &quot;MoonPanoramaMaker.log&quot; in home directory</string>
+           </property>
+           <property name="text">
+            <string>Write protocol to file (True / False)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="17" column="0">
+          <widget class="QLabel" name="camera_trigger_delay">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Time between slewing to new tile and exposure start</string>
+           </property>
+           <property name="text">
+            <string>Camera trigger delay (s)</string>
            </property>
           </widget>
          </item>
@@ -287,95 +341,6 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="latitude">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Geographical latitude, positive towards north, in degrees plus decimal fraction. Must be between -90. and 90.</string>
-           </property>
-           <property name="text">
-            <string>Latitude (degrees)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="21" column="0">
-          <widget class="QLabel" name="label_shift">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>0. for tile numbers to be centered in tiles. Larger values may be needed to avoid cluttering</string>
-           </property>
-           <property name="text">
-            <string>Label shift parameter (0.&lt;=p&lt;=1.)  </string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="geographical_position">
-           <property name="font">
-            <font>
-             <family>MS Shell Dlg 2</family>
-             <pointsize>10</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Geographical Position</string>
-           </property>
-          </widget>
-         </item>
-         <item row="19" column="0">
-          <widget class="QLabel" name="fig_size_vertical">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Vertical dimension of tile visualization window in inches. Must be between 0. and 25.</string>
-           </property>
-           <property name="text">
-            <string>Figure size vertical (inch)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="20" column="0">
-          <widget class="QLabel" name="label_font_size">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Font size for tile numbers in visualization window. Must be between 6 and 16</string>
-           </property>
-           <property name="text">
-            <string>Font size for labels (points)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="22" column="0">
-          <widget class="QLabel" name="ASCOM">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>ASCOM</string>
-           </property>
-          </widget>
-         </item>
          <item row="5" column="0">
           <widget class="QLabel" name="camera">
            <property name="font">
@@ -390,8 +355,38 @@
            </property>
           </widget>
          </item>
-         <item row="10" column="0">
-          <widget class="QLabel" name="workflow">
+         <item row="22" column="0">
+          <widget class="QLabel" name="label_shift">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>0. for tile numbers to be centered in tiles. Larger values may be needed to avoid cluttering</string>
+           </property>
+           <property name="text">
+            <string>Label shift parameter (0.&lt;=p&lt;=1.)  </string>
+           </property>
+          </widget>
+         </item>
+         <item row="12" column="0">
+          <widget class="QLabel" name="protocol_level">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Select level of detail for session protocol (0=No protocol)</string>
+           </property>
+           <property name="text">
+            <string>Session protocol level (0, 1, 2, 3)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="24" column="0">
+          <widget class="QLabel" name="ALIGNMENT">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
@@ -400,97 +395,25 @@
             </font>
            </property>
            <property name="text">
-            <string>Workflow</string>
+            <string>ALIGNMENT</string>
            </property>
           </widget>
          </item>
-         <item row="16" column="0">
-          <widget class="QLabel" name="camera_trigger_delay">
+         <item row="27" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_max_alignment_error">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
            </property>
-           <property name="toolTip">
-            <string>Time between slewing to new tile and exposure start</string>
-           </property>
-           <property name="text">
-            <string>Camera trigger delay (s)</string>
-           </property>
           </widget>
          </item>
-         <item row="9" column="0">
-          <widget class="QLabel" name="focal_length">
+         <item row="22" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_label_shift">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
-           </property>
-           <property name="toolTip">
-            <string>Focal length of telescope system, including projection lens. Must be between 0. and 100000.</string>
-           </property>
-           <property name="text">
-            <string>Focal length (mm)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="25" column="0">
-          <widget class="QLabel" name="wait_interval">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Parameter to reduce polling frequency during telescope slewing, e.g. 1. Must be between 0. and 20.</string>
-           </property>
-           <property name="text">
-            <string>Wait interval (s)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="3">
-          <widget class="QPushButton" name="edit_camera">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>45</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Edit parameters of currently selected camera</string>
-           </property>
-           <property name="text">
-            <string>Edit</string>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="2">
-          <widget class="QComboBox" name="camera_chooser">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>List of cameras for which parameters have been entered</string>
            </property>
           </widget>
          </item>
@@ -560,8 +483,17 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_longitude">
+         <item row="21" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_label_font_size">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item row="13" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_protocol_to_file">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
@@ -578,8 +510,8 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_elevation">
+         <item row="26" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_max_autoalign_interval">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
@@ -587,12 +519,18 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_timezone">
+         <item row="0" column="0">
+          <widget class="QLabel" name="geographical_position">
            <property name="font">
             <font>
+             <family>MS Shell Dlg 2</family>
              <pointsize>10</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
             </font>
+           </property>
+           <property name="text">
+            <string>Geographical Position</string>
            </property>
           </widget>
          </item>
@@ -605,8 +543,8 @@
            </property>
           </widget>
          </item>
-         <item row="18" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_fig_size_horizontal">
+         <item row="1" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_longitude">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
@@ -614,8 +552,41 @@
            </property>
           </widget>
          </item>
-         <item row="19" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_fig_size_vertical">
+         <item row="6" column="3">
+          <widget class="QPushButton" name="edit_camera">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>45</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Edit parameters of currently selected camera</string>
+           </property>
+           <property name="text">
+            <string>Edit</string>
+           </property>
+          </widget>
+         </item>
+         <item row="14" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_focus_on_star">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
@@ -623,26 +594,38 @@
            </property>
           </widget>
          </item>
-         <item row="20" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_label_font_size">
+         <item row="9" column="0">
+          <widget class="QLabel" name="focal_length">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
            </property>
+           <property name="toolTip">
+            <string>Focal length of telescope system, including projection lens. Must be between 0. and 100000.</string>
+           </property>
+           <property name="text">
+            <string>Focal length (mm)</string>
+           </property>
           </widget>
          </item>
-         <item row="21" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_label_shift">
+         <item row="2" column="0">
+          <widget class="QLabel" name="latitude">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
            </property>
+           <property name="toolTip">
+            <string>Geographical latitude, positive towards north, in degrees plus decimal fraction. Must be between -90. and 90.</string>
+           </property>
+           <property name="text">
+            <string>Latitude (degrees)</string>
+           </property>
           </widget>
          </item>
-         <item row="23" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_telescope_driver">
+         <item row="4" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_timezone">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
@@ -651,117 +634,6 @@
           </widget>
          </item>
          <item row="25" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_wait_interval">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="12" column="0">
-          <widget class="QLabel" name="protocol_to_file">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Append session protocol to file &quot;MoonPanoramaMaker.log&quot; in home directory</string>
-           </property>
-           <property name="text">
-            <string>Write protocol to file (True / False)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="12" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_protocol_to_file">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="11" column="0">
-          <widget class="QLabel" name="protocol_level">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Select level of detail for session protocol (0=No protocol)</string>
-           </property>
-           <property name="text">
-            <string>Session protocol level (0, 1, 2, 3)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="11" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_protocol_level">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="24" column="0">
-          <widget class="QLabel" name="guiding_interval">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Duration of guiding pulses during video exposure, e.g. 0.2. Must be between 0. and 3.</string>
-           </property>
-           <property name="text">
-            <string>Guide pulse duration (s)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="24" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_guiding_interval">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="31" column="0">
-          <widget class="QLabel" name="max_autoalign_interval">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Maximum time between auto-alignments (s). Must be between 30. and 3600.</string>
-           </property>
-           <property name="text">
-            <string>Maximum auto-alignment interval (s)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="30" column="0">
-          <widget class="QLabel" name="min_autoalign_interval">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Minimum time between auto-alignments (s). Must be between 20. and 1800.</string>
-           </property>
-           <property name="text">
-            <string>Minimum auto-alignment interval (s)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="30" column="2" colspan="4">
           <widget class="QLineEdit" name="input_min_autoalign_interval">
            <property name="minimumSize">
             <size>
@@ -776,8 +648,23 @@
            </property>
           </widget>
          </item>
-         <item row="29" column="0">
-          <widget class="QLabel" name="ALIGNMENT">
+         <item row="20" column="0">
+          <widget class="QLabel" name="fig_size_vertical">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Vertical dimension of tile visualization window in inches. Must be between 0. and 25.</string>
+           </property>
+           <property name="text">
+            <string>Figure size vertical (inch)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="11" column="0">
+          <widget class="QLabel" name="workflow">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
@@ -786,64 +673,91 @@
             </font>
            </property>
            <property name="text">
-            <string>ALIGNMENT</string>
+            <string>Workflow</string>
            </property>
           </widget>
          </item>
-         <item row="31" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_max_autoalign_interval">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="32" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_max_alignment_error">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="32" column="0">
-          <widget class="QLabel" name="max_alignment_error">
+         <item row="6" column="2">
+          <widget class="QComboBox" name="camera_chooser">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
            </property>
            <property name="toolTip">
-            <string>Maximum allowed auto-alignment error (% of overlap width). Must be between 10. and 60.</string>
-           </property>
-           <property name="text">
-            <string>Max alignment error (%)</string>
+            <string>List of cameras for which parameters have been entered</string>
            </property>
           </widget>
          </item>
-         <item row="13" column="0">
-          <widget class="QLabel" name="focus_on_star">
+         <item row="26" column="0">
+          <widget class="QLabel" name="max_autoalign_interval">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
            </property>
            <property name="toolTip">
-            <string>True, if focus is adjusted on a star. False, if a moon surface detail is used</string>
+            <string>Maximum time between auto-alignments (s). Must be between 30. and 3600.</string>
            </property>
            <property name="text">
-            <string>Focus on a star (True / False)</string>
+            <string>Maximum auto-alignment interval (s)    </string>
            </property>
           </widget>
          </item>
-         <item row="13" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_focus_on_star">
+         <item row="21" column="0">
+          <widget class="QLabel" name="label_font_size">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
+           </property>
+           <property name="toolTip">
+            <string>Font size for tile numbers in visualization window. Must be between 6 and 16</string>
+           </property>
+           <property name="text">
+            <string>Font size for labels (points)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="0">
+          <widget class="QLabel" name="telescope_interface">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Type of the mount interface (ASCOM or INDI)</string>
+           </property>
+           <property name="text">
+            <string>Telescope mount interface</string>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="2">
+          <widget class="QComboBox" name="mount_interface_chooser">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Select the type of the telescope mount interface</string>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="3" colspan="3">
+          <widget class="QPushButton" name="configure_mount_interface">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Select the mount driver and configure parameters</string>
+           </property>
+           <property name="text">
+            <string>Configure</string>
            </property>
           </widget>
          </item>
@@ -892,11 +806,6 @@
   <tabstop>input_fig_size_vertical</tabstop>
   <tabstop>input_label_font_size</tabstop>
   <tabstop>input_label_shift</tabstop>
-  <tabstop>input_telescope_driver</tabstop>
-  <tabstop>input_guiding_interval</tabstop>
-  <tabstop>input_wait_interval</tabstop>
-  <tabstop>input_polling_interval</tabstop>
-  <tabstop>input_telescope_lookup_precision</tabstop>
   <tabstop>input_min_autoalign_interval</tabstop>
   <tabstop>input_max_autoalign_interval</tabstop>
   <tabstop>input_max_alignment_error</tabstop>

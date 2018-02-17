@@ -195,6 +195,12 @@ class OperateTelescope(threading.Thread):
                 if self.configuration.protocol_level > 1:
                     Miscellaneous.protocol(
                         "OperateTelescope: telescope tracking has been switched on.")
+            # Set the PulseGuide speed (in units of deg/sec).
+            self.tel.GuideRateRightAscension = self.configuration.conf.getfloat("ASCOM", "pulse guide speed")
+            self.tel.GuideRateDeclination = self.configuration.conf.getfloat("ASCOM", "pulse guide speed")
+            if self.configuration.protocol_level > 1:
+                Miscellaneous.protocol("OperateTelescope: pulse guide speed set to " +
+                                       str(self.configuration.conf.get("ASCOM", "pulse guide speed")))
             # After successful connection to the telescope driver, mark the interface initialized.
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol("OperateTelescope: telescope driver is working properly.")
