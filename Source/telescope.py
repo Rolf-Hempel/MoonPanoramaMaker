@@ -188,7 +188,8 @@ class OperateTelescope(threading.Thread):
 
         # Connect to the ASCOM telescope driver and check if it is working properly.
         try:
-            self.tel = self.connect_and_test_telescope(self.configuration.conf.get("ASCOM", "telescope driver"))
+            self.tel = self.connect_and_test_telescope(
+                self.configuration.conf.get("ASCOM", "telescope driver"))
             # Switch on tracking, if not yet done.
             if not self.tel.Tracking:
                 self.tel.Tracking = True
@@ -196,11 +197,13 @@ class OperateTelescope(threading.Thread):
                     Miscellaneous.protocol(
                         "OperateTelescope: telescope tracking has been switched on.")
             # Set the PulseGuide speed (in units of deg/sec).
-            self.tel.GuideRateRightAscension = self.configuration.conf.getfloat("ASCOM", "pulse guide speed")
-            self.tel.GuideRateDeclination = self.configuration.conf.getfloat("ASCOM", "pulse guide speed")
+            self.tel.GuideRateRightAscension = self.configuration.conf.getfloat("ASCOM",
+                                                                                "pulse guide speed")
+            self.tel.GuideRateDeclination = self.configuration.conf.getfloat("ASCOM",
+                                                                             "pulse guide speed")
             if self.configuration.protocol_level > 1:
-                Miscellaneous.protocol("OperateTelescope: pulse guide speed set to " +
-                                       str(self.configuration.conf.get("ASCOM", "pulse guide speed")))
+                Miscellaneous.protocol("OperateTelescope: pulse guide speed set to " + str(
+                    self.configuration.conf.get("ASCOM", "pulse guide speed")))
             # After successful connection to the telescope driver, mark the interface initialized.
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol("OperateTelescope: telescope driver is working properly.")
@@ -238,9 +241,9 @@ class OperateTelescope(threading.Thread):
                     iter_count = 0
                     # Idle loop until changes in RA,DE are smaller than specified threshold.
                     while (abs(self.tel.RightAscension - rect) > self.configuration.conf.getfloat(
-                        "ASCOM", "telescope lookup precision") / 54000. or abs(
+                            "ASCOM", "telescope lookup precision") / 54000. or abs(
                         self.tel.Declination - decl) > self.configuration.conf.getfloat("ASCOM",
-                                                            "telescope lookup precision") / 3600.):
+                                                        "telescope lookup precision") / 3600.):
                         rect = self.tel.RightAscension
                         decl = self.tel.Declination
                         iter_count += 1
@@ -344,8 +347,8 @@ class OperateTelescope(threading.Thread):
                 # These instructions are used when the user presses one of the arrow keys.
                 elif instruction['name'] == "start moving north":
                     # Issue a PulseGuide in the specified direction.
-                    self.tel.PulseGuide(self.direction_north, int(
-                        self.configuration.polling_interval * 1000.))
+                    self.tel.PulseGuide(self.direction_north,
+                                        int(self.configuration.polling_interval * 1000.))
                     # Re-insert this instruction into the queue, and wait a short time.
                     self.instructions.insert(0, instruction)
                     time.sleep(self.configuration.polling_interval)
@@ -359,8 +362,8 @@ class OperateTelescope(threading.Thread):
                 # The following instructions are analog to the two above. They handle the three
                 # other coordinate directions.
                 elif instruction['name'] == "start moving south":
-                    self.tel.PulseGuide(self.direction_south, int(
-                        self.configuration.polling_interval * 1000.))
+                    self.tel.PulseGuide(self.direction_south,
+                                        int(self.configuration.polling_interval * 1000.))
                     self.instructions.insert(0, instruction)
                     time.sleep(self.configuration.polling_interval)
 
@@ -369,8 +372,8 @@ class OperateTelescope(threading.Thread):
                     instruction['finished'] = True
 
                 elif instruction['name'] == "start moving east":
-                    self.tel.PulseGuide(self.direction_east, int(
-                        self.configuration.polling_interval * 1000.))
+                    self.tel.PulseGuide(self.direction_east,
+                                        int(self.configuration.polling_interval * 1000.))
                     self.instructions.insert(0, instruction)
                     time.sleep(self.configuration.polling_interval)
 
@@ -379,8 +382,8 @@ class OperateTelescope(threading.Thread):
                     instruction['finished'] = True
 
                 elif instruction['name'] == "start moving west":
-                    self.tel.PulseGuide(self.direction_west, int(
-                        self.configuration.polling_interval * 1000.))
+                    self.tel.PulseGuide(self.direction_west,
+                                        int(self.configuration.polling_interval * 1000.))
                     self.instructions.insert(0, instruction)
                     time.sleep(self.configuration.polling_interval)
 
@@ -574,7 +577,7 @@ class Telescope:
                 round(degrees(start_guiding_instruction['rate_ra']) * 216000.,
                       3)) + ", Rate(DE): " + str(
                 round(degrees(start_guiding_instruction['rate_de']) * 216000.,
-                    3)) + " (arc min. / hour)")
+                      3)) + " (arc min. / hour)")
         # Insert the instruction into the queue.
         self.optel.instructions.insert(0, start_guiding_instruction)
         # Set the "guiding_active" flag to True.

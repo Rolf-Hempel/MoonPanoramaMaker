@@ -62,6 +62,9 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.telescope_changed = False
         self.camera_automation_changed = False
         self.tesselation_changed = False
+        # Remember if the ASCOM configuration editor was called. Changes made by this editor are
+        # only applied in the end if the user accepts the changes in the main window.
+        self.ascomeditor_called = False
 
         # Start filling the text fields of the GUI.
         self.input_longitude.setText(self.c.conf.get("Geographical Position", "longitude"))
@@ -76,10 +79,11 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
         self.input_focal_length.setText(self.c.conf.get("Telescope", "focal length"))
         # Prepare for alternative telescope interfaces (e.g. INDI).
-        self.interface_list = ["ASCOM", "INDI"]
+        # self.interface_list = ["ASCOM", "INDI"]
+        self.interface_list = ["ASCOM"]
         self.mount_interface_chooser.addItems(self.interface_list)
-        self.mount_interface_chooser.setCurrentIndex(self.interface_list.index(
-            self.c.conf.get("Telescope", "interface type")))
+        self.mount_interface_chooser.setCurrentIndex(
+            self.interface_list.index(self.c.conf.get("Telescope", "interface type")))
 
         self.input_protocol_level.setText(self.c.conf.get("Workflow", "protocol level"))
         self.input_protocol_to_file.setText(self.c.conf.get("Workflow", "protocol to file"))
@@ -94,12 +98,6 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
             self.c.conf.get("Tile Visualization", "figsize vertical"))
         self.input_label_font_size.setText(self.c.conf.get("Tile Visualization", "label fontsize"))
         self.input_label_shift.setText(self.c.conf.get("Tile Visualization", "label shift"))
-
-        # self.input_telescope_driver.setText(self.c.conf.get("ASCOM", "telescope driver"))
-        # self.input_guiding_interval.setText(self.c.conf.get("ASCOM", "guiding interval"))
-        # self.input_wait_interval.setText(self.c.conf.get("ASCOM", "wait interval"))
-        # self.input_telescope_lookup_precision.setText(
-        #     self.c.conf.get("ASCOM", "telescope lookup precision"))
 
         self.input_min_autoalign_interval.setText(
             self.c.conf.get("Alignment", "min autoalign interval"))
@@ -123,6 +121,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         if str(self.mount_interface_chooser.currentText()) == "ASCOM":
             self.configure_mount_interface.clicked.connect(self.start_ascom_dialog)
         elif str(self.mount_interface_chooser.currentText()) == "INDI":
+            # INDI is not implemented yet. Insert the connection to the INDI configuration editor.
             pass
 
         self.input_protocol_level.textChanged.connect(self.protocol_level_write)
@@ -135,12 +134,6 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.input_fig_size_vertical.textChanged.connect(self.fig_size_vertical_write)
         self.input_label_font_size.textChanged.connect(self.label_font_size_write)
         self.input_label_shift.textChanged.connect(self.label_shift_write)
-
-        # self.input_telescope_driver.textChanged.connect(self.telescope_driver_write)
-        # self.input_guiding_interval.textChanged.connect(self.guiding_interval_write)
-        # self.input_wait_interval.textChanged.connect(self.wait_interval_write)
-        # self.input_telescope_lookup_precision.textChanged.connect(
-        #    self.telescope_lookup_precision_write)
 
         self.input_min_autoalign_interval.textChanged.connect(self.min_autoalign_interval_write)
         self.input_max_autoalign_interval.textChanged.connect(self.max_autoalign_interval_write)
@@ -302,6 +295,8 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.ascomeditor = AscomConfigurationEditor(self.c)
         # Start the GUI.
         self.ascomeditor.exec_()
+        # Remember that the AscomConfigurationEditor was invoked.
+        self.ascomeditor_called = True
         # Check if the configuration has changed.
         if self.ascomeditor.configuration_changed:
             # Mark the configuration object as changed.
@@ -407,18 +402,6 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.tesselation_changed = True
         self.configuration_changed = True
 
-    def telescope_driver_write(self):
-        """
-        Special case for the ASCOM telescope driver name: No check for validity of the input string.
-        If the parameter has been changed, set the appropriate configuration change flags to True.
-
-        :return: -
-        """
-
-        self.c.conf.set("ASCOM", "telescope driver", str(self.input_telescope_driver.text()))
-        self.telescope_changed = True
-        self.configuration_changed = True
-
     def min_autoalign_interval_write(self):
         """
         If the parameter has been changed, set the appropriate configuration change flags to True.
@@ -510,7 +493,8 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
                 Miscellaneous.show_input_error("Focal length", "4670.")
                 return
 
-            self.c.conf.set("Telescope", "interface type", str(self.mount_interface_chooser.currentText()))
+            self.c.conf.set("Telescope", "interface type",
+                            str(self.mount_interface_chooser.currentText()))
 
             input_string = str(self.input_protocol_level.text())
             if Miscellaneous.testint(input_string, 0, 3) is not None:
@@ -530,8 +514,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
             input_string = str(self.input_focus_on_star.text())
             if Miscellaneous.testbool(input_string) is not None:
-                self.c.conf.set("Workflow", "focus on star",
-                                str(self.input_focus_on_star.text()))
+                self.c.conf.set("Workflow", "focus on star", str(self.input_focus_on_star.text()))
             else:
                 Miscellaneous.show_input_error("Focus on star", "False")
                 return
@@ -606,6 +589,16 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
             else:
                 Miscellaneous.show_input_error("Max alignment error", "30.")
                 return
+
+            if self.ascomeditor_called:
+                # If the AscomEditor was called, new parameters are already checked for validity.
+                self.c.conf.set("ASCOM", "guiding interval", self.ascomeditor.new_guiding_interval)
+                self.c.conf.set("ASCOM", "wait interval", self.ascomeditor.new_wait_interval)
+                self.c.conf.set("ASCOM", "pulse guide speed",
+                                self.ascomeditor.new_pulse_guide_speed)
+                self.c.conf.set("ASCOM", "telescope lookup precision",
+                                self.ascomeditor.new_telescope_lookup_precision)
+                self.c.conf.set('ASCOM', 'telescope driver', self.ascomeditor.new_driver_name)
 
         # All tests passed successfully, and all parameters have been written to the
         # configuration object. Close the GUI window.

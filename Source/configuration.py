@@ -25,7 +25,6 @@ import os.path
 import sys
 
 from PyQt5 import QtWidgets
-
 from configuration_editor import ConfigurationEditor
 
 
@@ -361,6 +360,17 @@ class Configuration:
                 self.conf.set('ASCOM', 'pulse guide speed', '0.01')
                 self.conf.remove_option('ASCOM', 'chooser')
                 self.conf.remove_option('ASCOM', 'hub')
+                scale = 7. / 8.5
+                new_figsize_horizontal = round(
+                    self.conf.getfloat('Tile Visualization', 'figsize horizontal') * scale, 1)
+                self.conf.set('Tile Visualization', 'figsize horizontal',
+                              str(new_figsize_horizontal))
+                new_figsize_vertical = round(
+                    self.conf.getfloat('Tile Visualization', 'figsize vertical') * scale, 1)
+                self.conf.set('Tile Visualization', 'figsize vertical', str(new_figsize_vertical))
+                new_label_fontsize = int(
+                    self.conf.getfloat('Tile Visualization', 'label fontsize') * scale)
+                self.conf.set('Tile Visualization', 'label fontsize', str(new_label_fontsize))
 
             # The configuration file could be imported, but the contents may not be up to date.
             file_identical = False
