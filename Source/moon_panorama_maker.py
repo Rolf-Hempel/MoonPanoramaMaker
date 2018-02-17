@@ -393,7 +393,7 @@ class StartQT5(QtWidgets.QMainWindow):
                 try:
                     self.tv.close_tile_visualization()
                     self.workflow.tesselation_created = False
-                    plt.pause(4. * self.configuration.conf.getfloat('ASCOM', 'polling interval'))
+                    plt.pause(4. * self.configuration.polling_interval)
                 except AttributeError:
                     pass
             self.workflow.new_tesselation_flag = True
@@ -1487,7 +1487,7 @@ class StartQT5(QtWidgets.QMainWindow):
             # Stop the workflow thread. This will terminate the camera thread and close the protocol
             # file.
             self.workflow.exiting = True
-            plt.pause(4. * self.configuration.conf.getfloat('ASCOM', 'polling interval'))
+            plt.pause(4. * self.configuration.polling_interval)
         else:
             # No confirmation by the user: Don't stop program execution.
             evnt.ignore()

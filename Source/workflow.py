@@ -27,7 +27,7 @@ from math import degrees
 
 from PyQt5 import QtCore
 
-from exceptions import ASCOMException
+from exceptions import TelescopeException
 from alignment import Alignment
 from camera import Camera
 from miscellaneous import Miscellaneous
@@ -148,7 +148,7 @@ class Workflow(QtCore.QThread):
                 # If a telescope driver is active, first terminate it:
                 if self.telescope_connected:
                     self.telescope.terminate()
-                    time.sleep(4. * self.gui.configuration.conf.getfloat('ASCOM', 'polling interval'))
+                    time.sleep(4. * self.gui.configuration.polling_interval)
                     self.telescope_connected = False
                 # Connect the telescope driver specified in configuration.
                 try:
@@ -158,7 +158,7 @@ class Workflow(QtCore.QThread):
                     self.telescope_connected = True
                     # Signal the main GUI that the telescope driver is initialized.
                     self.telescope_initialized_signal.emit()
-                except ASCOMException as e:
+                except TelescopeException as e:
                     # The telescope driver does not work properly. Signal the main GUI.
                     if self.gui.configuration.protocol_level > 0:
                         Miscellaneous.protocol("Telescope initialization failed: " + str(e))
@@ -170,7 +170,7 @@ class Workflow(QtCore.QThread):
                 # If the camera is connected, disconnect it now.
                 if self.camera_connected:
                     self.camera.terminate = True
-                    time.sleep(4. * self.gui.configuration.conf.getfloat('ASCOM', 'polling interval'))
+                    time.sleep(4. * self.gui.configuration.polling_interval)
                     self.camera_connected = False
                 # If camera automation is on, create a Camera object and connect the camera.
                 if self.gui.configuration.conf.getboolean("Workflow", "camera automation"):
@@ -497,9 +497,8 @@ class Workflow(QtCore.QThread):
                 self.escape_pressed_flag = False
                 # Wait while camera is active.
                 if self.gui.configuration.conf.getboolean("Workflow", "camera automation"):
-                    delay = self.gui.configuration.conf.getfloat('ASCOM', 'polling interval')
                     while (self.camera.active):
-                        time.sleep(delay)
+                        time.sleep(self.gui.configuration.polling_interval)
                 # After video(s) are finished, stop telescope guiding, blank out text browser and
                 # give key control back to the user.
                 self.telescope.stop_guiding()
@@ -508,7 +507,7 @@ class Workflow(QtCore.QThread):
                 self.reset_key_status_signal.emit()
 
             # Sleep time inserted to limit CPU consumption by idle looping.
-            time.sleep(self.gui.configuration.conf.getfloat('ASCOM', 'polling interval'))
+            time.sleep(self.gui.configuration.polling_interval)
             # print ("End of main loop")
 
         # The "exiting" flag is set (by gui method "CloseEvent"). Terminate the telescope first.
@@ -518,7 +517,7 @@ class Workflow(QtCore.QThread):
         if self.camera_connected:
             if self.gui.configuration.conf.getboolean("Workflow", "camera automation"):
                 self.camera.terminate = True
-        time.sleep(self.gui.configuration.conf.getfloat('ASCOM', 'polling interval'))
+        time.sleep(self.gui.configuration.polling_interval)
         # If stdout was re-directed to a file: Close the file and reset stdout to original value.
         if self.gui.configuration.conf.getboolean('Workflow', 'protocol to file'):
             try:

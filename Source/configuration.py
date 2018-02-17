@@ -82,6 +82,16 @@ class Configuration:
         # in between exposures. Otherwise FireCapture might get stuck.
         self.camera_time_between_multiple_exposures = 1.
 
+        # In several places polling is used to wait for an event. A short wait time is introduced
+        # after each attempt to reduce CPU load. A time-out count keeps polling from continuing
+        # indefinitely.
+        self.polling_interval = 0.1
+        self.polling_time_out_count = 50
+
+        # A PulseGuide operation of "calibrate_pulse_length" milliseconds is used to find out if
+        # the telescope operation is mirror-reversed in RA/DE.
+        self.calibrate_pulse_length = 1000.
+
         # Minimum length of time interval for drift computation:
         self.minimum_drift_seconds = 600.   # 10 minutes
 

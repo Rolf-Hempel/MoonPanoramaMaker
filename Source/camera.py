@@ -137,7 +137,7 @@ class Camera(QtCore.QThread):
                         self.active_tile_number) + " captured, signal (tile processed) emitted")
                 self.active = False
             # Insert a wait time to keep the CPU usage low.
-            time.sleep(self.configuration.conf.getfloat("ASCOM", "polling interval"))
+            time.sleep(self.configuration.polling_interval)
 
         self.mysocket.close()
         if self.configuration.protocol_level > 0:

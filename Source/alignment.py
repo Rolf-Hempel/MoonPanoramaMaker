@@ -97,7 +97,7 @@ class Alignment:
         """
         Initialization of instance variable "me" (moon ephemeris)
 
-        :param telescope: encapsulates telescope control via ASCOM
+        :param telescope: encapsulates telescope control
         """
 
         self.tel = telescope
@@ -147,7 +147,7 @@ class Alignment:
         # Manual alignment: The telescope is aimed at the current location of the landmark. Look
         # up its position and proceed to alignment computation.
         if alignment_manual:
-            # The telescope position is delivered by ASCOM driver of mounting
+            # The telescope position is delivered by the mount driver
             (ra_landmark, de_landmark) = self.tel.lookup_tel_position()
             relative_alignment_error = None
 

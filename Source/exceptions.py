@@ -20,8 +20,14 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+class TelescopeException(Exception):
+    """
+    Base exception for errors associated with the telescope interface.
+    """
+    pass
 
-class ASCOMException(Exception):
+
+class ASCOMException(TelescopeException):
     """
     Base exception for errors associated with accessing the telescope driver via ASCOM.
     """
