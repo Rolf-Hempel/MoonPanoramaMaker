@@ -25,6 +25,7 @@ import time
 from PyQt5 import QtCore
 from miscellaneous import Miscellaneous
 from socket_client import SocketClient, SocketClientDebug
+from exceptions import CameraException
 
 
 class Camera(QtCore.QThread):
@@ -83,10 +84,8 @@ class Camera(QtCore.QThread):
             try:
                 self.mysocket = SocketClient(self.host, self.port)
             except:
-                if self.configuration.protocol_level > 0:
-                    Miscellaneous.protocol(
-                        "Camera connection to FireCapture failed, expect exception")
-                return
+                raise CameraException("Unable to establish socket connection to FireCapture, host: "
+                                      + self.host + ", port: " + str(self.port))
             if self.configuration.protocol:
                 if self.configuration.protocol_level > 0:
                     Miscellaneous.protocol("Camera: Connection to FireCapture program established")
@@ -126,7 +125,8 @@ class Camera(QtCore.QThread):
                         if self.configuration.protocol_level > 0:
                             Miscellaneous.protocol("Camera, Error message in ack: " + str(e))
                     if self.configuration.protocol_level > 2:
-                        Miscellaneous.protocol("Camera: acknowledgement from FireCapture = " + ack)
+                        Miscellaneous.protocol("Camera: acknowledgement from FireCapture = "
+                                               + str(ack))
 
                 # All videos for this tile are acquired, mark tile as processed.
                 self.mark_processed()

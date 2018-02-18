@@ -23,7 +23,7 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 import threading
 import time
 from datetime import datetime
-from math import degrees, radians
+from math import degrees, radians, pi
 
 import numpy
 import pythoncom
@@ -139,12 +139,12 @@ class OperateTelescope(threading.Thread):
         try:
             if telescope_driver.Connected:
                 if self.configuration.protocol_level > 1:
-                    Miscellaneous.protocol("The Telescope was already connected.")
+                    Miscellaneous.protocol("The telescope was already connected.")
             else:
                 telescope_driver.Connected = True
                 if telescope_driver.Connected:
                     if self.configuration.protocol_level > 1:
-                        Miscellaneous.protocol("The Telescope is connected now.")
+                        Miscellaneous.protocol("The telescope is connected now.")
                 else:
                     raise ASCOMConnectException("Unable to connect to telescope driver")
         except:
@@ -509,8 +509,8 @@ class Telescope:
         """
 
         # Convert coordinates into hours and degrees, fill parameters into instruction fields and
-        # put the instruction into the queue.
-        rect = degrees(ra) / 15.
+        # put the instruction into the queue. Make sure the RA value is between 0 and 24 hours.
+        rect = (degrees(ra) / 15.)%24.
         decl = degrees(de)
         slew_to_instruction = self.optel.slew_to
         slew_to_instruction['rect'] = rect
@@ -520,7 +520,8 @@ class Telescope:
         (rect_lookup, decl_lookup) = self.lookup_tel_position_uncorrected()
         # For some mounts there is a systematic difference between target and the position
         # looked-up. Compute the difference. It will be used to correct future look-ups.
-        self.readout_correction_ra = ra - rect_lookup
+        # Bring the RA correction as close to zero as possible (full circle ambiguity).
+        self.readout_correction_ra = (ra - rect_lookup + pi) % (2. * pi) - pi
         self.readout_correction_de = de - decl_lookup
         # Write the corrections to the protocol file.
         if self.configuration.protocol_level > 2:
@@ -726,8 +727,10 @@ class Telescope:
         """
 
         if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("Terminating telescope")
+            Miscellaneous.protocol("High-level telescope interface: "
+                                   "Terminating OperateTelescope thread")
         self.optel.instructions.insert(0, self.optel.terminate)
         self.optel.join()
         if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("Telescope terminated")
+            Miscellaneous.protocol("High-level telescope interface: "
+                                   "OperateTelescope thread terminated")

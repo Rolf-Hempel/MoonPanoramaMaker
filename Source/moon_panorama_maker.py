@@ -140,6 +140,7 @@ class StartQT5(QtWidgets.QMainWindow):
         self.workflow.telescope_initialized_signal.connect(self.initialize_camera)
         self.workflow.telescope_failed_signal.connect(self.telescope_connection_failed)
         self.workflow.camera_initialized_signal.connect(self.initialize_tesselation)
+        self.workflow.camera_failed_signal.connect(self.camera_connection_failed)
         self.workflow.tesselation_initialized_signal.connect(self.start_workflow)
         self.workflow.alignment_point_reached_signal.connect(self.alignment_point_reached)
         self.workflow.alignment_performed_signal.connect(self.alignment_performed)
@@ -365,6 +366,19 @@ class StartQT5(QtWidgets.QMainWindow):
         # A camera connection (which was established before the configuration was changed) is
         # disconnected.
         self.workflow.camera_initialization_flag = True
+
+    def camera_connection_failed(self, message):
+        '''
+        There is a problem with the connection to FireCapture. Prompt the user to check the
+        FireCapture status and restart the workflow.
+
+        :param message: Detailed error message from low-level telescope interface.
+        :return: -
+        '''
+
+        self.set_text_browser("Unable to connect to FireCapture. Check the status of FireCapture "
+                              " and re-start the workflow.\nDetailed error info: " + message)
+
 
     def initialize_tesselation(self):
         '''

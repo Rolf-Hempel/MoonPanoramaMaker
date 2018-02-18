@@ -114,6 +114,7 @@ class AscomConfigurationEditor(QtWidgets.QDialog, Ui_AscomDialog):
         :return: -
         """
 
+        self.telescope_changed = True
         self.configuration_changed = True
 
     def telescope_lookup_precision_write(self):

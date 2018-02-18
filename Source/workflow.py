@@ -27,7 +27,7 @@ from math import degrees
 
 from PyQt5 import QtCore
 
-from exceptions import TelescopeException
+from exceptions import TelescopeException, CameraException
 from alignment import Alignment
 from camera import Camera
 from miscellaneous import Miscellaneous
@@ -50,6 +50,7 @@ class Workflow(QtCore.QThread):
     telescope_initialized_signal = QtCore.pyqtSignal()
     telescope_failed_signal = QtCore.pyqtSignal(str)
     camera_initialized_signal = QtCore.pyqtSignal()
+    camera_failed_signal = QtCore.pyqtSignal(str)
     tesselation_initialized_signal = QtCore.pyqtSignal()
     alignment_point_reached_signal = QtCore.pyqtSignal()
     autoalignment_point_reached_signal = QtCore.pyqtSignal()
@@ -179,12 +180,16 @@ class Workflow(QtCore.QThread):
                                              debug=self.gui.configuration.camera_debug)
                         self.camera.start()
                         self.camera_connected = True
-                    except Exception:
+                        # Signal the main GUI that the camera is initialized.
+                        self.camera_initialized_signal.emit()
+                    except CameraException as e:
                         if self.gui.configuration.protocol_level > 0:
-                            Miscellaneous.protocol("Camera initialization failed.")
-                # print ("Signal the main GUI that the camera is initialized.")
-                # Signal the main GUI that the camera is initialized.
-                self.camera_initialized_signal.emit()
+                            Miscellaneous.protocol("Camera initialization failed. " + str(e))
+                        self.camera_failed_signal.emit(str(e))
+                else:
+                    # No camera automation: Signal the main GUI that the camera is initialized,
+                    # anyway. Otherwise the execution environment build would not be finished.
+                    self.camera_initialized_signal.emit()
 
             # Initialize a new tesselation of the current moon phase and create the tile
             # visualization window.

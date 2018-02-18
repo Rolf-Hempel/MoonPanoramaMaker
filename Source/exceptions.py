@@ -47,3 +47,10 @@ class ASCOMPropertyException(ASCOMException):
     Look at the returned message string for details.
     """
     pass
+
+class CameraException(Exception):
+    """
+    Exception raised because the ASCOM telescope driver misses at least one required property.
+    Look at the returned message string for details.
+    """
+    pass
