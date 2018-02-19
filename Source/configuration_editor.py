@@ -28,7 +28,6 @@ sys.path.insert(0, basePath)
 
 from PyQt5 import QtWidgets
 from pytz import timezone
-from ascom_configuration_editor import AscomConfigurationEditor
 from configuration_dialog import Ui_ConfigurationDialog
 from camera_configuration_editor import CameraConfigurationEditor
 from camera_configuration_input import CameraConfigurationInput
@@ -79,8 +78,8 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
         self.input_focal_length.setText(self.c.conf.get("Telescope", "focal length"))
         # Prepare for alternative telescope interfaces (e.g. INDI).
-        # self.interface_list = ["ASCOM", "INDI"]
-        self.interface_list = ["ASCOM"]
+        self.interface_list = ["ASCOM", "INDI"]
+        # self.interface_list = ["ASCOM"]
         self.mount_interface_chooser.addItems(self.interface_list)
         self.mount_interface_chooser.setCurrentIndex(
             self.interface_list.index(self.c.conf.get("Telescope", "interface type")))
@@ -291,6 +290,12 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
         :return: -
         """
+
+        try:
+            # ASCON is only available on Windows. On Linux systems, do nothing.
+            from ascom_configuration_editor import AscomConfigurationEditor
+        except ImportError:
+            return
 
         self.ascomeditor = AscomConfigurationEditor(self.c)
         # Start the GUI.
