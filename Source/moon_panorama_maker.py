@@ -345,8 +345,8 @@ class StartQT5(QtWidgets.QMainWindow):
                 # FireCapture program. Execution will continue only after the user has hit the
                 # "Enter" key.
                 self.set_text_browser("Make sure that FireCapture is started, and that "
-                                      "'MoonPanoramaMaker' is selected in the PreProcessing section. "
-                                      "Confirm with 'enter', otherwise press 'esc'.")
+                                      "'MoonPanoramaMaker' is selected in the PreProcessing "
+                                      "section. Confirm with 'enter', otherwise press 'esc'.")
             else:
                 self.camera_connect_request_answered()
         else:
