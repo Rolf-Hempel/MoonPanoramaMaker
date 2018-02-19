@@ -271,7 +271,8 @@ class StartQT5(QtWidgets.QMainWindow):
 
         if self.configuration.protocol_level > 0:
             print("")
-            Miscellaneous.protocol("The user requested a restart. Rebuild the execution environment.")
+            Miscellaneous.protocol("The user requested a restart. "
+                                   "Rebuild the execution environment.")
 
         self.redirect_stdout()
 
