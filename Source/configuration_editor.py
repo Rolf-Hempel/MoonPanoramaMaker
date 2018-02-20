@@ -32,6 +32,7 @@ from configuration_dialog import Ui_ConfigurationDialog
 from camera_configuration_editor import CameraConfigurationEditor
 from camera_configuration_input import CameraConfigurationInput
 from camera_configuration_delete import CameraConfigurationDelete
+from exceptions import ASCOMException
 from miscellaneous import Miscellaneous
 
 
@@ -300,9 +301,12 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
                     "there might be an INDI client available. In this case, try to use 'INDI' instead of 'ASCOM'")
             return
 
-        self.ascomeditor = AscomConfigurationEditor(self.c)
-        # Start the GUI.
-        self.ascomeditor.exec_()
+        try:
+            self.ascomeditor = AscomConfigurationEditor(self.c)
+            # Start the GUI.
+            self.ascomeditor.exec_()
+        except ASCOMException:
+            return
         # Remember that the AscomConfigurationEditor was invoked.
         self.ascomeditor_called = True
         # Check if the configuration has changed.

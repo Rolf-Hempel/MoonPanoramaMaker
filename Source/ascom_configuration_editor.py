@@ -84,7 +84,7 @@ class AscomConfigurationEditor(QtWidgets.QDialog, Ui_AscomDialog):
             if self.old_driver_name != self.new_driver_name:
                 self.configuration_changed = True
         except:
-            if self.configuration.protocol_level > 0:
+            if self.c.protocol_level > 0:
                 Miscellaneous.protocol("Unable to access the ASCOM telescope chooser. Please check"
                                        " the ASCOM platform installation.")
 
