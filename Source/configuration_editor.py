@@ -301,12 +301,10 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
                     "there might be an INDI client available. In this case, try to use 'INDI' instead of 'ASCOM'")
             return
 
-        try:
-            self.ascomeditor = AscomConfigurationEditor(self.c)
-            # Start the GUI.
-            self.ascomeditor.exec_()
-        except ASCOMException:
-            return
+        self.ascomeditor = AscomConfigurationEditor(self.c)
+        # Start the GUI.
+        self.ascomeditor.exec_()
+
         # Remember that the AscomConfigurationEditor was invoked.
         self.ascomeditor_called = True
         # Check if the configuration has changed.
