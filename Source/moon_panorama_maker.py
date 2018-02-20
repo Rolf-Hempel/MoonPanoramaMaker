@@ -324,6 +324,8 @@ class StartQT5(QtWidgets.QMainWindow):
 
         self.set_text_browser("The telescope driver does not work properly. Check the interface "
                               "configuration and re-start the workflow.")
+        # Mark the telescope as not initialized.
+        self.telescope_initialization_flag = True
 
     def initialize_camera(self):
         '''
