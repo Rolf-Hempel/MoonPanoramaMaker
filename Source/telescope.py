@@ -26,20 +26,19 @@ from datetime import datetime
 from math import degrees, radians, pi
 
 import numpy
-import pythoncom
-import win32com.client
-from exceptions import TelescopeException, ASCOMConnectException, ASCOMPropertyException
+
+from exceptions import TelescopeException, ASCOMImportException, ASCOMConnectException, ASCOMPropertyException
 from miscellaneous import Miscellaneous
 
 
-class OperateTelescope(threading.Thread):
+class OperateTelescopeASCOM(threading.Thread):
     """
-    This module contains two classes: This class "OperateTelescope" provides the low-level interface
+    This module contains two classes: This class "OperateTelescopeASCOM" provides the low-level interface
     to the ASCOM driver of the telescope mount. It keeps a queue of instructions which is handled by
     an independent thread.
     
     Class Telescope provides the interface to the outside world. Its methods put instructions into
-    the OperateTelescope queue. Some of its methods block until the OperateTelescope thread has
+    the OperateTelescopeASCOM queue. Some of its methods block until the OperateTelescopeASCOM thread has
     acknowledged completion. Others are non-blocking.
     
     """
@@ -117,7 +116,7 @@ class OperateTelescope(threading.Thread):
         self.direction_west = 3
 
         if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("OperateTelescope thread initialized.")
+            Miscellaneous.protocol("OperateTelescopeASCOM thread initialized.")
 
     def connect_and_test_telescope(self, driver_name):
         """
@@ -127,6 +126,11 @@ class OperateTelescope(threading.Thread):
         :param driver_name: Name of the telescope driver, as returned by the ASCOM chooser.
         :return: telescope driver object supporting ASCOM methods and properties.
         """
+
+        try:
+            import win32com.client
+        except ImportError:
+            raise ASCOMImportException("Unable to import Win32com client")
 
         # Try to get access to the Win32Com object.
         try:
@@ -184,6 +188,14 @@ class OperateTelescope(threading.Thread):
         """
 
         # This is necessary because Windows COM objects are shared between threads.
+        try:
+            import pythoncom
+        except ImportError as e:
+            # Save the error message to be looked up by high-level telescope thread.
+            self.initialization_error = str(e)
+            if self.configuration.protocol_level > 0:
+                Miscellaneous.protocol("Ending OperateTelescopeASCOM thread")
+            return
         pythoncom.CoInitialize()
 
         # Connect to the ASCOM telescope driver and check if it is working properly.
@@ -202,11 +214,11 @@ class OperateTelescope(threading.Thread):
             self.tel.GuideRateDeclination = self.configuration.conf.getfloat("ASCOM",
                                                                              "pulse guide speed")
             if self.configuration.protocol_level > 1:
-                Miscellaneous.protocol("OperateTelescope: pulse guide speed set to " + str(
+                Miscellaneous.protocol("OperateTelescopeASCOM: pulse guide speed set to " + str(
                     self.configuration.conf.get("ASCOM", "pulse guide speed")))
             # After successful connection to the telescope driver, mark the interface initialized.
             if self.configuration.protocol_level > 0:
-                Miscellaneous.protocol("OperateTelescope: telescope driver is working properly.")
+                Miscellaneous.protocol("OperateTelescopeASCOM: telescope driver is working properly.")
             self.initialized = True
         except Exception as e:
             # Save the error message to be looked up by high-level telescope thread.
@@ -214,7 +226,7 @@ class OperateTelescope(threading.Thread):
             # Clean up the low-level telescope thread and exit.
             pythoncom.CoUninitialize()
             if self.configuration.protocol_level > 0:
-                Miscellaneous.protocol("Ending OperateTelescope thread")
+                Miscellaneous.protocol("Ending OperateTelescopeASCOM thread")
             return
 
         # Serve the instruction queue, until the "terminate" instruction is encountered.
@@ -413,7 +425,7 @@ class OperateTelescope(threading.Thread):
         # See comment at the beginning of this method.
         pythoncom.CoUninitialize()
         if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("Ending OperateTelescope thread")
+            Miscellaneous.protocol("Ending OperateTelescopeASCOM thread")
 
     def remove_instruction(self, instruction):
         """
@@ -446,7 +458,7 @@ class Telescope:
         self.configuration = configuration
 
         # Instantiate the OperateTelescope object and start the thread.
-        self.optel = OperateTelescope(self.configuration)
+        self.optel = OperateTelescopeASCOM(self.configuration)
         self.optel.start()
 
         # Wait for the low-level thread to be initialized. Meanwhile check for error messages.

@@ -23,6 +23,7 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 from math import sin, cos
 from datetime import datetime
+from PyQt5 import QtWidgets
 
 from show_input_error import ShowInputError
 
@@ -104,6 +105,16 @@ class Miscellaneous():
 
         inputerror = ShowInputError(parameter_string, example_string)
         inputerror.exec_()
+
+    @staticmethod
+    def show_detailed_error_message(message, details):
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Warning)
+        msg.setText(message)
+        msg.setWindowTitle(" ")
+        msg.setDetailedText(details)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.exec_()
 
     @staticmethod
     def rotate(pos_angle, de_center, scale_factor, flip_x, flip_y, x, y):

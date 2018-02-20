@@ -34,6 +34,13 @@ class ASCOMException(TelescopeException):
     pass
 
 
+class ASCOMImportException(ASCOMException):
+    """
+    Exception raised while importing modules used to access the ASCOM telescope driver.
+    """
+    pass
+
+
 class ASCOMConnectException(ASCOMException):
     """
     Exception raised while connecting to the ASCOM telescope driver.

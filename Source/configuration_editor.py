@@ -295,15 +295,9 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
             # ASCON is only available on Windows. On Linux systems, do nothing.
             from ascom_configuration_editor import AscomConfigurationEditor
         except ImportError:
-            msg = QtWidgets.QMessageBox()
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setText("The ASCOM interface does not seem to work.")
-            msg.setWindowTitle(" ")
-            msg.setDetailedText(
-                "Most likely the ASCOM platform is not installed on this computer.\n\nIf this is a Linux system, "
-                "there might be an INDI client available. In this case, try to use 'INDI' instead of 'ASCOM'")
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-            msg.exec_()
+            Miscellaneous.show_detailed_error_message("The ASCOM interface does not seem to work.",
+                    "Most likely the ASCOM platform is not installed on this computer.\n\nIf this is a Linux system, "
+                    "there might be an INDI client available. In this case, try to use 'INDI' instead of 'ASCOM'")
             return
 
         self.ascomeditor = AscomConfigurationEditor(self.c)
