@@ -130,7 +130,8 @@ class OperateTelescopeASCOM(threading.Thread):
         try:
             import win32com.client
         except ImportError:
-            raise ASCOMImportException("Unable to import Win32com client")
+            raise ASCOMImportException("Unable to import Win32com client. "
+                                       "Is this a Windows system?")
 
         # Try to get access to the Win32Com object.
         try:
@@ -165,7 +166,7 @@ class OperateTelescopeASCOM(threading.Thread):
             can_set_guide_rates = telescope_driver.CanSetGuideRates
         except:
             raise ASCOMConnectException(
-                "Telescope driver does not support required property lookups")
+                "The telescope driver does not support required property lookups")
 
         if not can_slew:
             raise ASCOMPropertyException("The telescope driver is not able to slew to RA/DE")
@@ -180,35 +181,34 @@ class OperateTelescopeASCOM(threading.Thread):
         # Return a reference to the driver object.
         return telescope_driver
 
-    def run(self):
+    def switch_on_tracking(self):
         """
-        Execute the thread which serves the telescope instruction queue.
-        
-        :return: -
+        Try to switch on tracking. If the telescope driver responds with an error, raise an
+        exception and set a human-readable error message.
+
+        :return:
         """
 
-        # This is necessary because Windows COM objects are shared between threads.
         try:
-            import pythoncom
-        except ImportError as e:
-            # Save the error message to be looked up by high-level telescope thread.
-            self.initialization_error = str(e)
-            if self.configuration.protocol_level > 0:
-                Miscellaneous.protocol("Ending OperateTelescopeASCOM thread")
-            return
-        pythoncom.CoInitialize()
-
-        # Connect to the ASCOM telescope driver and check if it is working properly.
-        try:
-            self.tel = self.connect_and_test_telescope(
-                self.configuration.conf.get("ASCOM", "telescope driver"))
             # Switch on tracking, if not yet done.
             if not self.tel.Tracking:
                 self.tel.Tracking = True
                 if self.configuration.protocol_level > 1:
-                    Miscellaneous.protocol(
-                        "OperateTelescope: telescope tracking has been switched on.")
-            # Set the PulseGuide speed (in units of deg/sec).
+                    Miscellaneous.protocol("OperateTelescope: telescope tracking has been "
+                                           "switched on.")
+        except:
+            raise ASCOMPropertyException("Telescope tracking could not be switched on")
+
+    def set_pulse_guide_speed(self):
+        """
+        Set the PulseGuide speed (in units of deg/sec). This operation can fail if the user has
+        specified an out-of-range value in the configuration dialog. In this case it is important to
+        point the user at the concrete problem and tell him/her how to resolve it.
+
+        :return:
+        """
+
+        try:
             self.tel.GuideRateRightAscension = self.configuration.conf.getfloat("ASCOM",
                                                                                 "pulse guide speed")
             self.tel.GuideRateDeclination = self.configuration.conf.getfloat("ASCOM",
@@ -216,10 +216,39 @@ class OperateTelescopeASCOM(threading.Thread):
             if self.configuration.protocol_level > 1:
                 Miscellaneous.protocol("OperateTelescopeASCOM: pulse guide speed set to " + str(
                     self.configuration.conf.get("ASCOM", "pulse guide speed")))
-            # After successful connection to the telescope driver, mark the interface initialized.
+        except:
+            raise ASCOMPropertyException("The 'pulse guide speed' value set by the user in the "
+                                         "configuration dialog cannot be handled by the telescope "
+                                         "driver. Most likely it is too large. Try again with a "
+                                         "smaller value.")
+
+    def run(self):
+        """
+        Execute the thread which serves the telescope instruction queue.
+        
+        :return: -
+        """
+
+        try:
+            import pythoncom
+        except ImportError as e:
+            # Save the error message to be looked up by high-level telescope thread.
+            self.initialization_error = "Pythoncom module could not be imported. " \
+                                        "Is this a Windows system?"
             if self.configuration.protocol_level > 0:
-                Miscellaneous.protocol("OperateTelescopeASCOM: telescope driver is working properly.")
-            self.initialized = True
+                Miscellaneous.protocol("Ending OperateTelescopeASCOM thread")
+            return
+        # This is necessary because Windows COM objects are shared between threads.
+        pythoncom.CoInitialize()
+
+        # Connect to the ASCOM telescope driver and check if it is working properly.
+        try:
+            self.tel = self.connect_and_test_telescope(
+                self.configuration.conf.get("ASCOM", "telescope driver"))
+            # Switch on tracking, if not yet done.
+            self.switch_on_tracking()
+            # Set the PulseGuide speed.
+            self.set_pulse_guide_speed()
         except Exception as e:
             # Save the error message to be looked up by high-level telescope thread.
             self.initialization_error = str(e)
@@ -228,6 +257,12 @@ class OperateTelescopeASCOM(threading.Thread):
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol("Ending OperateTelescopeASCOM thread")
             return
+
+        # After successful connection to the telescope driver, mark the interface initialized.
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol(
+                "OperateTelescopeASCOM: telescope driver is working properly.")
+        self.initialized = True
 
         # Serve the instruction queue, until the "terminate" instruction is encountered.
         while True:

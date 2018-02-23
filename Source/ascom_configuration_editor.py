@@ -151,7 +151,7 @@ class AscomConfigurationEditor(QtWidgets.QDialog, Ui_AscomDialog):
 
             self.new_pulse_guide_speed = str(self.input_pulse_guide_speed.text())
             if not Miscellaneous.testfloat(self.new_pulse_guide_speed, 0., 1.):
-                Miscellaneous.show_input_error("Pulse guide speed", "0.01")
+                Miscellaneous.show_input_error("Pulse guide speed", "0.001")
                 return
 
             self.new_telescope_lookup_precision = str(self.input_telescope_lookup_precision.text())

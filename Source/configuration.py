@@ -206,7 +206,7 @@ class Configuration:
             self.conf.set('ASCOM', 'telescope driver', 'POTH.Telescope')
             self.conf.set('ASCOM', 'guiding interval', '0.2')
             self.conf.set('ASCOM', 'wait interval', '1.')
-            self.conf.set('ASCOM', 'pulse guide speed', '0.01')
+            self.conf.set('ASCOM', 'pulse guide speed', '0.003')
             self.conf.set('ASCOM', 'telescope lookup precision', '0.5')
 
             self.conf.add_section('Alignment')
