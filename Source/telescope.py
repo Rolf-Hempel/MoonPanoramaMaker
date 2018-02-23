@@ -26,8 +26,8 @@ from datetime import datetime
 from math import degrees, radians, pi
 
 import numpy
-
-from exceptions import TelescopeException, ASCOMImportException, ASCOMConnectException, ASCOMPropertyException
+from exceptions import TelescopeException, ASCOMImportException, ASCOMConnectException, \
+    ASCOMPropertyException
 from miscellaneous import Miscellaneous
 
 
@@ -210,12 +210,16 @@ class OperateTelescopeASCOM(threading.Thread):
 
         try:
             self.tel.GuideRateRightAscension = self.configuration.conf.getfloat("ASCOM",
-                                                                                "pulse guide speed")
+                                                                                "pulse guide "
+                                                                                "speed RA")
             self.tel.GuideRateDeclination = self.configuration.conf.getfloat("ASCOM",
-                                                                             "pulse guide speed")
+                                                                             "pulse guide speed DE")
             if self.configuration.protocol_level > 1:
-                Miscellaneous.protocol("OperateTelescopeASCOM: pulse guide speed set to " + str(
-                    self.configuration.conf.get("ASCOM", "pulse guide speed")))
+                Miscellaneous.protocol(
+                    "OperateTelescopeASCOM: pulse guide speed in RA set to " + str(
+                        self.configuration.conf.get("ASCOM",
+                                                    "pulse guide speed RA")) + ", in DE to " + str(
+                        self.configuration.conf.get("ASCOM", "pulse guide speed DE")))
         except:
             raise ASCOMPropertyException("The 'pulse guide speed' value set by the user in the "
                                          "configuration dialog cannot be handled by the telescope "
