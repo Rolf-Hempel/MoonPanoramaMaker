@@ -604,8 +604,10 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
                 # If the AscomEditor was called, new parameters are already checked for validity.
                 self.c.conf.set("ASCOM", "guiding interval", self.ascomeditor.new_guiding_interval)
                 self.c.conf.set("ASCOM", "wait interval", self.ascomeditor.new_wait_interval)
-                self.c.conf.set("ASCOM", "pulse guide speed",
-                                self.ascomeditor.new_pulse_guide_speed)
+                self.c.conf.set("ASCOM", "pulse guide speed RA",
+                                self.ascomeditor.new_pulse_guide_speed_ra)
+                self.c.conf.set("ASCOM", "pulse guide speed DE",
+                                self.ascomeditor.new_pulse_guide_speed_de)
                 self.c.conf.set("ASCOM", "telescope lookup precision",
                                 self.ascomeditor.new_telescope_lookup_precision)
                 self.c.conf.set('ASCOM', 'telescope driver', self.ascomeditor.new_driver_name)

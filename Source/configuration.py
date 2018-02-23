@@ -206,7 +206,8 @@ class Configuration:
             self.conf.set('ASCOM', 'telescope driver', 'POTH.Telescope')
             self.conf.set('ASCOM', 'guiding interval', '0.2')
             self.conf.set('ASCOM', 'wait interval', '1.')
-            self.conf.set('ASCOM', 'pulse guide speed', '0.003')
+            self.conf.set('ASCOM', 'pulse guide speed RA', '0.003')
+            self.conf.set('ASCOM', 'pulse guide speed DE', '0.003')
             self.conf.set('ASCOM', 'telescope lookup precision', '0.5')
 
             self.conf.add_section('Alignment')
@@ -357,7 +358,8 @@ class Configuration:
                 # parameter names.
                 self.conf.set('Telescope', 'interface type', 'ASCOM')
                 self.conf.set('ASCOM', 'telescope driver', self.conf.get('ASCOM', 'hub'))
-                self.conf.set('ASCOM', 'pulse guide speed', '0.01')
+                self.conf.set('ASCOM', 'pulse guide speed RA', '0.003')
+                self.conf.set('ASCOM', 'pulse guide speed DE', '0.003')
                 self.conf.remove_option('ASCOM', 'chooser')
                 self.conf.remove_option('ASCOM', 'hub')
                 scale = 7. / 8.5

@@ -30,8 +30,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>520</width>
-        <height>185</height>
+        <width>522</width>
+        <height>189</height>
        </rect>
       </property>
       <widget class="QWidget" name="layoutWidget">
@@ -40,7 +40,7 @@
          <x>0</x>
          <y>10</y>
          <width>511</width>
-         <height>164</height>
+         <height>166</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout">
@@ -94,7 +94,7 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
+        <item row="4" column="0">
          <widget class="QLabel" name="wait_interval">
           <property name="font">
            <font>
@@ -109,7 +109,7 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="1">
+        <item row="4" column="1">
          <widget class="QLineEdit" name="input_wait_interval">
           <property name="font">
            <font>
@@ -118,7 +118,7 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="0">
+        <item row="6" column="0">
          <widget class="QLabel" name="telescope_lookup_precision">
           <property name="font">
            <font>
@@ -133,7 +133,7 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="1">
+        <item row="6" column="1">
          <widget class="QLineEdit" name="input_telescope_lookup_precision">
           <property name="font">
            <font>
@@ -143,22 +143,22 @@
          </widget>
         </item>
         <item row="2" column="0">
-         <widget class="QLabel" name="pulse_guide_speed">
+         <widget class="QLabel" name="pulse_guide_speed_ra">
           <property name="font">
            <font>
             <pointsize>10</pointsize>
            </font>
           </property>
           <property name="toolTip">
-           <string>Speed of pulse guide operations in RA/DE. Must be between 0. and 1.</string>
+           <string>Speed of pulse guide operations in RA. Must be between 0. and 0.1. The range of allowed values may be restricted further by the ASCOM driver.</string>
           </property>
           <property name="text">
-           <string>Pulse guide speed (deg/sec)</string>
+           <string>Pulse guide speed RA (deg/sec)</string>
           </property>
          </widget>
         </item>
         <item row="2" column="1">
-         <widget class="QLineEdit" name="input_pulse_guide_speed">
+         <widget class="QLineEdit" name="input_pulse_guide_speed_ra">
           <property name="font">
            <font>
             <pointsize>10</pointsize>
@@ -166,6 +166,30 @@
           </property>
           <property name="toolTip">
            <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="pulse_guide_speed_de">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Speed of pulse guide operations in DE. Must be between 0. and 0.1. The range of allowed values may be restricted further by the ASCOM driver.</string>
+          </property>
+          <property name="text">
+           <string>Pulse guide speed DE (deg/sec)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLineEdit" name="input_pulse_guide_speed_de">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
           </property>
          </widget>
         </item>

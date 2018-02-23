@@ -49,16 +49,21 @@ class AscomConfigurationEditor(QtWidgets.QDialog, Ui_AscomDialog):
         self.old_guiding_interval = self.new_guiding_interval = self.c.conf.get('ASCOM',
                                                                                 'guiding interval')
         self.old_wait_interval = self.new_wait_interval = self.c.conf.get('ASCOM', 'wait interval')
-        self.old_pulse_guide_speed = self.new_pulse_guide_speed = self.c.conf.get('ASCOM',
+        self.old_pulse_guide_speed_ra = self.new_pulse_guide_speed_ra = self.c.conf.get('ASCOM',
                                                                                   'pulse guide '
-                                                                                  'speed')
+                                                                                  'speed RA')
+        self.old_pulse_guide_speed_de = self.new_pulse_guide_speed_de = self.c.conf.get('ASCOM',
+                                                                                        'pulse '
+                                                                                        'guide '
+                                                                                        'speed DE')
         self.old_telescope_lookup_precision = self.new_telescope_lookup_precision = self.c.conf.get(
             'ASCOM', 'telescope lookup precision')
 
         # Fill the gui text fields with the current parameters
         self.input_guiding_interval.setText(self.old_guiding_interval)
         self.input_wait_interval.setText(self.old_wait_interval)
-        self.input_pulse_guide_speed.setText(self.old_pulse_guide_speed)
+        self.input_pulse_guide_speed_ra.setText(self.old_pulse_guide_speed_ra)
+        self.input_pulse_guide_speed_de.setText(self.old_pulse_guide_speed_de)
         self.input_telescope_lookup_precision.setText(self.old_telescope_lookup_precision)
 
         # The configuration_changed flag indicates if at least one parameter has been changed by
@@ -72,7 +77,8 @@ class AscomConfigurationEditor(QtWidgets.QDialog, Ui_AscomDialog):
         self.select_driver.clicked.connect(self.open_ascom_chooser)
         self.input_guiding_interval.textChanged.connect(self.guiding_interval_write)
         self.input_wait_interval.textChanged.connect(self.wait_interval_write)
-        self.input_pulse_guide_speed.textChanged.connect(self.pulse_guide_speed_write)
+        self.input_pulse_guide_speed_ra.textChanged.connect(self.pulse_guide_speed_ra_write)
+        self.input_pulse_guide_speed_de.textChanged.connect(self.pulse_guide_speed_de_write)
         self.input_telescope_lookup_precision.textChanged.connect(
             self.telescope_lookup_precision_write)
 
@@ -107,7 +113,17 @@ class AscomConfigurationEditor(QtWidgets.QDialog, Ui_AscomDialog):
 
         self.configuration_changed = True
 
-    def pulse_guide_speed_write(self):
+    def pulse_guide_speed_ra_write(self):
+        """
+        If the parameter has been changed, set the appropriate configuration change flags to True.
+
+        :return: -
+        """
+
+        self.telescope_changed = True
+        self.configuration_changed = True
+
+    def pulse_guide_speed_de_write(self):
         """
         If the parameter has been changed, set the appropriate configuration change flags to True.
 
@@ -149,8 +165,13 @@ class AscomConfigurationEditor(QtWidgets.QDialog, Ui_AscomDialog):
                 Miscellaneous.show_input_error("Wait interval", "1.")
                 return
 
-            self.new_pulse_guide_speed = str(self.input_pulse_guide_speed.text())
-            if not Miscellaneous.testfloat(self.new_pulse_guide_speed, 0., 1.):
+            self.new_pulse_guide_speed_ra = str(self.input_pulse_guide_speed_ra.text())
+            if not Miscellaneous.testfloat(self.new_pulse_guide_speed_ra, 0., 0.1):
+                Miscellaneous.show_input_error("Pulse guide speed", "0.001")
+                return
+
+            self.new_pulse_guide_speed_de = str(self.input_pulse_guide_speed_de.text())
+            if not Miscellaneous.testfloat(self.new_pulse_guide_speed_de, 0., 0.1):
                 Miscellaneous.show_input_error("Pulse guide speed", "0.001")
                 return
 
