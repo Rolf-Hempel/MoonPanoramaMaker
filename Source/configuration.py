@@ -210,7 +210,7 @@ class Configuration:
 
             self.conf.add_section('Alignment')
             self.conf.set('Alignment', 'min autoalign interval', '30.')
-            self.conf.set('Alignment', 'max autoalign interval', '300.')
+            self.conf.set('Alignment', 'max autoalign interval', '180.')
             self.conf.set('Alignment', 'max alignment error', '50.')
 
             self.conf.add_section('Camera ZWO ASI120MM-S')

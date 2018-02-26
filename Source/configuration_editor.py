@@ -32,7 +32,6 @@ from configuration_dialog import Ui_ConfigurationDialog
 from camera_configuration_editor import CameraConfigurationEditor
 from camera_configuration_input import CameraConfigurationInput
 from camera_configuration_delete import CameraConfigurationDelete
-from exceptions import ASCOMException
 from miscellaneous import Miscellaneous
 
 
@@ -89,7 +88,10 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.mount_interface_chooser.setCurrentIndex(
             self.interface_list.index(self.c.conf.get("Telescope", "interface type")))
 
-        self.input_protocol_level.setText(self.c.conf.get("Workflow", "protocol level"))
+        protocol_levels = ['0', '1', '2', '3']
+        self.protocol_level_chooser.addItems(protocol_levels)
+        self.protocol_level_chooser.setCurrentIndex(protocol_levels.index(
+            self.c.conf.get("Workflow", "protocol level")))
         self.protocol_to_file_chooser.addItems(['True', 'False'])
         self.protocol_to_file_chooser.setCurrentIndex(['True', 'False'].index(
             self.c.conf.get("Workflow", "protocol to file")))
@@ -138,7 +140,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
             # INDI is not implemented yet. Insert the connection to the INDI configuration editor.
             pass
 
-        self.input_protocol_level.textChanged.connect(self.protocol_level_write)
+        self.protocol_level_chooser.currentIndexChanged.connect(self.protocol_level_write)
         self.protocol_to_file_chooser.currentIndexChanged.connect(self.protocol_to_file_write)
         self.focus_on_star_chooser.currentIndexChanged.connect(self.focus_on_star_write)
         self.limb_first_chooser.currentIndexChanged.connect(self.limb_first_write)
@@ -529,23 +531,12 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
             self.c.conf.set("Telescope", "interface type",
                             str(self.mount_interface_chooser.currentText()))
-
-            input_string = str(self.input_protocol_level.text())
-            if Miscellaneous.testint(input_string, 0, 3) is not None:
-                self.c.conf.set("Workflow", "protocol level", str(self.input_protocol_level.text()))
-                self.c.set_protocol_level()
-            else:
-                Miscellaneous.show_input_error("Session protocol level", "2")
-                return
-
+            self.c.conf.set("Workflow", "protocol level", self.protocol_level_chooser.currentText())
             self.c.conf.set("Workflow", "protocol to file",
                                 str(self.protocol_to_file_chooser.currentText()))
-
             self.c.conf.set("Workflow", "focus on star",
                             str(self.focus_on_star_chooser.currentText()))
-
             self.c.conf.set("Workflow", "limb first", str(self.limb_first_chooser.currentText()))
-
             self.c.conf.set("Workflow", "camera automation",
                                 str(self.camera_automation_chooser.currentText()))
 

@@ -217,21 +217,20 @@ class Workflow(QtCore.QThread):
                                           pos_angle)
 
                 # Write the initialization message to stdout / file:
-                if self.gui.configuration.protocol:
-                    if self.gui.configuration.protocol_level > 0:
-                        print("")
-                        Miscellaneous.protocol("MoonPanoramaMaker (re)started"
-                            "\n           ----------------------------------------------------\n" +
-                            "           " + str(datetime.now())[:10] + " " +
-                            self.gui.configuration.version + "\n" +
-                            "           ----------------------------------------------------")
-                        Miscellaneous.protocol("Moon center RA: " +
-                                        str(round(degrees(self.me.ra), 5)) + ", DE: " +
-                                        str(round(degrees(self.me.de), 5)) + " (degrees), " +
-                                        "diameter: " + str(round(degrees(m_diameter)*60., 3)) +
-                                        " ('), phase_angle: " + str(round(degrees(phase_angle), 2)) +
-                                        ", pos_angle: " + str(round(degrees(pos_angle), 2)) +
-                                        " (degrees)")
+                if self.gui.configuration.protocol_level > 0:
+                    print("")
+                    Miscellaneous.protocol("MoonPanoramaMaker (re)started"
+                        "\n           ----------------------------------------------------\n" +
+                        "           " + str(datetime.now())[:10] + " " +
+                        self.gui.configuration.version + "\n" +
+                        "           ----------------------------------------------------")
+                    Miscellaneous.protocol("Moon center RA: " +
+                                    str(round(degrees(self.me.ra), 5)) + ", DE: " +
+                                    str(round(degrees(self.me.de), 5)) + " (degrees), " +
+                                    "diameter: " + str(round(degrees(m_diameter)*60., 3)) +
+                                    " ('), phase_angle: " + str(round(degrees(phase_angle), 2)) +
+                                    ", pos_angle: " + str(round(degrees(pos_angle), 2)) +
+                                    " (degrees)")
 
                 self.tesselation_created = True
                 # print ("Signal the main GUI that the tesselation is initialized.")
