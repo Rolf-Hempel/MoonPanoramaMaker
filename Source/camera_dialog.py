@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_CameraDialog(object):
     def setupUi(self, CameraDialog):
         CameraDialog.setObjectName("CameraDialog")
-        CameraDialog.resize(571, 333)
+        CameraDialog.resize(571, 302)
         CameraDialog.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(CameraDialog)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
@@ -20,12 +20,13 @@ class Ui_CameraDialog(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 549, 280))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 551, 253))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
         self.gridLayout = QtWidgets.QGridLayout()
+        self.gridLayout.setContentsMargins(9, -1, 9, 5)
         self.gridLayout.setObjectName("gridLayout")
         self.pixel_size = QtWidgets.QLabel(self.scrollAreaWidgetContents)
         font = QtGui.QFont()

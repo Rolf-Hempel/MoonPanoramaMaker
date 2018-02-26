@@ -70,10 +70,11 @@ class Camera(QtCore.QThread):
         self.terminate = False
         self.active_tile_number = -1
 
-        # The socket connection is hardwired. It could be made flexible to allow FireCapture
-        # and MoonPanoramaMaker to run on different computers.
-        self.host = 'localhost'
+        # Set the parameters for the socket connection to FireCapture. FireCapture might run on a
+        # different computer.
+        self.host = self.configuration.conf.get("Camera", "ip address")
         self.port = 9820
+
         # For debugging purposes, the connection to FireCapture can be replaced with a mockup class
         # which reads still images from files. These can be used to test the autoaligh mechanism.
         if debug:
@@ -86,9 +87,8 @@ class Camera(QtCore.QThread):
             except:
                 raise CameraException("Unable to establish socket connection to FireCapture, host: "
                                       + self.host + ", port: " + str(self.port))
-            if self.configuration.protocol:
-                if self.configuration.protocol_level > 0:
-                    Miscellaneous.protocol("Camera: Connection to FireCapture program established")
+            if self.configuration.protocol_level > 0:
+                Miscellaneous.protocol("Camera: Connection to FireCapture program established")
 
     def run(self):
         while not self.terminate:

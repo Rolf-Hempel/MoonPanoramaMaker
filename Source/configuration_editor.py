@@ -27,7 +27,7 @@ basePath = os.path.dirname(os.path.abspath(sys.argv[0]))
 sys.path.insert(0, basePath)
 
 from PyQt5 import QtWidgets
-from pytz import timezone
+from pytz import timezone, all_timezones
 from configuration_dialog import Ui_ConfigurationDialog
 from camera_configuration_editor import CameraConfigurationEditor
 from camera_configuration_input import CameraConfigurationInput
@@ -40,16 +40,16 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
     """
     Update the parameters used by MoonPanoramaMaker which are stored in the configuration object.
     The interaction with the user is through the ConfigurationDialog class.
-    
+
     """
 
     def __init__(self, configuration, parent=None):
         """
         Initialize the text fields in the GUI based on the configuration object, and connect
         gui signals with methods to update the configuration object entries.
-        
+
         :param configuration: object containing parameters set by the user
-        :param parent: 
+        :param parent:
         """
 
         QtWidgets.QDialog.__init__(self, parent)
@@ -70,12 +70,16 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.input_longitude.setText(self.c.conf.get("Geographical Position", "longitude"))
         self.input_latitude.setText(self.c.conf.get("Geographical Position", "latitude"))
         self.input_elevation.setText(self.c.conf.get("Geographical Position", "elevation"))
-        self.input_timezone.setText(self.c.conf.get("Geographical Position", "timezone"))
+        self.timezone_chooser.addItems(all_timezones)
+        self.timezone_chooser.setCurrentIndex(
+            all_timezones.index(self.c.conf.get("Geographical Position", "timezone")))
 
         # Special treatment of available camera models: populate the camera_chooser with list.
         self.camlist = self.c.get_camera_list()
         self.camera_chooser.addItems(self.camlist)
         self.camera_chooser.setCurrentIndex(self.camlist.index(self.c.conf.get("Camera", "name")))
+
+        self.input_ip_address.setText(self.c.conf.get("Camera", "ip address"))
 
         self.input_focal_length.setText(self.c.conf.get("Telescope", "focal length"))
         # Prepare for alternative telescope interfaces (e.g. INDI).
@@ -86,10 +90,18 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
             self.interface_list.index(self.c.conf.get("Telescope", "interface type")))
 
         self.input_protocol_level.setText(self.c.conf.get("Workflow", "protocol level"))
-        self.input_protocol_to_file.setText(self.c.conf.get("Workflow", "protocol to file"))
-        self.input_focus_on_star.setText(self.c.conf.get("Workflow", "focus on star"))
-        self.input_limb_first.setText(self.c.conf.get("Workflow", "limb first"))
-        self.input_camera_automation.setText(self.c.conf.get("Workflow", "camera automation"))
+        self.protocol_to_file_chooser.addItems(['True', 'False'])
+        self.protocol_to_file_chooser.setCurrentIndex(['True', 'False'].index(
+            self.c.conf.get("Workflow", "protocol to file")))
+        self.focus_on_star_chooser.addItems(['True', 'False'])
+        self.focus_on_star_chooser.setCurrentIndex(
+            ['True', 'False'].index(self.c.conf.get("Workflow", "focus on star")))
+        self.limb_first_chooser.addItems(['True', 'False'])
+        self.limb_first_chooser.setCurrentIndex(
+            ['True', 'False'].index(self.c.conf.get("Workflow", "limb first")))
+        self.camera_automation_chooser.addItems(['True', 'False'])
+        self.camera_automation_chooser.setCurrentIndex(
+            ['True', 'False'].index(self.c.conf.get("Workflow", "camera automation")))
         self.input_camera_trigger_delay.setText(self.c.conf.get("Workflow", "camera trigger delay"))
 
         self.input_fig_size_horizontal.setText(
@@ -109,12 +121,14 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.input_longitude.textChanged.connect(self.longitude_write)
         self.input_latitude.textChanged.connect(self.latitude_write)
         self.input_elevation.textChanged.connect(self.elevation_write)
-        self.input_timezone.textChanged.connect(self.timezone_write)
+        self.timezone_chooser.currentIndexChanged.connect(self.timezone_write)
 
         self.camera_chooser.currentIndexChanged.connect(self.camera_changed)
         self.edit_camera.clicked.connect(self.start_edit_camera_dialog)
         self.new_camera.clicked.connect(self.start_new_camera_dialog)
         self.delete_camera.clicked.connect(self.start_delete_camera_dialog)
+
+        self.input_ip_address.textChanged.connect(self.ip_address_write)
 
         self.input_focal_length.textChanged.connect(self.focal_length_write)
         self.mount_interface_chooser.currentIndexChanged.connect(self.mount_interface_changed)
@@ -125,10 +139,10 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
             pass
 
         self.input_protocol_level.textChanged.connect(self.protocol_level_write)
-        self.input_protocol_to_file.textChanged.connect(self.protocol_to_file_write)
-        self.input_focus_on_star.textChanged.connect(self.focus_on_star_write)
-        self.input_limb_first.textChanged.connect(self.limb_first_write)
-        self.input_camera_automation.textChanged.connect(self.camera_automation_write)
+        self.protocol_to_file_chooser.currentIndexChanged.connect(self.protocol_to_file_write)
+        self.focus_on_star_chooser.currentIndexChanged.connect(self.focus_on_star_write)
+        self.limb_first_chooser.currentIndexChanged.connect(self.limb_first_write)
+        self.camera_automation_chooser.currentIndexChanged.connect(self.camera_automation_write)
         self.input_camera_trigger_delay.textChanged.connect(self.camera_trigger_delay_write)
         self.input_fig_size_horizontal.textChanged.connect(self.fig_size_horizontal_write)
         self.input_fig_size_vertical.textChanged.connect(self.fig_size_vertical_write)
@@ -142,7 +156,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
     def longitude_write(self):
         """
         If the parameter has been changed, set the appropriate configuration change flags to True.
-        
+
         :return: -
         """
 
@@ -257,6 +271,17 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
             self.camera_chooser.addItems(self.camlist)
             # The current camera is deleted, set the index of the chooser to 0 (default).
             self.camera_chooser.setCurrentIndex(0)
+
+    def ip_address_write(self):
+        """
+        If the parameter has been changed, set the appropriate configuration change flags
+        to True.
+
+        :return: -
+        """
+
+        self.camera_automation_changed = True
+        self.configuration_changed = True
 
     def focal_length_write(self):
         """
@@ -443,7 +468,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         """
         If the OK button is clicked and the configuration has been changed, test all parameters for
         validity. In case an out-of-bound value is entered, open an error correction dialog window.
-        
+
         :return: -
         """
 
@@ -486,14 +511,13 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
                 Miscellaneous.show_input_error("Elevation", "250")
                 return
 
-            # Special case time zone: Take the time zone string entered and try to convert it using
-            # the timezone method of pytz. If an error is raised, the input string was invalid.
-            try:
-                timezone(str(self.input_timezone.text()))
-                self.c.conf.set("Geographical Position", "timezone",
-                                str(self.input_timezone.text()))
-            except:
-                Miscellaneous.show_input_error("Timezone", "Europe/Berlin")
+            self.c.conf.set("Geographical Position", "timezone", self.timezone_chooser.currentText())
+
+            input_string = str(self.input_ip_address.text())
+            if Miscellaneous.testipaddress(input_string):
+                self.c.conf.set("Camera", "ip address", input_string)
+            else:
+                Miscellaneous.show_input_error("IP address to access FireCapture", "192.168.0.34")
                 return
 
             input_string = str(self.input_focal_length.text())
@@ -514,35 +538,16 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
                 Miscellaneous.show_input_error("Session protocol level", "2")
                 return
 
-            input_string = str(self.input_protocol_to_file.text())
-            if Miscellaneous.testbool(input_string) is not None:
-                self.c.conf.set("Workflow", "protocol to file",
-                                str(self.input_protocol_to_file.text()))
-            else:
-                Miscellaneous.show_input_error("Write protocol to file", "True")
-                return
+            self.c.conf.set("Workflow", "protocol to file",
+                                str(self.protocol_to_file_chooser.currentText()))
 
-            input_string = str(self.input_focus_on_star.text())
-            if Miscellaneous.testbool(input_string) is not None:
-                self.c.conf.set("Workflow", "focus on star", str(self.input_focus_on_star.text()))
-            else:
-                Miscellaneous.show_input_error("Focus on star", "False")
-                return
+            self.c.conf.set("Workflow", "focus on star",
+                            str(self.focus_on_star_chooser.currentText()))
 
-            input_string = str(self.input_limb_first.text())
-            if Miscellaneous.testbool(input_string) is not None:
-                self.c.conf.set("Workflow", "limb first", str(self.input_limb_first.text()))
-            else:
-                Miscellaneous.show_input_error("Limb first", "True")
-                return
+            self.c.conf.set("Workflow", "limb first", str(self.limb_first_chooser.currentText()))
 
-            input_string = str(self.input_camera_automation.text())
-            if Miscellaneous.testbool(input_string) is not None:
-                self.c.conf.set("Workflow", "camera automation",
-                                str(self.input_camera_automation.text()))
-            else:
-                Miscellaneous.show_input_error("Camera automation", "True")
-                return
+            self.c.conf.set("Workflow", "camera automation",
+                                str(self.camera_automation_chooser.currentText()))
 
             input_string = str(self.input_camera_trigger_delay.text())
             if Miscellaneous.testfloat(input_string, 0., 60.):

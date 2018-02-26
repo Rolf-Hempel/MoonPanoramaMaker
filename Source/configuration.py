@@ -139,9 +139,6 @@ class Configuration:
         # Minimum of measurements in cluster:
         self.dbscan_minimum_in_cluster = 5  # originally: 10, optimized: 5
 
-        # Initialize the protocol flag
-        self.protocol = True
-
         # The config file for persistent parameter storage is located in the user's home
         # directory, as is the detailed MoonPanoramaMaker logfile.
         home = os.path.expanduser("~")
@@ -183,6 +180,7 @@ class Configuration:
 
             self.conf.add_section('Camera')
             self.conf.set('Camera', 'name', 'ZWO ASI120MM-S')
+            self.conf.set('Camera', 'ip address', 'localhost')
 
             self.conf.add_section('Telescope')
             self.conf.set('Telescope', 'focal length', '2800.')
@@ -362,6 +360,7 @@ class Configuration:
                 self.conf.set('ASCOM', 'pulse guide speed DE', '0.003')
                 self.conf.remove_option('ASCOM', 'chooser')
                 self.conf.remove_option('ASCOM', 'hub')
+                self.conf.set('Camera', 'ip address', 'localhost')
                 scale = 7. / 8.5
                 new_figsize_horizontal = round(
                     self.conf.getfloat('Tile Visualization', 'figsize horizontal') * scale, 1)
@@ -466,6 +465,6 @@ if __name__ == "__main__":
         print ("Camera automation changed.")
     if editor.tesselation_changed:
         print ("Tesselation changed.")
-    if editor.configuration_changed:
+    if editor.configuration_changed or not c.configuration_read:
         print("Configuration has changed, write back config file. ")
         c.write_config()

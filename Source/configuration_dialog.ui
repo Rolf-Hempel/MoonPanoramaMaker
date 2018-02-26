@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>879</width>
-    <height>849</height>
+    <width>624</width>
+    <height>822</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,8 +42,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>857</width>
-        <height>796</height>
+        <width>604</width>
+        <height>773</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -60,15 +60,6 @@
          </property>
          <item row="17" column="2" colspan="4">
           <widget class="QLineEdit" name="input_camera_trigger_delay">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="15" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_limb_first">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
@@ -114,7 +105,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>Daylight saving time is accounted for automatically</string>
+            <string>Choose from list. Daylight saving time is accounted for automatically</string>
            </property>
            <property name="text">
             <string>Timezone (e.g. Europe/Berlin)</string>
@@ -168,15 +159,6 @@
            </property>
            <property name="text">
             <string>Limb first (True / False)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="16" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_camera_automation">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
            </property>
           </widget>
          </item>
@@ -492,15 +474,6 @@
            </property>
           </widget>
          </item>
-         <item row="13" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_protocol_to_file">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
          <item row="2" column="2" colspan="4">
           <widget class="QLineEdit" name="input_latitude">
            <property name="font">
@@ -585,15 +558,6 @@
            </property>
           </widget>
          </item>
-         <item row="14" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_focus_on_star">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
          <item row="9" column="0">
           <widget class="QLabel" name="focal_length">
            <property name="font">
@@ -621,15 +585,6 @@
            </property>
            <property name="text">
             <string>Latitude (degrees)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="2" colspan="4">
-          <widget class="QLineEdit" name="input_timezone">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
            </property>
           </widget>
          </item>
@@ -761,6 +716,96 @@
            </property>
           </widget>
          </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="ip_address">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Address of system where FireCapture is executed. Either a valid IP address or 'localhost'. Make sure the firewall is open for port 9820.</string>
+           </property>
+           <property name="statusTip">
+            <string/>
+           </property>
+           <property name="text">
+            <string>IP address to access FireCapture</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="2" colspan="4">
+          <widget class="QLineEdit" name="input_ip_address">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="2" colspan="4">
+          <widget class="QComboBox" name="timezone_chooser">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>List of supported time zones</string>
+           </property>
+           <property name="maxVisibleItems">
+            <number>20</number>
+           </property>
+          </widget>
+         </item>
+         <item row="13" column="2" colspan="4">
+          <widget class="QComboBox" name="protocol_to_file_chooser">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>True, if the protocol should be written to the file 'MoonPanoramaMaker.log' in the user's home directory. False, if the protocol should go to stdout.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="14" column="2" colspan="4">
+          <widget class="QComboBox" name="focus_on_star_chooser">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>True, if a star is selected for focussing. False, if a surface area on the moon is selected.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="15" column="2" colspan="4">
+          <widget class="QComboBox" name="limb_first_chooser">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>True, if recording starts at the sunlit limb. False, if it starts at the terminator.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="16" column="2" colspan="4">
+          <widget class="QComboBox" name="camera_automation_chooser">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>True, if FireCapture is triggered by MoonPanoramaMaker automatically. False, if the user triggers the camera.</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>
@@ -790,17 +835,20 @@
   <tabstop>input_longitude</tabstop>
   <tabstop>input_latitude</tabstop>
   <tabstop>input_elevation</tabstop>
-  <tabstop>input_timezone</tabstop>
+  <tabstop>timezone_chooser</tabstop>
   <tabstop>camera_chooser</tabstop>
   <tabstop>edit_camera</tabstop>
   <tabstop>new_camera</tabstop>
   <tabstop>delete_camera</tabstop>
+  <tabstop>input_ip_address</tabstop>
   <tabstop>input_focal_length</tabstop>
+  <tabstop>mount_interface_chooser</tabstop>
+  <tabstop>configure_mount_interface</tabstop>
   <tabstop>input_protocol_level</tabstop>
-  <tabstop>input_protocol_to_file</tabstop>
-  <tabstop>input_focus_on_star</tabstop>
-  <tabstop>input_limb_first</tabstop>
-  <tabstop>input_camera_automation</tabstop>
+  <tabstop>protocol_to_file_chooser</tabstop>
+  <tabstop>focus_on_star_chooser</tabstop>
+  <tabstop>limb_first_chooser</tabstop>
+  <tabstop>camera_automation_chooser</tabstop>
   <tabstop>input_camera_trigger_delay</tabstop>
   <tabstop>input_fig_size_horizontal</tabstop>
   <tabstop>input_fig_size_vertical</tabstop>
@@ -809,7 +857,6 @@
   <tabstop>input_min_autoalign_interval</tabstop>
   <tabstop>input_max_autoalign_interval</tabstop>
   <tabstop>input_max_alignment_error</tabstop>
-  <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
  <connections>

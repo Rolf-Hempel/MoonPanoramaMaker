@@ -94,6 +94,25 @@ class Miscellaneous():
             return None
 
     @staticmethod
+    def testipaddress(address):
+        """
+        Test if the input string represents a valid IP address or 'localhost'.
+
+        :param string: string representation of the IP address
+        :return: True if given address is valid. Otherwise False.
+        """
+
+        if address == 'localhost':
+            return True
+        parts = address.split(".")
+        if len(parts) != 4:
+            return False
+        for item in parts:
+            if not 0 <= int(item) <= 255:
+                return False
+        return True
+
+    @staticmethod
     def show_input_error(parameter_string, example_string):
         """
         Open a window which shows an invalid input parameter together with a valid example.
