@@ -304,13 +304,12 @@ class Alignment:
                 if self.configuration.protocol_level > 2:
                     Miscellaneous.protocol(str(e))
                 raise RuntimeError
-            if self.configuration.protocol:
-                if self.configuration.protocol_level > 2:
-                    Miscellaneous.protocol("Frame captured for autoalignment, x_shift: " +
-                                str(round(x_shift / self.im_shift.pixel_angle, 1)) +
-                                ", y_shift: " + str(round(y_shift / self.im_shift.pixel_angle, 1))+
-                                " (pixels), # consistent shifts: " + str(in_cluster) +
-                                ", # outliers: " + str(outliers))
+            if self.configuration.protocol_level > 2:
+                Miscellaneous.protocol("Frame captured for autoalignment, x_shift: " +
+                            str(round(x_shift / self.im_shift.pixel_angle, 1)) +
+                            ", y_shift: " + str(round(y_shift / self.im_shift.pixel_angle, 1))+
+                            " (pixels), # consistent shifts: " + str(in_cluster) +
+                            ", # outliers: " + str(outliers))
             xy_shifts.append([x_shift, y_shift])
         # Subtract second position from first and third position and reverse the vector. Reason for
         # the reversal: The shift has been applied to the mount pointing. The shift measured in the
