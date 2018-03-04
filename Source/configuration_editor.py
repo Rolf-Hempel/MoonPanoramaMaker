@@ -61,9 +61,10 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.telescope_changed = False
         self.camera_automation_changed = False
         self.tesselation_changed = False
-        # Remember if the ASCOM configuration editor was called. Changes made by this editor are
-        # only applied in the end if the user accepts the changes in the main window.
+        # Remember if the ASCOM or INDI configuration editor was called. Changes made by this
+        # editor are only applied in the end if the user accepts the changes in the main window.
         self.ascomeditor_called = False
+        self.indieditor_called = False
 
         # Start filling the text fields of the GUI.
         self.input_longitude.setText(self.c.conf.get("Geographical Position", "longitude"))
@@ -137,7 +138,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         if str(self.mount_interface_chooser.currentText()) == "ASCOM":
             self.configure_mount_interface.clicked.connect(self.start_ascom_dialog)
         elif str(self.mount_interface_chooser.currentText()) == "INDI":
-            # INDI is not implemented yet. Insert the connection to the INDI configuration editor.
+            self.configure_mount_interface.clicked.connect(self.start_indi_dialog)
             pass
 
         self.protocol_level_chooser.currentIndexChanged.connect(self.protocol_level_write)
@@ -304,9 +305,17 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         """
 
         if str(self.mount_interface_chooser.currentText()) == "ASCOM":
+            try:
+                self.configure_mount_interface.clicked.disconnect()
+            except:
+                pass
             self.configure_mount_interface.clicked.connect(self.start_ascom_dialog)
         elif str(self.mount_interface_chooser.currentText()) == "INDI":
-            self.configure_mount_interface.clicked.disconnect()
+            try:
+                self.configure_mount_interface.clicked.disconnect()
+            except:
+                pass
+            self.configure_mount_interface.clicked.connect(self.start_indi_dialog)
 
         self.telescope_changed = True
         self.configuration_changed = True
@@ -339,6 +348,31 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
             # Mark the configuration object as changed.
             self.configuration_changed = True
         if self.ascomeditor.telescope_changed:
+            # Mark the telescope driver as changed.
+            self.telescope_changed = True
+
+    def start_indi_dialog(self):
+        """
+        The "configure" button has been clicked for the INDI telescope interface:
+        Open the INDI dialog.
+
+        :return: -
+        """
+
+
+        from indi_configuration_editor import IndiConfigurationEditor
+
+        self.indieditor = IndiConfigurationEditor(self.c)
+        # Start the GUI.
+        self.indieditor.exec_()
+
+        # Remember that the AscomConfigurationEditor was invoked.
+        self.indieditor_called = True
+        # Check if the configuration has changed.
+        if self.indieditor.configuration_changed:
+            # Mark the configuration object as changed.
+            self.configuration_changed = True
+        if self.indieditor.telescope_changed:
             # Mark the telescope driver as changed.
             self.telescope_changed = True
 
@@ -607,6 +641,14 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
                 self.c.conf.set("ASCOM", "telescope lookup precision",
                                 self.ascomeditor.new_telescope_lookup_precision)
                 self.c.conf.set('ASCOM', 'telescope driver', self.ascomeditor.new_driver_name)
+
+            if self.indieditor_called:
+                # If the AscomEditor was called, new parameters are already checked for validity.
+                self.c.conf.set("INDI", "server url", self.indieditor.new_indi_server_url)
+                self.c.conf.set("INDI", "pulse guide speed index",
+                                self.indieditor.new_pulse_guide_speed_index)
+                self.c.conf.set("INDI", "guiding interval", self.indieditor.new_guiding_interval)
+                self.c.conf.set("INDI", "wait interval", self.indieditor.new_wait_interval)
 
         # All tests passed successfully, and all parameters have been written to the
         # configuration object. Close the GUI window.

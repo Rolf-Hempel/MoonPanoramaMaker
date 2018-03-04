@@ -208,6 +208,12 @@ class Configuration:
             self.conf.set('ASCOM', 'pulse guide speed DE', '0.003')
             self.conf.set('ASCOM', 'telescope lookup precision', '0.5')
 
+            self.conf.add_section('INDI')
+            self.conf.set('INDI', 'server url', 'localhost')
+            self.conf.set('INDI', 'guiding interval', '0.5')
+            self.conf.set('INDI', 'wait interval', '1.')
+            self.conf.set('INDI', 'pulse guide speed index', '0')
+
             self.conf.add_section('Alignment')
             self.conf.set('Alignment', 'min autoalign interval', '30.')
             self.conf.set('Alignment', 'max autoalign interval', '180.')
@@ -360,7 +366,15 @@ class Configuration:
                 self.conf.set('ASCOM', 'pulse guide speed DE', '0.003')
                 self.conf.remove_option('ASCOM', 'chooser')
                 self.conf.remove_option('ASCOM', 'hub')
+
+                self.conf.add_section('INDI')
+                self.conf.set('INDI', 'server url', 'localhost')
+                self.conf.set('INDI', 'guiding interval', '0.5')
+                self.conf.set('INDI', 'wait interval', '1.')
+                self.conf.set('INDI', 'pulse guide speed index', '0')
+
                 self.conf.set('Camera', 'ip address', 'localhost')
+
                 scale = 7. / 8.5
                 new_figsize_horizontal = round(
                     self.conf.getfloat('Tile Visualization', 'figsize horizontal') * scale, 1)
