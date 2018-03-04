@@ -24,11 +24,15 @@ import PyIndi
 
 
 class IndiClient(PyIndi.BaseClient):
-    def __init__(self):
+    def __init__(self, device_list, device_name_list):
+        print ("initializing IndiClient")
         super(IndiClient, self).__init__()
+        self.device_list = device_list
+        self.device_name_list = device_name_list
 
     def newDevice(self, d):
-        pass
+        self.device_list.append(d)
+        self.device_name_list.append(d.getDeviceName())
 
     def newProperty(self, p):
         pass

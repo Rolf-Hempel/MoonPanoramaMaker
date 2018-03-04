@@ -53,6 +53,8 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
         self.old_guiding_interval = self.new_guiding_interval = self.c.conf.get('INDI',
                                                                                 'guiding interval')
         self.old_wait_interval = self.new_wait_interval = self.c.conf.get('INDI', 'wait interval')
+        self.old_telescope_lookup_precision = self.new_telescope_lookup_precision = self.c.conf.get(
+            'INDI', 'telescope lookup precision')
 
 
         # Fill the gui text fields with the current parameters
@@ -62,6 +64,7 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
         self.pulse_guide_speed_chooser.setCurrentIndex(int(self.old_pulse_guide_speed_index))
         self.input_guiding_interval.setText(self.old_guiding_interval)
         self.input_wait_interval.setText(self.old_wait_interval)
+        self.input_telescope_lookup_precision.setText(self.old_telescope_lookup_precision)
 
         # The configuration_changed flag indicates if at least one parameter has been changed by
         # the user. If the telescope driver is changed, driver initialization has to be repeated.
@@ -76,11 +79,13 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
         self.pulse_guide_speed_chooser.currentIndexChanged.connect(self.pulse_guide_speed_write)
         self.input_guiding_interval.textChanged.connect(self.guiding_interval_write)
         self.input_wait_interval.textChanged.connect(self.wait_interval_write)
+        self.input_telescope_lookup_precision.textChanged.connect(
+            self.telescope_lookup_precision_write)
 
     def open_indi_manager(self):
         # This must be extended for the case that the indi-web server does not run on 'localhost'.
         try:
-            os.system("indi-web &")
+            os.system('pgrep indi-web > /dev/null || ( indi-web & )')
         except:
             if self.c.protocol_level > 0:
                 Miscellaneous.protocol("Unable to start the indi-web manager. Please check"
@@ -143,6 +148,15 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
 
         self.configuration_changed = True
 
+    def telescope_lookup_precision_write(self):
+        """
+        If the parameter has been changed, set the appropriate configuration change flags to True.
+
+        :return: -
+        """
+
+        self.configuration_changed = True
+
     def accept(self):
         """
         This method is invoked when the OK button is pressed. If at least one parameter has been
@@ -171,6 +185,11 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
             self.new_wait_interval = str(self.input_wait_interval.text())
             if not Miscellaneous.testfloat(self.new_wait_interval, 0., 20.):
                 Miscellaneous.show_input_error("Wait interval", "1.")
+                return
+
+            self.new_telescope_lookup_precision = str(self.input_telescope_lookup_precision.text())
+            if not Miscellaneous.testfloat(self.new_telescope_lookup_precision, 0.1, 10.):
+                Miscellaneous.show_input_error("Telescope position lookup precision", "0.5")
                 return
 
             self.new_pulse_guide_speed_index = str(self.pulse_guide_speed_chooser.currentIndex())

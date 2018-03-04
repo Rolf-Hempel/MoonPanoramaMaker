@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>542</width>
-    <height>309</height>
+    <height>323</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,7 +31,7 @@
         <x>0</x>
         <y>0</y>
         <width>522</width>
-        <height>261</height>
+        <height>275</height>
        </rect>
       </property>
       <widget class="QWidget" name="layoutWidget">
@@ -40,7 +40,7 @@
          <x>0</x>
          <y>10</y>
          <width>511</width>
-         <height>241</height>
+         <height>261</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout">
@@ -159,6 +159,30 @@
         </item>
         <item row="3" column="1">
          <widget class="QComboBox" name="pulse_guide_speed_chooser">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0">
+         <widget class="QLabel" name="telescope_lookup_precision">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Required precision (&quot;) for lookup of telescope position. Must be between 0.1 and 10.</string>
+          </property>
+          <property name="text">
+           <string>Telescope position lookup precision (&quot;)   </string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="1">
+         <widget class="QLineEdit" name="input_telescope_lookup_precision">
           <property name="font">
            <font>
             <pointsize>10</pointsize>

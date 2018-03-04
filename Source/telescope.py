@@ -29,6 +29,8 @@ import numpy
 from exceptions import TelescopeException, ASCOMImportException, ASCOMConnectException, \
     ASCOMPropertyException, INDIImportException, INDIConnectException, INDIPropertyException
 from miscellaneous import Miscellaneous
+import PyIndi
+from indi_client import IndiClient
 
 
 class OperateTelescopeASCOM(threading.Thread):
@@ -561,6 +563,8 @@ class OperateTelescopeINDI(threading.Thread):
         self.direction_west = 3
 
         self.indiclnt = None
+        self.device_list = []
+        self.device_name_list = []
         self.telescope = None
         self.device_telescope = None
         self.telescope_on_coord_set = None
@@ -572,7 +576,7 @@ class OperateTelescopeINDI(threading.Thread):
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol("OperateTelescopeINDI thread initialized.")
 
-    def connect_and_test_telescope(self, driver_name):
+    def connect_and_test_telescope(self):
         """
         Access the telescope driver via the INDI server, connect to it, and find out if it supports
         the functions required by MoonPanoramaMaker.
@@ -583,8 +587,10 @@ class OperateTelescopeINDI(threading.Thread):
 
         # Try to get access to the INDI client.
         try:
-            self.indiclnt = IndiClient()
-            self.server_address = self.configuration.conf.get("INDI", "server address")
+            # self.indiclnt = IndiClient(self.device_list, self.device_name_list)
+            self.indiclnt = IndiClient(self.device_list, self.device_name_list)
+            time.sleep(3.)
+            self.server_address = self.configuration.conf.get("INDI", "server url")
             self.server_port = 7624
             self.indiclnt.setServer(self.server_address, self.server_port)
         except:
@@ -594,14 +600,15 @@ class OperateTelescopeINDI(threading.Thread):
         if not (self.indiclnt.connectServer()):
             raise INDIConnectException(
                 "No INDI server running on " + self.indiclnt.getHost() + ":" + str(
-                    self.indiclnt.getPort()) + ". Try to run 'ndiserver indi_simulator_telescope "
+                    self.indiclnt.getPort()) + ". Try to run 'indiserver indi_simulator_telescope "
                                                "indi_simulator_ccd'")
 
         # Get the telescope device.
         for iter in range(self.configuration.polling_time_out_count):
             time.sleep(self.configuration.polling_interval)
-            self.device_telescope = self.indiclnt.getDevice(driver_name)
-            if self.device_telescope:
+            if len(self.device_list) > 0:
+                # It is assumed that the telescope is the first device in the list.
+                self.device_telescope = self.device_list[0]
                 break
         if not self.device_telescope:
             raise INDIConnectException("INDI: Unable to get the telescope device")
@@ -695,6 +702,32 @@ class OperateTelescopeINDI(threading.Thread):
         :return:
         """
 
+        pulse_guide_speed_index = self.configuration.conf.getint("INDI", "pulse guide speed index")
+        pulse_guide_speed = ['SLEW_GUIDE', 'SLEW_CENTERING', 'SLEW_FIND', 'SLEW_MAX'][pulse_guide_speed_index]
+        prate = self.device_telescope.getSwitch("TELESCOPE_SLEW_RATE")
+        while not (prate) or type(prate) != PyIndi.ISwitchVectorProperty:
+            prate = self.device_telescope.getSwitch("TELESCOPE_SLEW_RATE")
+            time.sleep(0.2)
+        if len(prate) < 1:  # no slew rate
+            print("No slew rate")
+            raise INDIPropertyException("INDI: No slew rate provided by telescope driver")
+        else:
+            print("There are " + str(len(prate)) + " slew rates.")
+            speed_set = False
+            for p in prate:
+                if p.name == pulse_guide_speed:
+                    p.s = PyIndi.ISS_ON
+                    speed_set = True
+                else:
+                    p.s = PyIndi.ISS_OFF
+            if speed_set:
+                self.indiclnt.sendNewSwitch(prate)
+            else:
+                raise INDIPropertyException("INDI: The user selected a pulse guide "
+                                            "speed not supporded by telescope driver")
+            if self.configuration.protocol_level > 1:
+                Miscellaneous.protocol("OperateTelescopeINDI: pulse guide speed set to "
+                                           + pulse_guide_speed)
         return
 
     def run(self):
@@ -715,7 +748,7 @@ class OperateTelescopeINDI(threading.Thread):
 
         # Connect to the INDI telescope driver and check if it is working properly.
         try:
-            self.connect_and_test_telescope(self.configuration.conf.get("INDI", "telescope driver"))
+            self.connect_and_test_telescope()
             # Switch on tracking, if not yet done.
             self.switch_on_tracking()
             # Set the pulse guide speed.
@@ -750,26 +783,42 @@ class OperateTelescopeINDI(threading.Thread):
                     self.telescope_radec[0].value = instruction['rect']
                     self.telescope_radec[1].value = instruction['decl']
                     self.indiclnt.sendNewNumber(self.telescope_radec)
+                    print ("slew to started")
 
                 # Wait until the mount is standing still, then look up the current mount position.
                 elif instruction['name'] == "lookup tel position":
-                    # Wait until the scope has finished moving.
-                    for iter in range(self.configuration.polling_time_out_count):
-                        if self.telescope_radec.s != PyIndi.IPS_BUSY:
-                            break
-                        time.sleep(self.configuration.polling_interval)
-                    if self.telescope_radec.s == PyIndi.IPS_BUSY:
-                        self.instruction_error = "INDI: Timeout: RA/DE object busy"
-                        if self.configuration.protocol_level > 2:
-                            Miscellaneous.protocol("OperateTelescopeINDI: Timeout in lookup telescope position.")
-                        return
+                    # Initialize (rect, decl) with impossible coordinates, and iteration count to 0.
+                    rect = 25.
+                    decl = 91.
+                    iter_count = 0
+                    # Idle loop until changes in RA,DE are smaller than specified threshold.
+                    while (abs(self.telescope_radec[0].value - rect) > self.configuration.conf.getfloat(
+                            "INDI", "telescope lookup precision") / 54000. or abs(
+                        self.telescope_radec[1].value - decl) > self.configuration.conf.getfloat(
+                            "INDI", "telescope lookup precision") / 3600.):
+                        rect = self.telescope_radec[0].value
+                        decl = self.telescope_radec[1].value
+                        iter_count += 1
+                        time.sleep(self.configuration.conf.getfloat("INDI", "wait interval"))
+                    # # Wait until the scope has finished moving.
+                    # time.sleep(3.*self.configuration.conf.getfloat("INDI", "wait interval"))
+                    # for iter in range(int(60./self.configuration.polling_interval)):
+                    #     if self.telescope_radec.s != PyIndi.IPS_BUSY:
+                    #         break
+                    #     time.sleep(self.configuration.polling_interval)
+                    # if self.telescope_radec.s == PyIndi.IPS_BUSY:
+                    #     self.instruction_error = "INDI: Timeout: RA/DE object busy"
+                    #     if self.configuration.protocol_level > 2:
+                    #         Miscellaneous.protocol("OperateTelescopeINDI: Timeout in lookup telescope position.")
+                    #     return
+                    print("lookup tel position")
                     # Stationary state reached, copy measured position (in radians) into dict.
                     instruction['ra'] = radians(self.telescope_radec[0].value * 15)
                     instruction['de'] = radians(self.telescope_radec[1].value)
                     if self.configuration.protocol_level > 2:
                         Miscellaneous.protocol("OperateTelescopeINDI: Position looked-up: RA " + str(
                             round(self.telescope_radec[0].value * 15., 5)) + ", DE " + str(
-                            round(self.telescope_radec[1].value, 5)) + " (degrees)")
+                            round(self.telescope_radec[1].value, 5)) + " (degrees), iterations: " + str(iter_count))
                     # Signal that the instruction is finished.
                     instruction['finished'] = True
 

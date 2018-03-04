@@ -139,7 +139,6 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
             self.configure_mount_interface.clicked.connect(self.start_ascom_dialog)
         elif str(self.mount_interface_chooser.currentText()) == "INDI":
             self.configure_mount_interface.clicked.connect(self.start_indi_dialog)
-            pass
 
         self.protocol_level_chooser.currentIndexChanged.connect(self.protocol_level_write)
         self.protocol_to_file_chooser.currentIndexChanged.connect(self.protocol_to_file_write)
@@ -147,6 +146,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.limb_first_chooser.currentIndexChanged.connect(self.limb_first_write)
         self.camera_automation_chooser.currentIndexChanged.connect(self.camera_automation_write)
         self.input_camera_trigger_delay.textChanged.connect(self.camera_trigger_delay_write)
+
         self.input_fig_size_horizontal.textChanged.connect(self.fig_size_horizontal_write)
         self.input_fig_size_vertical.textChanged.connect(self.fig_size_vertical_write)
         self.input_label_font_size.textChanged.connect(self.label_font_size_write)
@@ -358,7 +358,6 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
         :return: -
         """
-
 
         from indi_configuration_editor import IndiConfigurationEditor
 
@@ -649,6 +648,8 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
                                 self.indieditor.new_pulse_guide_speed_index)
                 self.c.conf.set("INDI", "guiding interval", self.indieditor.new_guiding_interval)
                 self.c.conf.set("INDI", "wait interval", self.indieditor.new_wait_interval)
+                self.c.conf.set("INDI", "telescope lookup precision",
+                                self.indieditor.new_telescope_lookup_precision)
 
         # All tests passed successfully, and all parameters have been written to the
         # configuration object. Close the GUI window.

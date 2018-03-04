@@ -213,6 +213,7 @@ class Configuration:
             self.conf.set('INDI', 'guiding interval', '0.5')
             self.conf.set('INDI', 'wait interval', '1.')
             self.conf.set('INDI', 'pulse guide speed index', '0')
+            self.conf.set('INDI', 'telescope lookup precision', '0.5')
 
             self.conf.add_section('Alignment')
             self.conf.set('Alignment', 'min autoalign interval', '30.')
@@ -372,6 +373,7 @@ class Configuration:
                 self.conf.set('INDI', 'guiding interval', '0.5')
                 self.conf.set('INDI', 'wait interval', '1.')
                 self.conf.set('INDI', 'pulse guide speed index', '0')
+                self.conf.set('INDI', 'telescope lookup precision', '0.5')
 
                 self.conf.set('Camera', 'ip address', 'localhost')
 

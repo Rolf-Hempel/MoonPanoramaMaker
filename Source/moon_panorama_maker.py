@@ -127,6 +127,8 @@ class StartQT5(QtWidgets.QMainWindow):
         if not self.configuration.file_identical:
             editor = ConfigurationEditor(self.configuration)
             editor.exec_()
+            if editor.configuration_changed:
+                self.configuration.write_config()
 
         # Start the workflow thread. It controls the computations and control of external devices.
         # By decoupling those activities from the main thread, the GUI is kept from freezing during
@@ -209,6 +211,8 @@ class StartQT5(QtWidgets.QMainWindow):
 
         editor = ConfigurationEditor(self.configuration)
         editor.exec_()
+        if editor.configuration_changed:
+            self.configuration.write_config()
 
         # Select which parts of the initialization chain have to be executed. Keep flags active
         # which are still set from the initialization phase.
