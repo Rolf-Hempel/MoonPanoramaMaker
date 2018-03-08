@@ -34,37 +34,35 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
 
     """
 
-    def __init__(self, configuration, parent=None):
+    def __init__(self, configuration, new_indi_server_url, new_indi_pulse_guide_speed_index,
+                 new_indi_guiding_interval, new_indi_wait_interval,
+                 new_indi_telescope_lookup_precision, parent=None):
         """
         Read the current camera information from the configuration object and populate the text
         fields of the editor gui.
 
         :param configuration: object containing parameters set by the user
+        :param new_indi_server_url: URL of the INDI server process
+        :param new_indi_pulse_guide_speed_index: index of the pulse guide speed chooser combobox
+        :param new_indi_guiding_interval: duration of guiding pulses (sec.)
+        :param new_indi_wait_interval: time between tests for current telescope pointing (sec.)
+        :param new_indi_telescope_lookup_precision: maximum difference (arc sec.) between two
+                                                    consecutive position lookups after a "slew to"
+        :param parent: parent class
         """
+
         QtWidgets.QDialog.__init__(self, parent)
         self.setupUi(self)
         self.c = configuration
 
-        # Read the current INDI parameters from the configuration object
-        self.old_indi_server_url = self.new_indi_server_url = self.c.conf.get('INDI', 'server url')
-        self.old_pulse_guide_speed_index = self.new_pulse_guide_speed_index = self.c.conf.get('INDI',
-                                                                                  'pulse guide '
-                                                                                  'speed index')
-        self.old_guiding_interval = self.new_guiding_interval = self.c.conf.get('INDI',
-                                                                                'guiding interval')
-        self.old_wait_interval = self.new_wait_interval = self.c.conf.get('INDI', 'wait interval')
-        self.old_telescope_lookup_precision = self.new_telescope_lookup_precision = self.c.conf.get(
-            'INDI', 'telescope lookup precision')
-
-
         # Fill the gui text fields with the current parameters
-        self.input_indi_server_url.setText(self.old_indi_server_url)
+        self.input_indi_server_url.setText(new_indi_server_url)
         guide_speeds = ["SLEW_GUIDE", "SLEW_CENTERING", "SLEW_FIND", "SLEW_MAX"]
         self.pulse_guide_speed_chooser.addItems(guide_speeds)
-        self.pulse_guide_speed_chooser.setCurrentIndex(int(self.old_pulse_guide_speed_index))
-        self.input_guiding_interval.setText(self.old_guiding_interval)
-        self.input_wait_interval.setText(self.old_wait_interval)
-        self.input_telescope_lookup_precision.setText(self.old_telescope_lookup_precision)
+        self.pulse_guide_speed_chooser.setCurrentIndex(int(new_indi_pulse_guide_speed_index))
+        self.input_guiding_interval.setText(new_indi_guiding_interval)
+        self.input_wait_interval.setText(new_indi_wait_interval)
+        self.input_telescope_lookup_precision.setText(new_indi_telescope_lookup_precision)
 
         # The configuration_changed flag indicates if at least one parameter has been changed by
         # the user. If the telescope driver is changed, driver initialization has to be repeated.
@@ -94,7 +92,7 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
         # Check if the given URL of the INDI server is valid.
         if Miscellaneous.testipaddress(self.new_indi_server_url):
             try:
-                webbrowser.open("http://" + self.new_indi_server_url + ":8624")
+                webbrowser.open("http://" + str(self.input_indi_server_url.text()) + ":8624")
             except:
                 if self.c.protocol_level > 0:
                     Miscellaneous.protocol("Unable to access the indi-web manager. Please check"
@@ -116,7 +114,6 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
         :return: -
         """
 
-        self.new_indi_server_url = str(self.input_indi_server_url.text())
         self.telescope_changed = True
         self.configuration_changed = True
 
@@ -169,30 +166,25 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
             # Check if the URL entered is valid. If it is not, give an example of a valid URL.
             # The URL has been copied to "self.new_indi_server_url" in method "indi_server_url_write"
             # already because it might have been needed by "open_indi_manager".
-            if not Miscellaneous.testipaddress(self.new_indi_server_url):
+            if not Miscellaneous.testipaddress(str(self.input_indi_server_url.text())):
                 Miscellaneous.show_input_error("URL of the INDI server", "'localhost'")
                 return
 
-            # Replace the original value with the corresponding entry in the gui text field.
-            self.new_guiding_interval = str(self.input_guiding_interval.text())
             # Check if the float entered is within the given bounds [0., 3.]. If the return value
             # is None, an error was detected. In this case give an example for a correct value.
-            if not Miscellaneous.testfloat(self.new_guiding_interval, 0., 3.):
+            if not Miscellaneous.testfloat(str(self.input_guiding_interval.text()), 0., 3.):
                 Miscellaneous.show_input_error("Guide pulse duration", "0.5")
                 return
 
             # Repeat the same logic for "Wait interval".
-            self.new_wait_interval = str(self.input_wait_interval.text())
-            if not Miscellaneous.testfloat(self.new_wait_interval, 0., 20.):
+            if not Miscellaneous.testfloat(str(self.input_wait_interval.text()), 0., 20.):
                 Miscellaneous.show_input_error("Wait interval", "1.")
                 return
 
-            self.new_telescope_lookup_precision = str(self.input_telescope_lookup_precision.text())
-            if not Miscellaneous.testfloat(self.new_telescope_lookup_precision, 0.1, 10.):
+            if not Miscellaneous.testfloat(str(self.input_telescope_lookup_precision.text()), 0.1,
+                                           10.):
                 Miscellaneous.show_input_error("Telescope position lookup precision", "0.5")
                 return
-
-            self.new_pulse_guide_speed_index = str(self.pulse_guide_speed_chooser.currentIndex())
 
         # Close the editing gui.
         self.close()

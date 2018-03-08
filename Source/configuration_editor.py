@@ -27,7 +27,7 @@ basePath = os.path.dirname(os.path.abspath(sys.argv[0]))
 sys.path.insert(0, basePath)
 
 from PyQt5 import QtWidgets
-from pytz import timezone, all_timezones
+from pytz import all_timezones
 from configuration_dialog import Ui_ConfigurationDialog
 from camera_configuration_editor import CameraConfigurationEditor
 from camera_configuration_input import CameraConfigurationInput
@@ -119,6 +119,21 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.input_max_autoalign_interval.setText(
             self.c.conf.get("Alignment", "max autoalign interval"))
         self.input_max_alignment_error.setText(self.c.conf.get("Alignment", "max alignment error"))
+
+        self.new_ascom_driver_name = self.c.conf.get('ASCOM', 'telescope driver')
+        self.new_ascom_guiding_interval = self.c.conf.get('ASCOM', 'guiding interval')
+        self.new_ascom_wait_interval = self.c.conf.get('ASCOM', 'wait interval')
+        self.new_ascom_pulse_guide_speed_ra = self.c.conf.get('ASCOM', 'pulse guide speed RA')
+        self.new_ascom_pulse_guide_speed_de = self.c.conf.get('ASCOM', 'pulse guide speed DE')
+        self.new_ascom_telescope_lookup_precision = self.c.conf.get('ASCOM',
+                                                                    'telescope lookup precision')
+
+        self.new_indi_server_url = self.c.conf.get('INDI', 'server url')
+        self.new_indi_pulse_guide_speed_index = self.c.conf.get('INDI', 'pulse guide speed index')
+        self.new_indi_guiding_interval = self.c.conf.get('INDI', 'guiding interval')
+        self.new_indi_wait_interval = self.c.conf.get('INDI', 'wait interval')
+        self.new_indi_telescope_lookup_precision = self.c.conf.get('INDI',
+                                                                   'telescope lookup precision')
 
         # Connect textChanged signals with methods to update the corresponding parameters.
         self.input_longitude.textChanged.connect(self.longitude_write)
@@ -337,7 +352,12 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
                     "there might be an INDI client available. In this case, try to use 'INDI' instead of 'ASCOM'")
             return
 
-        self.ascomeditor = AscomConfigurationEditor(self.c)
+        self.ascomeditor = AscomConfigurationEditor(self.c, self.new_ascom_driver_name,
+                                                    self.new_ascom_guiding_interval,
+                                                    self.new_ascom_wait_interval,
+                                                    self.new_ascom_pulse_guide_speed_ra,
+                                                    self.new_ascom_pulse_guide_speed_de,
+                                                    self.new_ascom_telescope_lookup_precision)
         # Start the GUI.
         self.ascomeditor.exec_()
 
@@ -347,6 +367,16 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         if self.ascomeditor.configuration_changed:
             # Mark the configuration object as changed.
             self.configuration_changed = True
+            # Copy back the current gui values.
+            self.new_ascom_driver_name = self.ascomeditor.new_driver_name
+            self.new_ascom_guiding_interval = str(self.ascomeditor.input_guiding_interval.text())
+            self.new_ascom_wait_interval = str(self.ascomeditor.input_wait_interval.text())
+            self.new_ascom_pulse_guide_speed_ra = str(
+                self.ascomeditor.input_pulse_guide_speed_ra.text())
+            self.new_ascom_pulse_guide_speed_de = str(
+                self.ascomeditor.input_pulse_guide_speed_de.text())
+            self.new_ascom_telescope_lookup_precision = str(
+                self.ascomeditor.input_telescope_lookup_precision.text())
         if self.ascomeditor.telescope_changed:
             # Mark the telescope driver as changed.
             self.telescope_changed = True
@@ -361,16 +391,28 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
         from indi_configuration_editor import IndiConfigurationEditor
 
-        self.indieditor = IndiConfigurationEditor(self.c)
+        self.indieditor = IndiConfigurationEditor(self.c, self.new_indi_server_url,
+                                                  self.new_indi_pulse_guide_speed_index,
+                                                  self.new_indi_guiding_interval,
+                                                  self.new_indi_wait_interval,
+                                                  self.new_indi_telescope_lookup_precision)
         # Start the GUI.
         self.indieditor.exec_()
 
-        # Remember that the AscomConfigurationEditor was invoked.
+        # Remember that the INDIConfigurationEditor was invoked.
         self.indieditor_called = True
         # Check if the configuration has changed.
         if self.indieditor.configuration_changed:
             # Mark the configuration object as changed.
             self.configuration_changed = True
+            # Copy back the current gui values.
+            self.new_indi_server_url = str(self.indieditor.input_indi_server_url.text())
+            self.new_indi_pulse_guide_speed_index = str(
+                self.indieditor.pulse_guide_speed_chooser.currentIndex())
+            self.new_indi_guiding_interval = str(self.indieditor.input_guiding_interval.text())
+            self.new_indi_wait_interval = str(self.indieditor.input_wait_interval.text())
+            self.new_indi_telescope_lookup_precision = str(
+                self.indieditor.input_telescope_lookup_precision.text())
         if self.indieditor.telescope_changed:
             # Mark the telescope driver as changed.
             self.telescope_changed = True
@@ -631,25 +673,25 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
             if self.ascomeditor_called:
                 # If the AscomEditor was called, new parameters are already checked for validity.
-                self.c.conf.set("ASCOM", "guiding interval", self.ascomeditor.new_guiding_interval)
-                self.c.conf.set("ASCOM", "wait interval", self.ascomeditor.new_wait_interval)
+                self.c.conf.set("ASCOM", "guiding interval", self.new_ascom_guiding_interval)
+                self.c.conf.set("ASCOM", "wait interval", self.new_ascom_wait_interval)
                 self.c.conf.set("ASCOM", "pulse guide speed RA",
-                                self.ascomeditor.new_pulse_guide_speed_ra)
+                                self.new_ascom_pulse_guide_speed_ra)
                 self.c.conf.set("ASCOM", "pulse guide speed DE",
-                                self.ascomeditor.new_pulse_guide_speed_de)
+                                self.new_ascom_pulse_guide_speed_de)
                 self.c.conf.set("ASCOM", "telescope lookup precision",
-                                self.ascomeditor.new_telescope_lookup_precision)
+                                self.new_ascom_telescope_lookup_precision)
                 self.c.conf.set('ASCOM', 'telescope driver', self.ascomeditor.new_driver_name)
 
             if self.indieditor_called:
-                # If the AscomEditor was called, new parameters are already checked for validity.
-                self.c.conf.set("INDI", "server url", self.indieditor.new_indi_server_url)
+                # If the IndiEditor was called, copy back the current new values.
+                self.c.conf.set("INDI", "server url", self.new_indi_server_url)
                 self.c.conf.set("INDI", "pulse guide speed index",
-                                self.indieditor.new_pulse_guide_speed_index)
-                self.c.conf.set("INDI", "guiding interval", self.indieditor.new_guiding_interval)
-                self.c.conf.set("INDI", "wait interval", self.indieditor.new_wait_interval)
+                                self.new_indi_pulse_guide_speed_index)
+                self.c.conf.set("INDI", "guiding interval", self.new_indi_guiding_interval)
+                self.c.conf.set("INDI", "wait interval", self.new_indi_wait_interval)
                 self.c.conf.set("INDI", "telescope lookup precision",
-                                self.indieditor.new_telescope_lookup_precision)
+                                self.new_indi_telescope_lookup_precision)
 
         # All tests passed successfully, and all parameters have been written to the
         # configuration object. Close the GUI window.

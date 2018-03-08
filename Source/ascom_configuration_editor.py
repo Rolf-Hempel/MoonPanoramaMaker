@@ -33,38 +33,37 @@ class AscomConfigurationEditor(QtWidgets.QDialog, Ui_AscomDialog):
 
     """
 
-    def __init__(self, configuration, parent=None):
+    def __init__(self, configuration, new_ascom_driver_name, new_ascom_guiding_interval,
+                 new_ascom_wait_interval, new_ascom_pulse_guide_speed_ra,
+                 new_ascom_pulse_guide_speed_de, new_ascom_telescope_lookup_precision, parent=None):
         """
         Read the current camera information from the configuration object and populate the text
         fields of the editor gui.
 
         :param configuration: object containing parameters set by the user
+        :param new_ascom_driver_name: name of the ASCOM telescope driver
+        :param new_ascom_guiding_interval: duration of guiding pulses (sec.)
+        :param new_ascom_wait_interval: time between tests for current telescope pointing (sec.)
+        :param new_ascom_pulse_guide_speed_ra: pulse guide speed in RA (in deg./sec.)
+        :param new_ascom_pulse_guide_speed_de: pulse guide speed in DE (in deg./sec.)
+        :param new_ascom_telescope_lookup_precision: maximum difference (arc sec.) between two
+                                                    consecutive position lookups after a "slew to"
+        :param parent: parent class
         """
+
         QtWidgets.QDialog.__init__(self, parent)
         self.setupUi(self)
         self.c = configuration
 
-        # Read the current ASCOM parameters from the configuration object
-        self.old_driver_name = self.new_driver_name = self.c.conf.get('ASCOM', 'telescope driver')
-        self.old_guiding_interval = self.new_guiding_interval = self.c.conf.get('ASCOM',
-                                                                                'guiding interval')
-        self.old_wait_interval = self.new_wait_interval = self.c.conf.get('ASCOM', 'wait interval')
-        self.old_pulse_guide_speed_ra = self.new_pulse_guide_speed_ra = self.c.conf.get('ASCOM',
-                                                                                  'pulse guide '
-                                                                                  'speed RA')
-        self.old_pulse_guide_speed_de = self.new_pulse_guide_speed_de = self.c.conf.get('ASCOM',
-                                                                                        'pulse '
-                                                                                        'guide '
-                                                                                        'speed DE')
-        self.old_telescope_lookup_precision = self.new_telescope_lookup_precision = self.c.conf.get(
-            'ASCOM', 'telescope lookup precision')
-
+        # Special case driver_name: copy input value in instance variables, to be used by method
+        # "open_ascom_chooser".
+        self.new_driver_name = self.old_driver_name = new_ascom_driver_name
         # Fill the gui text fields with the current parameters
-        self.input_guiding_interval.setText(self.old_guiding_interval)
-        self.input_wait_interval.setText(self.old_wait_interval)
-        self.input_pulse_guide_speed_ra.setText(self.old_pulse_guide_speed_ra)
-        self.input_pulse_guide_speed_de.setText(self.old_pulse_guide_speed_de)
-        self.input_telescope_lookup_precision.setText(self.old_telescope_lookup_precision)
+        self.input_guiding_interval.setText(new_ascom_guiding_interval)
+        self.input_wait_interval.setText(new_ascom_wait_interval)
+        self.input_pulse_guide_speed_ra.setText(new_ascom_pulse_guide_speed_ra)
+        self.input_pulse_guide_speed_de.setText(new_ascom_pulse_guide_speed_de)
+        self.input_telescope_lookup_precision.setText(new_ascom_telescope_lookup_precision)
 
         # The configuration_changed flag indicates if at least one parameter has been changed by
         # the user. If the telescope driver is changed, driver initialization has to be repeated.
@@ -86,9 +85,9 @@ class AscomConfigurationEditor(QtWidgets.QDialog, Ui_AscomDialog):
         try:
             x = win32com.client.Dispatch("ASCOM.Utilities.Chooser")
             x.DeviceType = 'Telescope'
-            self.new_driver_name = x.Choose(self.old_driver_name)
-            if self.old_driver_name != self.new_driver_name:
-                self.configuration_changed = True
+            driver_name = x.Choose(self.new_driver_name)
+            if driver_name != "":
+                self.new_driver_name = driver_name
         except:
             if self.c.protocol_level > 0:
                 Miscellaneous.protocol("Unable to access the ASCOM telescope chooser. Please check"
@@ -180,14 +179,18 @@ class AscomConfigurationEditor(QtWidgets.QDialog, Ui_AscomDialog):
                 Miscellaneous.show_input_error("Telescope position lookup precision", "0.5")
                 return
 
-            if self.old_driver_name != self.new_driver_name:
-                self.telescope_changed = True
+        # Special case driver_name: This one is handled by a gui of the ASCOM platform.
+        if self.new_driver_name != self.old_driver_name:
+            self.configuration_changed = True
+            self.telescope_changed = True
 
         # Close the editing gui.
         self.close()
 
     def reject(self):
         # In case the Cancel button is pressed, discard all changes and close the gui.
+        # Reject the change to the driver name.
+        self.new_driver_name = self.old_driver_name
         self.configuration_changed = False
         self.telescope_changed = False
         self.close()
