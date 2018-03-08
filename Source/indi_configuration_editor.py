@@ -90,7 +90,7 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
                                        " the INDI installation.")
 
         # Check if the given URL of the INDI server is valid.
-        if Miscellaneous.testipaddress(self.new_indi_server_url):
+        if Miscellaneous.testipaddress(str(self.input_indi_server_url.text())):
             try:
                 webbrowser.open("http://" + str(self.input_indi_server_url.text()) + ":8624")
             except:
