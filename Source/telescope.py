@@ -26,11 +26,10 @@ from datetime import datetime
 from math import degrees, radians, pi
 
 import numpy
+
 from exceptions import TelescopeException, ASCOMImportException, ASCOMConnectException, \
     ASCOMPropertyException, INDIImportException, INDIConnectException, INDIPropertyException
 from miscellaneous import Miscellaneous
-import PyIndi
-from indi_client import IndiClient
 
 
 class OperateTelescopeASCOM(threading.Thread):
@@ -585,9 +584,15 @@ class OperateTelescopeINDI(threading.Thread):
         :return: -
         """
 
+        # Try to import PyIndi. If this fails, the program most likely runs on a Windows computer.
+        try:
+            import PyIndi
+            from indi_client import IndiClient
+        except ImportError:
+            raise INDIImportException("Unable to import INDI client. Is INDI installed on this system?")
+
         # Try to get access to the INDI client.
         try:
-            # self.indiclnt = IndiClient(self.device_list, self.device_name_list)
             self.indiclnt = IndiClient(self.device_list, self.device_name_list)
             time.sleep(3.)
             self.server_address = self.configuration.conf.get("INDI", "server url")
@@ -600,8 +605,7 @@ class OperateTelescopeINDI(threading.Thread):
         if not (self.indiclnt.connectServer()):
             raise INDIConnectException(
                 "No INDI server running on " + self.indiclnt.getHost() + ":" + str(
-                    self.indiclnt.getPort()) + ". Try to run 'indiserver indi_simulator_telescope "
-                                               "indi_simulator_ccd'")
+                    self.indiclnt.getPort()) + ".")
 
         # Get the telescope device.
         for iter in range(self.configuration.polling_time_out_count):
@@ -670,6 +674,7 @@ class OperateTelescopeINDI(threading.Thread):
         :return:
         """
 
+        import PyIndi
         # We want to set the ON_COORD_SET switch to engage tracking after goto. "device.getSwitch"
         # is a helper to retrieve a property vector.
         for iter in range(self.configuration.polling_time_out_count):
@@ -702,6 +707,7 @@ class OperateTelescopeINDI(threading.Thread):
         :return:
         """
 
+        import PyIndi
         pulse_guide_speed_index = self.configuration.conf.getint("INDI", "pulse guide speed index")
         pulse_guide_speed = ['SLEW_GUIDE', 'SLEW_CENTERING', 'SLEW_FIND', 'SLEW_MAX'][pulse_guide_speed_index]
         prate = self.device_telescope.getSwitch("TELESCOPE_SLEW_RATE")
@@ -736,15 +742,6 @@ class OperateTelescopeINDI(threading.Thread):
 
         :return: -
         """
-
-        try:
-            import PyIndi
-            from indi_client import IndiClient
-        except ImportError:
-            self.initialization_error = "Unable to import INDI client. Is INDI installed on this system?"
-            if self.configuration.protocol_level > 0:
-                Miscellaneous.protocol("Ending OperateTelescopeINDI thread")
-            return
 
         # Connect to the INDI telescope driver and check if it is working properly.
         try:
