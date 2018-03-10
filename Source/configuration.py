@@ -85,7 +85,7 @@ class Configuration:
         # after each attempt to reduce CPU load. A time-out count keeps polling from continuing
         # indefinitely.
         self.polling_interval = 0.1
-        self.polling_time_out_count = 50
+        self.polling_time_out_count = 200
 
         # A PulseGuide operation of "calibrate_pulse_length" milliseconds is used to find out if
         # the telescope operation is mirror-reversed in RA/DE.
@@ -210,7 +210,7 @@ class Configuration:
 
             self.conf.add_section('INDI')
             self.conf.set('INDI', 'server url', 'localhost')
-            self.conf.set('INDI', 'guiding interval', '0.5')
+            self.conf.set('INDI', 'guiding interval', '1.5')
             self.conf.set('INDI', 'wait interval', '2.')
             self.conf.set('INDI', 'pulse guide speed index', '0')
             self.conf.set('INDI', 'telescope lookup precision', '0.7')
