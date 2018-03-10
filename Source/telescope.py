@@ -23,6 +23,7 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 import threading
 import time
 from datetime import datetime
+from enum import IntEnum
 from math import degrees, radians, pi
 
 import numpy
@@ -482,6 +483,28 @@ class OperateTelescopeASCOM(threading.Thread):
                 self.instructions.remove(inst)
 
 
+class interfaceType(IntEnum):
+    """
+    This enumeration defines the interface types used by INDI to characterize drivers. It
+    serves to select those drivers connected to an INDI server that implement the telescope
+    interface.
+    """
+    TELESCOPE_INTERFACE = (1 << 0)
+    CCD_INTERFACE = (1 << 1)
+    GUIDER_INTERFACE = (1 << 2)
+    FOCUSER_INTERFACE = (1 << 3)
+    FILTER_INTERFACE = (1 << 4)
+    DOME_INTERFACE = (1 << 5)
+    GPS_INTERFACE = (1 << 6)
+    WEATHER_INTERFACE = (1 << 7)
+    AO_INTERFACE = (1 << 8)
+    DUSTCAP_INTERFACE = (1 << 9)
+    LIGHTBOX_INTERFACE = (1 << 10)
+    DETECTOR_INTERFACE = (1 << 11)
+    ROTATOR_INTERFACE = (1 << 12)
+    AUX_INTERFACE = (1 << 15)
+
+
 class OperateTelescopeINDI(threading.Thread):
     """
     This class has the same external interface as "OperateTelescopeASCOM". It uses the INDI
@@ -607,15 +630,36 @@ class OperateTelescopeINDI(threading.Thread):
                 "No INDI server running on " + self.indiclnt.getHost() + ":" + str(
                     self.indiclnt.getPort()) + ".")
 
-        # Get the telescope device.
+        # Get the list of available devices.
         for iter in range(self.configuration.polling_time_out_count):
             time.sleep(self.configuration.polling_interval)
             if len(self.device_list) > 0:
-                # It is assumed that the telescope is the first device in the list.
-                self.device_telescope = self.device_list[0]
                 break
+        if len(self.device_list) == 0:
+            raise INDIConnectException("INDI: Unable to get the device list")
+
+        # Look for a device which implements the TELESCOPE_INTERFACE. Exit the
+        # loop when the first such driver is found.
+        self.device_telescope = None
+        for device in self.device_list:
+            driver_info = device.getText("DRIVER_INFO")
+            for iter in range(self.configuration.polling_time_out_count):
+                time.sleep(self.configuration.polling_interval)
+                if driver_info:
+                    break
+                driver_info = device.getText("DRIVER_INFO")
+            if not driver_info:
+                raise INDIConnectException("INDI: Unable to get driver info")
+            # The driver info is available, check the interface types it implements.
+            if int(driver_info[3].text) & interfaceType.TELESCOPE_INTERFACE:
+                if self.configuration.protocol_level > 0:
+                    Miscellaneous.protocol("OperateTelescopeINDI: Telescope driver found: "
+                                           + driver_info[0].text + ".")
+                self.device_telescope = device
+                break
+        # There is no device which implements the TELESCOPE_INTERFACE. Raise an exception.
         if not self.device_telescope:
-            raise INDIConnectException("INDI: Unable to get the telescope device")
+            raise INDIConnectException("INDI: Unable to find a driver of type 'telescope'")
 
         # Wait for the CONNECTION property be defined for telescope.
         for iter in range(self.configuration.polling_time_out_count):
@@ -753,7 +797,6 @@ class OperateTelescopeINDI(threading.Thread):
         :return: -
         """
 
-        import PyIndi
         # Connect to the INDI telescope driver and check if it is working properly.
         try:
             self.connect_and_test_telescope()
