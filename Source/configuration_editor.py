@@ -389,6 +389,15 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         :return: -
         """
 
+        try:
+            # PyIndi is only available on Linux and MacOS. On Windows systems, do nothing.
+            import PyIndi
+        except ImportError:
+            Miscellaneous.show_detailed_error_message("The INDI interface does not seem to work.",
+                    "Most likely PyIndi is not installed on this computer.\n\nIf this is a Windows system, "
+                    "there might be an ASCOM client available. In this case, try to use 'ASCOM' instead of 'INDI'")
+            return
+
         from indi_configuration_editor import IndiConfigurationEditor
 
         self.indieditor = IndiConfigurationEditor(self.c, self.new_indi_server_url,
