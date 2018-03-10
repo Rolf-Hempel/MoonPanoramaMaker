@@ -349,7 +349,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         except ImportError:
             Miscellaneous.show_detailed_error_message("The ASCOM interface does not seem to work.",
                     "Most likely the ASCOM platform is not installed on this computer.\n\nIf this is a Linux system, "
-                    "there might be an INDI client available. In this case, try to use 'INDI' instead of 'ASCOM'")
+                    "there might be an INDI client available. In this case, try to use 'INDI' instead of 'ASCOM'.")
             return
 
         self.ascomeditor = AscomConfigurationEditor(self.c, self.new_ascom_driver_name,
@@ -395,7 +395,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         except ImportError:
             Miscellaneous.show_detailed_error_message("The INDI interface does not seem to work.",
                     "Most likely PyIndi is not installed on this computer.\n\nIf this is a Windows system, "
-                    "there might be an ASCOM client available. In this case, try to use 'ASCOM' instead of 'INDI'")
+                    "there might be an ASCOM client available. In this case, try to use 'ASCOM' instead of 'INDI'.")
             return
 
         from indi_configuration_editor import IndiConfigurationEditor
