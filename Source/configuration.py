@@ -209,7 +209,7 @@ class Configuration:
             self.conf.set('ASCOM', 'telescope lookup precision', '0.5')
 
             self.conf.add_section('INDI')
-            self.conf.set('INDI', 'server url', '127.0.0.1')
+            self.conf.set('INDI', 'server url', 'localhost')
             self.conf.set('INDI', 'guiding interval', '1.5')
             self.conf.set('INDI', 'wait interval', '2.')
             self.conf.set('INDI', 'pulse guide speed index', '0')
@@ -370,7 +370,7 @@ class Configuration:
 
                 self.conf.add_section('INDI')
                 self.conf.set('INDI', 'server url', 'localhost')
-                self.conf.set('INDI', 'guiding interval', '0.5')
+                self.conf.set('INDI', 'guiding interval', '1.5')
                 self.conf.set('INDI', 'wait interval', '2.')
                 self.conf.set('INDI', 'pulse guide speed index', '0')
                 self.conf.set('INDI', 'telescope lookup precision', '0.7')
