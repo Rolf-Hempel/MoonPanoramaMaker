@@ -18,6 +18,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
+
+This module contains three classes: This class "OperateTelescopeASCOM" provides the low-level
+interface to the ASCOM driver of the telescope mount. It keeps a queue of instructions which is
+handled by an independent thread.
+
+The class "OperateTelescopeINDI" has the same external interface as "OperateTelescopeASCOM". It
+uses the INDI telescope interface instead of ASCOM.
+
+Class "Telescope" provides the interface to the outside world. Its methods put instructions into
+the OperateTelescopeASCOM/INDI queue. Some of its methods block until the OperateTelescopeASCOM/
+INDI thread has acknowledged completion. Others are non-blocking.
+
 """
 
 import threading
@@ -35,16 +47,8 @@ from miscellaneous import Miscellaneous
 
 class OperateTelescopeASCOM(threading.Thread):
     """
-    This module contains three classes: This class "OperateTelescopeASCOM" provides the low-level
-    interface to the ASCOM driver of the telescope mount. It keeps a queue of instructions which is
-    handled by an independent thread.
-
-    The class "OperateTelescopeINDI" has the same external interface as "OperateTelescopeASCOM". It
-    uses the INDI telescope interface instead of ASCOM.
-
-    Class "Telescope" provides the interface to the outside world. Its methods put instructions into
-    the OperateTelescopeASCOM/INDI queue. Some of its methods block until the OperateTelescopeASCOM/
-    INDI thread has acknowledged completion. Others are non-blocking.
+    This class provides the low-level interface to the ASCOM driver of the telescope mount. It
+    keeps a queue of instructions which is handled by an independent thread.
 
     """
 
@@ -578,7 +582,7 @@ class OperateTelescopeINDI(threading.Thread):
         self.terminate = {}
         self.terminate['name'] = "terminate"
 
-        # Initialize default directions for the ASCOM instruction "PulseGuide"
+        # Initialize default directions for the "PulseGuide" instructions
         self.direction_north = 0
         self.direction_south = 1
         self.direction_east = 2
