@@ -620,6 +620,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
             self.c.conf.set("Telescope", "interface type",
                             str(self.mount_interface_chooser.currentText()))
             self.c.conf.set("Workflow", "protocol level", self.protocol_level_chooser.currentText())
+            self.c.set_protocol_level()
             self.c.conf.set("Workflow", "protocol to file",
                             ['True', 'False'][self.protocol_to_file_chooser.currentIndex()])
             self.c.conf.set("Workflow", "focus on star",

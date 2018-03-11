@@ -472,6 +472,7 @@ if __name__ == "__main__":
 
     if editor.output_channel_changed:
         print ("Output channel changed.")
+    print ("Protocol level: " + str(c.protocol_level))
     if editor.telescope_changed:
         print ("Telescope changed.")
     if editor.camera_automation_changed:
