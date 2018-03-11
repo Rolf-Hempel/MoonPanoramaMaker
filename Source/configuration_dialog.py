@@ -450,7 +450,7 @@ class Ui_ConfigurationDialog(object):
         self.camera_automation.setText(_translate("ConfigurationDialog", "Camera automation"))
         self.telescope.setText(_translate("ConfigurationDialog", "Telescope"))
         self.limb_first.setToolTip(_translate("ConfigurationDialog", "Choose whether the tiles at the bright moon limb or those near the terminator should be recorded first."))
-        self.limb_first.setText(_translate("ConfigurationDialog", "Begin with moon limb or terminator"))
+        self.limb_first.setText(_translate("ConfigurationDialog", "Begin at moon limb or terminator"))
         self.fig_size_horizontal.setToolTip(_translate("ConfigurationDialog", "Horizontal dimension of tile visualization window in inches. Must be between 0. and 25."))
         self.fig_size_horizontal.setText(_translate("ConfigurationDialog", "Figure size horizontal (inch)"))
         self.tile_visualization.setText(_translate("ConfigurationDialog", "Tile Visualization"))
