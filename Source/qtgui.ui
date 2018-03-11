@@ -267,6 +267,11 @@
     </item>
     <item row="2" column="0">
      <widget class="QPushButton" name="rotate_camera">
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
       <property name="toolTip">
        <string>Rotate camera until the moon limb stands vertically at FOV center</string>
       </property>
@@ -335,6 +340,24 @@
       </property>
      </widget>
     </item>
+    <item row="2" column="1">
+     <widget class="QPushButton" name="exit">
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="toolTip">
+       <string>Save all parameters, close the windows and exit the program</string>
+      </property>
+      <property name="text">
+       <string>Exit - E</string>
+      </property>
+      <property name="shortcut">
+       <string>E</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -343,6 +366,7 @@
   <tabstop>restart</tabstop>
   <tabstop>edit_configuration</tabstop>
   <tabstop>rotate_camera</tabstop>
+  <tabstop>exit</tabstop>
   <tabstop>new_landmark_selection</tabstop>
   <tabstop>show_landmark</tabstop>
   <tabstop>set_focus_area</tabstop>

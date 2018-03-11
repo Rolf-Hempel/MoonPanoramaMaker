@@ -94,6 +94,8 @@ class StartQT5(QtWidgets.QMainWindow):
         self.button_list.append(self.ui.autoalignment)
         self.ui.set_tile_processed.clicked.connect(self.set_tile_processed)                   # 16
         self.button_list.append(self.ui.set_tile_processed)
+        self.ui.exit.clicked.connect(self.exit_program)                                       # 17
+        self.button_list.append(self.ui.exit)
 
         # Read in or (if no config file is found) create all configuration parameters. If a new
         # configuration has been created, write it to disk.
@@ -1476,12 +1478,12 @@ class StartQT5(QtWidgets.QMainWindow):
         # Write the complete message to the status bar.
         self.ui.statusbar.showMessage(status_text)
 
-    def closeEvent(self, evnt):
+    def exit_program(self, event=None):
         """
         When the user asks to close the main GUI, a dialog is presented asking for confirmation.
         In case the user confirms, do cleanup activities before closing the main GUI.
-        
-        :param evnt: event object
+
+        :param event: event object (provided when the user closes the main window)
         :return: -
         """
 
@@ -1492,7 +1494,8 @@ class StartQT5(QtWidgets.QMainWindow):
                                                QtWidgets.QMessageBox.No)
         # Positive reply: Do it.
         if reply == QtWidgets.QMessageBox.Yes:
-            evnt.accept()
+            if event:
+                event.accept()
 
             # Store the geometry of main window, so it is placed the same at next program start.
             (x0, y0, width, height) = self.geometry().getRect()
@@ -1509,9 +1512,22 @@ class StartQT5(QtWidgets.QMainWindow):
             # file.
             self.workflow.exiting = True
             plt.pause(4. * self.configuration.polling_interval)
+            sys.exit(0)
         else:
             # No confirmation by the user: Don't stop program execution.
-            evnt.ignore()
+            if event:
+                event.ignore()
+
+    def closeEvent(self, evnt):
+        """
+        This event is triggered when the user closes the main window by clicking on the cross in
+        the window corner.
+        
+        :param evnt: event object
+        :return: -
+        """
+
+        self.exit_program(event=evnt)
 
 
 class TileNumberInput(QtWidgets.QDialog, Ui_TileNumberInputDialog):
