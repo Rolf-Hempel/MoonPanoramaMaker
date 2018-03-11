@@ -122,10 +122,10 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>True, if FireCapture should be triggered automatically, False otherwise</string>
+            <string>The camera can be either triggered manually, or the program triggers FireCapture automatically.</string>
            </property>
            <property name="text">
-            <string>Camera automation (True / False)</string>
+            <string>Camera automation</string>
            </property>
           </widget>
          </item>
@@ -151,10 +151,10 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>True, if tiles at the bright Moon limb should be recorded first, False if to start at terminator</string>
+            <string>Choose whether the tiles at the bright moon limb or those near the terminator should be recorded first.</string>
            </property>
            <property name="text">
-            <string>Limb first (True / False)</string>
+            <string>Begin at moon limb or terminator</string>
            </property>
           </widget>
          </item>
@@ -240,10 +240,10 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>True, if focus is adjusted on a star. False, if a moon surface detail is used</string>
+            <string>The focus can be adjusted on a star or on a lunar feature.</string>
            </property>
            <property name="text">
-            <string>Focus on a star (True / False)</string>
+            <string>Focus on a star or lunar feature</string>
            </property>
           </widget>
          </item>
@@ -255,10 +255,10 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>Append session protocol to file &quot;MoonPanoramaMaker.log&quot; in home directory</string>
+            <string>If &quot;file&quot; is selected, append session protocol to file &quot;MoonPanoramaMaker.log&quot; in home directory</string>
            </property>
            <property name="text">
-            <string>Write protocol to file (True / False)</string>
+            <string>Write protocol to file or StdOut</string>
            </property>
           </widget>
          </item>
@@ -683,63 +683,6 @@
            </property>
           </widget>
          </item>
-         <item row="13" column="2">
-          <widget class="QComboBox" name="protocol_to_file_chooser">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>True, if the protocol should be written to the file 'MoonPanoramaMaker.log' in the user's home directory. False, if the protocol should go to stdout.</string>
-           </property>
-          </widget>
-         </item>
-         <item row="14" column="2">
-          <widget class="QComboBox" name="focus_on_star_chooser">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>True, if a star is selected for focussing. False, if a surface area on the moon is selected.</string>
-           </property>
-          </widget>
-         </item>
-         <item row="15" column="2">
-          <widget class="QComboBox" name="limb_first_chooser">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>True, if recording starts at the sunlit limb. False, if it starts at the terminator.</string>
-           </property>
-          </widget>
-         </item>
-         <item row="16" column="2">
-          <widget class="QComboBox" name="camera_automation_chooser">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>True, if FireCapture is triggered by MoonPanoramaMaker automatically. False, if the user triggers the camera.</string>
-           </property>
-          </widget>
-         </item>
-         <item row="17" column="2">
-          <widget class="QLineEdit" name="input_camera_trigger_delay">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
          <item row="19" column="2">
           <widget class="QLineEdit" name="input_fig_size_horizontal">
            <property name="font">
@@ -802,6 +745,63 @@
          </item>
          <item row="27" column="2">
           <widget class="QLineEdit" name="input_max_alignment_error">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item row="13" column="2" colspan="4">
+          <widget class="QComboBox" name="protocol_to_file_chooser">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="14" column="2" colspan="4">
+          <widget class="QComboBox" name="focus_on_star_chooser">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="15" column="2" colspan="4">
+          <widget class="QComboBox" name="limb_first_chooser">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="16" column="2" colspan="4">
+          <widget class="QComboBox" name="camera_automation_chooser">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="17" column="2">
+          <widget class="QLineEdit" name="input_camera_trigger_delay">
            <property name="font">
             <font>
              <pointsize>10</pointsize>

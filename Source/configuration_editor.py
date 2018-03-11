@@ -91,18 +91,22 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
         protocol_levels = ['0', '1', '2', '3']
         self.protocol_level_chooser.addItems(protocol_levels)
-        self.protocol_level_chooser.setCurrentIndex(protocol_levels.index(
-            self.c.conf.get("Workflow", "protocol level")))
-        self.protocol_to_file_chooser.addItems(['True', 'False'])
-        self.protocol_to_file_chooser.setCurrentIndex(['True', 'False'].index(
-            self.c.conf.get("Workflow", "protocol to file")))
-        self.focus_on_star_chooser.addItems(['True', 'False'])
+        self.protocol_level_chooser.setCurrentIndex(
+            protocol_levels.index(self.c.conf.get("Workflow", "protocol level")))
+        self.protocol_to_file_chooser.addItems(
+            ["Write the protocol to a file", 'Write the protocol to standard output'])
+        self.protocol_to_file_chooser.setCurrentIndex(
+            ['True', 'False'].index(self.c.conf.get("Workflow", "protocol to file")))
+        self.focus_on_star_chooser.addItems(
+            ['Select a star for adjusting the focus', 'Select an area on the moon for focussing'])
         self.focus_on_star_chooser.setCurrentIndex(
             ['True', 'False'].index(self.c.conf.get("Workflow", "focus on star")))
-        self.limb_first_chooser.addItems(['True', 'False'])
+        self.limb_first_chooser.addItems(
+            ['Begin at the bright moon limb', 'Begin at the terminator'])
         self.limb_first_chooser.setCurrentIndex(
             ['True', 'False'].index(self.c.conf.get("Workflow", "limb first")))
-        self.camera_automation_chooser.addItems(['True', 'False'])
+        self.camera_automation_chooser.addItems(
+            ['Trigger FireCapture automatically', 'Trigger the camera manually'])
         self.camera_automation_chooser.setCurrentIndex(
             ['True', 'False'].index(self.c.conf.get("Workflow", "camera automation")))
         self.input_camera_trigger_delay.setText(self.c.conf.get("Workflow", "camera trigger delay"))
@@ -617,12 +621,13 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
                             str(self.mount_interface_chooser.currentText()))
             self.c.conf.set("Workflow", "protocol level", self.protocol_level_chooser.currentText())
             self.c.conf.set("Workflow", "protocol to file",
-                                str(self.protocol_to_file_chooser.currentText()))
+                            ['True', 'False'][self.protocol_to_file_chooser.currentIndex()])
             self.c.conf.set("Workflow", "focus on star",
-                            str(self.focus_on_star_chooser.currentText()))
-            self.c.conf.set("Workflow", "limb first", str(self.limb_first_chooser.currentText()))
+                            ['True', 'False'][self.focus_on_star_chooser.currentIndex()])
+            self.c.conf.set("Workflow", "limb first",
+                            ['True', 'False'][self.limb_first_chooser.currentIndex()])
             self.c.conf.set("Workflow", "camera automation",
-                                str(self.camera_automation_chooser.currentText()))
+                            ['True', 'False'][self.camera_automation_chooser.currentIndex()])
 
             input_string = str(self.input_camera_trigger_delay.text())
             if Miscellaneous.testfloat(input_string, 0., 60.):
