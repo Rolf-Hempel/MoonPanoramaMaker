@@ -621,7 +621,6 @@ class OperateTelescopeINDI(threading.Thread):
         # Try to get access to the INDI client.
         try:
             self.indiclnt = IndiClient(self.device_list, self.device_name_list)
-            time.sleep(3.)
             self.server_address = self.configuration.conf.get("INDI", "server url")
             self.server_port = 7624
             self.indiclnt.setServer(self.server_address, self.server_port)
@@ -756,11 +755,11 @@ class OperateTelescopeINDI(threading.Thread):
 
     def set_pulse_guide_speed(self):
         """
-        Set the PulseGuide speed (in units of deg/sec). This operation can fail if the user has
-        specified an out-of-range value in the configuration dialog. In this case it is important to
-        point the user at the concrete problem and tell him/her how to resolve it.
+        Set the PulseGuide speed. Normally, the telescope driver should provide the four basic
+        slew speeds which the user can have selected via the INDI configuration GUI. If this
+        is not the case, an exception is raised and a human-readable error message is printed.
 
-        :return:
+        :return: -
         """
 
         import PyIndi
@@ -787,6 +786,7 @@ class OperateTelescopeINDI(threading.Thread):
             if speed_set:
                 self.indiclnt.sendNewSwitch(prate)
             else:
+                # The selected slew rate is not among the rates provided by the driver.
                 raise INDIPropertyException("INDI: The user selected a pulse guide "
                                             "speed not supporded by telescope driver")
             if self.configuration.protocol_level > 1:
@@ -855,7 +855,6 @@ class OperateTelescopeINDI(threading.Thread):
                         iter_count += 1
                         time.sleep(self.configuration.conf.getfloat("INDI", "wait interval"))
 
-
                     # Stationary state reached, copy measured position (in radians) into dict.
                     instruction['ra'] = radians(self.telescope_radec[0].value * 15)
                     instruction['de'] = radians(self.telescope_radec[1].value)
@@ -866,7 +865,7 @@ class OperateTelescopeINDI(threading.Thread):
                     # Signal that the instruction is finished.
                     instruction['finished'] = True
 
-                # Find out which ASCOM directions correspond to directions in the sky.
+                # Find out which INDI directions correspond to directions in the sky.
                 elif instruction['name'] == "calibrate":
                     # Look up the current RA position of the mount.
                     ra_begin = self.telescope_radec[0].value * 15.
@@ -1082,6 +1081,14 @@ class OperateTelescopeINDI(threading.Thread):
                 time.sleep(self.configuration.polling_interval)
 
         # Terminate the main loop (after executing the "terminate" instruction).
+        # Disconnect all INDI devices and the server from the INDI client first.
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("Disconnecting INDI devices")
+        for name in self.device_name_list:
+            self.indiclnt.disconnectDevice(name)
+        if self.configuration.protocol_level > 0:
+            Miscellaneous.protocol("Disconnecting INDI server")
+        self.indiclnt.disconnectServer()
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol("Ending OperateTelescopeINDI thread")
 

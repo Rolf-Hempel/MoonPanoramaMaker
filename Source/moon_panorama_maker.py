@@ -22,9 +22,10 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
 from math import degrees
-import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 from compute_drift_rate import ComputeDriftRate
 from configuration import Configuration
 from configuration_editor import ConfigurationEditor
@@ -246,7 +247,6 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         if self.first_start:
-            self.first_start = False
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol(
                     "Program start: Build the execution environment.")
@@ -296,7 +296,9 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         '''
 
-        # print("in MPM: initialize stdout")
+        # This point is reached by pressing either Restart or Configuration at program start.
+        # Next time Restart is pressed, the user is asked for acknowledgement.
+        self.first_start = False
         if self.output_channel_initialization_flag:
             self.workflow.output_channel_initialization_flag = True
             self.output_channel_initialization_flag = False
@@ -312,7 +314,6 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         '''
 
-        # print ("in MPM: initialize telescope")
         if self.telescope_initialization_flag:
             self.workflow.telescope_initialization_flag = True
             self.telescope_initialization_flag = False
@@ -343,7 +344,6 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         '''
 
-        # print("in MPM: initialize camera")
         if self.camera_initialization_flag:
             if self.configuration.conf.getboolean("Workflow", "camera automation"):
                 # Pressing the "Enter" key in this context will invoke method
@@ -786,12 +786,11 @@ class StartQT5(QtWidgets.QMainWindow):
         # Switch back to manual alignment, if auto-alignment was active
         self.ui.alignment.setEnabled(True)
         self.reset_autoalignment()
-        # Disable keys further down in observation workflow.
-        self.disable_keys(
-            [self.ui.set_focus_area, self.ui.goto_focus_area, self.ui.start_continue_recording,
-             self.ui.select_tile, self.ui.move_to_selected_tile, self.ui.set_tile_unprocessed,
-             self.ui.set_all_tiles_unprocessed, self.ui.set_all_tiles_processed,
-             self.ui.autoalignment, self.ui.set_tile_processed])
+        # Disable keys further down the observation workflow, which do not make sense after
+        # camera rotation.
+        self.disable_keys([self.ui.move_to_selected_tile])
+        # De-activate all keys while the telescope is moving.
+        self.save_key_status()
         # Display info for the user, and trigger workflow thread to move the telescope to the
         # center point of the sunlit moon limb.
         self.set_text_browser("Slewing telescope to Moon limb, please wait.")
@@ -822,11 +821,14 @@ class StartQT5(QtWidgets.QMainWindow):
         self.camera_rotated = True
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol("Camera rotation finished")
-        # Activate GUI buttons. Auto-alignment is possible only when camera_automation is active.
+        # Re-activate GUI buttons.
+        self.reset_key_status()
+        # Activate GUI buttons further down the workflow.
         self.enable_keys(
             [self.ui.set_focus_area, self.ui.start_continue_recording, self.ui.select_tile,
              self.ui.set_tile_unprocessed, self.ui.set_all_tiles_unprocessed,
              self.ui.set_all_tiles_processed, self.ui.set_tile_processed])
+        # Auto-alignment is possible only when camera_automation is active.
         self.ui.autoalignment.setEnabled(self.configuration.conf.getboolean("Workflow",
                                                                             "camera automation"))
         # When the camera orientation has changed, all tiles are marked "unprocessed"
