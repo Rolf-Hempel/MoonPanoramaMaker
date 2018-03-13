@@ -61,41 +61,41 @@ class StartQT5(QtWidgets.QMainWindow):
         # Build a list of GUI buttons. It is used to control the de-activation and re-activation of
         # GUI buttons at runtime. Also, connect GUI events with method invocations.
         self.button_list = []
-        self.ui.edit_configuration.clicked.connect(self.edit_configuration)                   # 00
+        self.ui.edit_configuration.clicked.connect(self.edit_configuration)                 # 00
         self.button_list.append(self.ui.edit_configuration)
-        self.ui.restart.clicked.connect(self.restart)                                         # 01
+        self.ui.restart.clicked.connect(self.restart)                                       # 01
         self.button_list.append(self.ui.restart)
-        self.ui.new_landmark_selection.clicked.connect(self.prompt_new_landmark_selection)    # 02
+        self.ui.new_landmark_selection.clicked.connect(self.prompt_new_landmark_selection)  # 02
         self.button_list.append(self.ui.new_landmark_selection)
-        self.ui.alignment.clicked.connect(self.prompt_alignment)                              # 03
+        self.ui.alignment.clicked.connect(self.prompt_alignment)                            # 03
         self.button_list.append(self.ui.alignment)
-        self.ui.configure_drift_correction.clicked.connect(self.configure_drift_correction)   # 04
+        self.ui.configure_drift_correction.clicked.connect(self.configure_drift_correction) # 04
         self.button_list.append(self.ui.configure_drift_correction)
-        self.ui.rotate_camera.clicked.connect(self.prompt_rotate_camera)                      # 05
+        self.ui.rotate_camera.clicked.connect(self.prompt_rotate_camera)                    # 05
         self.button_list.append(self.ui.rotate_camera)
-        self.ui.set_focus_area.clicked.connect(self.set_focus_area)                           # 06
+        self.ui.set_focus_area.clicked.connect(self.set_focus_area)                         # 06
         self.button_list.append(self.ui.set_focus_area)
-        self.ui.goto_focus_area.clicked.connect(self.goto_focus_area)                         # 07
+        self.ui.goto_focus_area.clicked.connect(self.goto_focus_area)                       # 07
         self.button_list.append(self.ui.goto_focus_area)
-        self.ui.start_continue_recording.clicked.connect(self.start_continue_recording)       # 08
+        self.ui.start_continue_recording.clicked.connect(self.start_continue_recording)     # 08
         self.button_list.append(self.ui.start_continue_recording)
-        self.ui.select_tile.clicked.connect(self.select_tile)                                 # 09
+        self.ui.select_tile.clicked.connect(self.select_tile)                               # 09
         self.button_list.append(self.ui.select_tile)
-        self.ui.move_to_selected_tile.clicked.connect(self.move_to_selected_tile)             # 10
+        self.ui.move_to_selected_tile.clicked.connect(self.move_to_selected_tile)           # 10
         self.button_list.append(self.ui.move_to_selected_tile)
-        self.ui.set_tile_unprocessed.clicked.connect(self.set_tile_unprocessed)               # 11
+        self.ui.set_tile_unprocessed.clicked.connect(self.set_tile_unprocessed)             # 11
         self.button_list.append(self.ui.set_tile_unprocessed)
-        self.ui.set_all_tiles_unprocessed.clicked.connect(self.set_all_tiles_unprocessed)     # 12
+        self.ui.set_all_tiles_unprocessed.clicked.connect(self.set_all_tiles_unprocessed)   # 12
         self.button_list.append(self.ui.set_all_tiles_unprocessed)
-        self.ui.set_all_tiles_processed.clicked.connect(self.set_all_tiles_processed)         # 13
+        self.ui.set_all_tiles_processed.clicked.connect(self.set_all_tiles_processed)       # 13
         self.button_list.append(self.ui.set_all_tiles_processed)
-        self.ui.show_landmark.clicked.connect(self.show_landmark)                             # 14
+        self.ui.show_landmark.clicked.connect(self.show_landmark)                           # 14
         self.button_list.append(self.ui.show_landmark)
-        self.ui.autoalignment.clicked.connect(self.prompt_autoalignment)                      # 15
+        self.ui.autoalignment.clicked.connect(self.prompt_autoalignment)                    # 15
         self.button_list.append(self.ui.autoalignment)
-        self.ui.set_tile_processed.clicked.connect(self.set_tile_processed)                   # 16
+        self.ui.set_tile_processed.clicked.connect(self.set_tile_processed)                 # 16
         self.button_list.append(self.ui.set_tile_processed)
-        self.ui.exit.clicked.connect(self.exit_program)                                       # 17
+        self.ui.exit.clicked.connect(self.exit_program)                                     # 17
         self.button_list.append(self.ui.exit)
 
         # Read in or (if no config file is found) create all configuration parameters. If a new
@@ -137,10 +137,13 @@ class StartQT5(QtWidgets.QMainWindow):
         # By decoupling those activities from the main thread, the GUI is kept from freezing during
         # long-running activities.
         self.workflow = Workflow(self)
-        plt.pause(2.)
+        plt.pause(self.configuration.wait_for_workflow_initialization)
 
         # The workflow thread sends signals when a task is finished. Connect those signals with
         # the appropriate GUI activity.
+        # An additional signal (from the camera object) is connected dynamically in method
+        # "initialize_tesselation". This is necessary because the camera object is created and
+        # destroyed at runtime.
         self.workflow.output_channel_initialized_signal.connect(self.initialize_telescope)
         self.workflow.telescope_initialized_signal.connect(self.initialize_camera)
         self.workflow.telescope_failed_signal.connect(self.telescope_connection_failed)
@@ -157,9 +160,6 @@ class StartQT5(QtWidgets.QMainWindow):
         self.workflow.set_statusbar_signal.connect(self.set_statusbar)
         self.workflow.reset_key_status_signal.connect(self.reset_key_status)
         self.workflow.set_text_browser_signal.connect(self.set_text_browser)
-        # An additional signal (from the camera object) is connected dynamically in method
-        # "initialize_tesselation". This is necessary because the camera object is created and
-        # destroyed at runtime.
 
         # Set status flags.
         self.initialized = False
@@ -178,11 +178,21 @@ class StartQT5(QtWidgets.QMainWindow):
         # The program workflow will do a fresh start next time the (Re-)Start button is pressed.
         self.first_start = True
 
-        # All initialization steps have to be executed.
+        # At the first workflow start, all initialization steps have to be executed.
         self.output_channel_initialization_flag = True
         self.telescope_initialization_flag = True
         self.camera_initialization_flag = True
         self.new_tesselation_flag = True
+
+        # Initialize instance variables.
+        self.tv = None
+        self.max_alignment_error = None
+        self.max_seconds_between_autoaligns = None
+        self.all_tiles_recorded = None
+        self.camera_interrupted = None
+        self.selected_tile_numbers = None
+        self.selected_tile_numbers_string = None
+        self.saved_key_status = None
 
         self.set_text_browser("Press:\n - 'Edit configuration - C'  to set/review configuration "
                               "parameters first, or\n - '(Re-)Start - S'  to start the workflow "
@@ -201,6 +211,7 @@ class StartQT5(QtWidgets.QMainWindow):
             for childQWidget in parentQWidget.findChildren(QtWidgets.QWidget):
                 childQWidget.setFocusPolicy(policy)
                 recursiveSetChildFocusPolicy(childQWidget)
+
         recursiveSetChildFocusPolicy(self)
 
     def edit_configuration(self):
@@ -248,8 +259,7 @@ class StartQT5(QtWidgets.QMainWindow):
 
         if self.first_start:
             if self.configuration.protocol_level > 0:
-                Miscellaneous.protocol(
-                    "Program start: Build the execution environment.")
+                Miscellaneous.protocol("Program start: Build the execution environment.")
 
             # Begin environment setup with redirecting the output channel if requested. All steps
             # will be executed because the corresponding flags have been set to True in __init__.
@@ -388,7 +398,6 @@ class StartQT5(QtWidgets.QMainWindow):
         self.set_text_browser("Unable to connect to FireCapture. Check the status of FireCapture "
                               " and re-start the workflow.\nDetailed error info: " + message)
 
-
     def initialize_tesselation(self):
         '''
         Before dealing with the tesselation and its visualization, first connect the camera with
@@ -405,11 +414,12 @@ class StartQT5(QtWidgets.QMainWindow):
         # If camera automation is on and a new camera has been connected in the workflow thread,
         # connect the signal by which the camera signalizes the completion of a video with the
         # corresponding GUI method.
-        if self.camera_initialization_flag and self.configuration.conf.getboolean("Workflow", "camera automation"):
+        if self.camera_initialization_flag and self.configuration.conf.getboolean("Workflow",
+                                                                                  "camera "
+                                                                                  "automation"):
             self.workflow.camera.camera_signal.connect(self.signal_from_camera)
         self.camera_initialization_flag = False
 
-        # print("in MPM: initialize tesselation")
         if self.new_tesselation_flag:
             # If a tesselation is active already, disable it and close the Matplotlib window.
             if self.workflow.tesselation_created:
@@ -704,7 +714,8 @@ class StartQT5(QtWidgets.QMainWindow):
             # The configuration parameter is in percent. In "workflow" it is compared to a value
             # between 0. and 1.
             self.max_alignment_error = (self.configuration.conf.getfloat("Alignment",
-                                                            "max alignment error")) / 100.
+                                                                         "max alignment error")) \
+                                       / 100.
             # Initialize the maximum time between auto-aligns to the minimum acceptable value.
             # The interval will be increased at next auto-align if the correction is very small.
             self.max_seconds_between_autoaligns = self.min_autoalign_interval
@@ -829,8 +840,8 @@ class StartQT5(QtWidgets.QMainWindow):
              self.ui.set_tile_unprocessed, self.ui.set_all_tiles_unprocessed,
              self.ui.set_all_tiles_processed, self.ui.set_tile_processed])
         # Auto-alignment is possible only when camera_automation is active.
-        self.ui.autoalignment.setEnabled(self.configuration.conf.getboolean("Workflow",
-                                                                            "camera automation"))
+        self.ui.autoalignment.setEnabled(
+            self.configuration.conf.getboolean("Workflow", "camera automation"))
         # When the camera orientation has changed, all tiles are marked "unprocessed"
         self.tv.mark_all_unprocessed()
         self.workflow.active_tile_number = -1
@@ -961,16 +972,14 @@ class StartQT5(QtWidgets.QMainWindow):
         # Check if the currently active tile is marked "processed", change its display in the
         # tile visualization window accordingly. It will not be marked as "active" any more.
         if self.workflow.active_tile_number > -1:
-            t = self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number]
-            tp = t['processed']
             if self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number]['processed']:
                 self.mark_processed()
         # Look for the next unprocessed tile.
-        (self.next_tile, next_tile_index) = self.workflow.tc.find_next_unprocessed_tile(self.workflow)
+        (next_tile, next_tile_index) = self.workflow.tc.find_next_unprocessed_tile(self.workflow)
 
         # There is no unprocessed tile left, set the "all_tiles_recorded" flag, display a message,
         # re-activate GUI keys and exit the viceo acquisition loop
-        if self.next_tile is None:
+        if next_tile is None:
             self.all_tiles_recorded = True
             # self.ui.move_to_selected_tile.setEnabled(False)
             self.set_statusbar()
@@ -1034,7 +1043,7 @@ class StartQT5(QtWidgets.QMainWindow):
             # There is an active tile. If it is still unprocessed, mark it as such in the tile
             # visualization window. Otherwise mark it as processed.
             if (self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
-                    'processed'] == False):
+                'processed'] == False):
                 self.tv.mark_unprocessed([self.workflow.active_tile_number])
             else:
                 self.tv.mark_processed([self.workflow.active_tile_number])
@@ -1042,9 +1051,9 @@ class StartQT5(QtWidgets.QMainWindow):
         # below) extends the TileNumberInputDialog in module tile_number_input_dialog. Set the
         # context to "workflow", so that on dialog closing the selected value will be stored in
         # "active_tile_number" of the workflow object.
-        self.tni = TileNumberInput(len(self.workflow.tc.list_of_tiles_sorted)-1,
-                                   self.workflow.active_tile_number, self.workflow)
-        self.tni.exec_()
+        tni = TileNumberInput(len(self.workflow.tc.list_of_tiles_sorted) - 1,
+                              self.workflow.active_tile_number, self.workflow)
+        tni.exec_()
         if self.configuration.protocol_level > 1:
             Miscellaneous.protocol(
                 "Tile number " + str(self.workflow.active_tile_number) + " was selected.")
@@ -1073,8 +1082,8 @@ class StartQT5(QtWidgets.QMainWindow):
             self.selected_tile_numbers_string = str(self.selected_tile_numbers)[1:-1]
             self.gui_context = "set_tile_unprocessed"
             self.set_text_browser(
-                "Do you want to mark tile(s) " + self.selected_tile_numbers_string + " as "
-                "un-processed? Confirm with 'enter', otherwise press 'esc'.")
+                "Do you want to mark tile(s) " + self.selected_tile_numbers_string +
+                " as un-processed? Confirm with 'enter', otherwise press 'esc'.")
 
     def mark_unprocessed(self):
         """
@@ -1116,8 +1125,8 @@ class StartQT5(QtWidgets.QMainWindow):
             self.selected_tile_numbers_string = str(self.selected_tile_numbers)[1:-1]
             self.gui_context = "set_tile_processed"
             self.set_text_browser(
-                "Do you want to mark tile(s) " + self.selected_tile_numbers_string + " as "
-                "processed? Confirm with 'enter', otherwise press 'esc'.")
+                "Do you want to mark tile(s) " + self.selected_tile_numbers_string +
+                "as processed? Confirm with 'enter', otherwise press 'esc'.")
 
     def tile_processed(self):
         """
@@ -1144,9 +1153,8 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         self.gui_context = "set_all_tiles_unprocessed"
-        self.set_text_browser("Do you want to mark all tiles "
-                              "as un-processed? Confirm with 'enter', "
-                              "otherwise press 'esc'.")
+        self.set_text_browser("Do you want to mark all tiles as un-processed? Confirm with 'enter',"
+                              " otherwise press 'esc'.")
 
     def mark_all_tiles_unprocessed(self):
         """
@@ -1175,8 +1183,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
 
         self.gui_context = "set_all_tiles_processed"
-        self.set_text_browser("Do you want to mark all tiles "
-                              "as processed? Confirm with 'enter', "
+        self.set_text_browser("Do you want to mark all tiles as processed? Confirm with 'enter', "
                               "otherwise press 'esc'.")
 
     def mark_all_tiles_processed(self):
@@ -1204,8 +1211,6 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         """
 
-        # Get the tile object from the list kept by the TileConstructor object.
-        self.selected_tile = self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number]
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol(
                 "Goto selected tile number " + str(self.workflow.active_tile_number))
@@ -1216,8 +1221,8 @@ class StartQT5(QtWidgets.QMainWindow):
         self.save_key_status()
         # Write the tile number to the text browser and instruct the workflow thread to move the
         # mount.
-        self.set_text_browser("Moving telescope to tile " + str(self.workflow.active_tile_number)
-                              + ".")
+        self.set_text_browser(
+            "Moving telescope to tile " + str(self.workflow.active_tile_number) + ".")
         self.workflow.move_to_selected_tile_flag = True
 
     def reset_active_tile(self):
@@ -1232,7 +1237,7 @@ class StartQT5(QtWidgets.QMainWindow):
         # There is a selected active tile.
         if self.workflow.active_tile_number > -1:
             if (self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
-                    'processed'] == False):
+                'processed'] == False):
                 self.tv.mark_unprocessed([self.workflow.active_tile_number])
             else:
                 self.mark_processed()
@@ -1452,7 +1457,7 @@ class StartQT5(QtWidgets.QMainWindow):
             align_ra = degrees(self.workflow.al.ra_correction) * 60.
             align_de = degrees(self.workflow.al.de_correction) * 60.
             status_text += (
-                ", mount alignment: (" + '%3.1f' % align_ra + "'," + '%3.1f' % align_de + "')")
+                    ", mount alignment: (" + '%3.1f' % align_ra + "'," + '%3.1f' % align_de + "')")
         # If auto-alignment is active, add a note on that.
         if self.autoalign_enabled:
             status_text += ", auto-align on"
@@ -1461,7 +1466,7 @@ class StartQT5(QtWidgets.QMainWindow):
             drift_ra = degrees(self.workflow.al.drift_ra) * 216000.
             drift_de = degrees(self.workflow.al.drift_de) * 216000.
             status_text += (
-                ", drift rate: (" + '%4.2f' % drift_ra + "'/h, " + '%4.2f' % drift_de + "'/h)")
+                    ", drift rate: (" + '%4.2f' % drift_ra + "'/h, " + '%4.2f' % drift_de + "'/h)")
         # Tell if camera is properly oriented.
         if self.camera_rotated:
             status_text += ", camera rotated"
@@ -1579,6 +1584,7 @@ if __name__ == "__main__":
     # "pyinstaller moon_panorama_maker.spec"
     #
     import os
+
     if getattr(sys, 'frozen', False):
         here = os.path.dirname(sys.executable)
         sys.path.insert(1, here)

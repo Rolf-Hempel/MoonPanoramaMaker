@@ -73,20 +73,22 @@ class Camera(QtCore.QThread):
         # Set the parameters for the socket connection to FireCapture. FireCapture might run on a
         # different computer.
         self.host = self.configuration.conf.get("Camera", "ip address")
-        self.port = 9820
+        self.port = self.configuration.fire_capture_port_number
 
         # For debugging purposes, the connection to FireCapture can be replaced with a mockup class
         # which reads still images from files. These can be used to test the autoaligh mechanism.
         if debug:
-            self.mysocket = SocketClientDebug(self.host, self.port, self.configuration.camera_debug_delay)
+            self.mysocket = SocketClientDebug(self.host, self.port,
+                                              self.configuration.camera_debug_delay)
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol("Camera in debug mode, still camera emulated.")
         else:
             try:
                 self.mysocket = SocketClient(self.host, self.port)
             except:
-                raise CameraException("Unable to establish socket connection to FireCapture, host: "
-                                      + self.host + ", port: " + str(self.port))
+                raise CameraException(
+                    "Unable to establish socket connection to FireCapture, host: " + self.host +
+                    ", port: " + str(self.port))
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol("Camera: Connection to FireCapture program established")
 
@@ -125,8 +127,8 @@ class Camera(QtCore.QThread):
                         if self.configuration.protocol_level > 0:
                             Miscellaneous.protocol("Camera, Error message in ack: " + str(e))
                     if self.configuration.protocol_level > 2:
-                        Miscellaneous.protocol("Camera: acknowledgement from FireCapture = "
-                                               + str(ack))
+                        Miscellaneous.protocol(
+                            "Camera: acknowledgement from FireCapture = " + str(ack))
 
                 # All videos for this tile are acquired, mark tile as processed.
                 self.mark_processed()

@@ -123,9 +123,9 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
         # If the OK button is pressed, start the drift computation.
         self.ui.buttonBox.accepted.connect(self.compute_drift)
         # Connect events in the gui with methods to store the entered data.
-        self.ui.spinBoxFirstIndex.editingFinished.connect(self.set_limit_spinBoxLastIndex)
+        self.ui.spinBoxFirstIndex.editingFinished.connect(self.set_limit_spin_box_last_index)
         self.ui.spinBoxFirstIndex.valueChanged.connect(self.first_index_changed)
-        self.ui.spinBoxLastIndex.editingFinished.connect(self.set_limit_spinBoxFirstIndex)
+        self.ui.spinBoxLastIndex.editingFinished.connect(self.set_limit_spin_box_first_index)
         self.ui.spinBoxLastIndex.valueChanged.connect(self.last_index_changed)
         self.ui.defaultFirstRadioButton.toggled.connect(self.toggle_default_first_radio_button)
         self.ui.defaultLastRadioButton.toggled.connect(self.toggle_default_last_radio_button)
@@ -224,7 +224,7 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
                                          int(self.ui.spinBoxFirstIndex.text()) - 1,
                                          int(self.ui.spinBoxLastIndex.text()) - 1)
 
-    def set_limit_spinBoxLastIndex(self):
+    def set_limit_spin_box_last_index(self):
         """
         In case the user chooses an alignment point with index>0 for the beginning of drift
         computation, make sure that the spin box for selecting the end point starts with the
@@ -235,7 +235,7 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
 
         self.ui.spinBoxLastIndex.setMinimum(1 + int(self.ui.spinBoxFirstIndex.text()))
 
-    def set_limit_spinBoxFirstIndex(self):
+    def set_limit_spin_box_first_index(self):
         """
         The corresponding reduction of range for the selection of the first alignment point index
         in case the user has not chosen the last available index for the end of the drift
@@ -275,11 +275,11 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
         # Drift rates are computed only if the chosen alignment points span a large enough time
         # interval. Otherwise the results would not be reliable enough.
         if (self.al.alignment_points[self.al.last_index]['time_seconds'] -
-                self.al.alignment_points[self.al.first_index][
-                    'time_seconds']) > self.configuration.minimum_drift_seconds:
+            self.al.alignment_points[self.al.first_index][
+                'time_seconds']) > self.configuration.minimum_drift_seconds:
             if self.configuration.protocol_level > 2:
-                Miscellaneous.protocol("Start drift computation, first/last index: " +
-                                       str(self.al.first_index) + ", " + str(self.al.last_index))
+                Miscellaneous.protocol("Start drift computation, first/last index: " + str(
+                    self.al.first_index) + ", " + str(self.al.last_index))
             # The actual logic for drift rate computation is in method compute_drift_rate in class
             # Alignment.
             self.al.compute_drift_rate()

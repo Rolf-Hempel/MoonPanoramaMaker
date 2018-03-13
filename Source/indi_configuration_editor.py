@@ -102,7 +102,8 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
         else:
             Miscellaneous.show_detailed_error_message("Invalid URL entered.",
                                                       "The URL of the INDI server is not correct. "
-                                                      "It must be eigher 'localhost' or the IP number "
+                                                      "It must be eigher 'localhost' or the IP "
+                                                      "number "
                                                       "of the system where the INDI "
                                                       "server is executed. (e.g. '192.168.0.2') ")
 
@@ -164,8 +165,6 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
         """
         if self.configuration_changed:
             # Check if the URL entered is valid. If it is not, give an example of a valid URL.
-            # The URL has been copied to "self.new_indi_server_url" in method "indi_server_url_write"
-            # already because it might have been needed by "open_indi_manager".
             if not Miscellaneous.testipaddress(str(self.input_indi_server_url.text())):
                 Miscellaneous.show_input_error("URL of the INDI server", "'localhost'")
                 return
@@ -176,11 +175,12 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
                 Miscellaneous.show_input_error("Guide pulse duration", "0.5")
                 return
 
-            # Repeat the same logic for "Wait interval".
+            # Repeat the same logic for "wait interval".
             if not Miscellaneous.testfloat(str(self.input_wait_interval.text()), 0., 20.):
                 Miscellaneous.show_input_error("Wait interval", "1.")
                 return
 
+            # Repeat the same logic for "telescope lookup precision".
             if not Miscellaneous.testfloat(str(self.input_telescope_lookup_precision.text()), 0.1,
                                            10.):
                 Miscellaneous.show_input_error("Telescope position lookup precision", "0.5")

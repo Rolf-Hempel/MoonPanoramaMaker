@@ -151,31 +151,31 @@ class AscomConfigurationEditor(QtWidgets.QDialog, Ui_AscomDialog):
         """
         if self.configuration_changed:
             # Replace the original value with the corresponding entry in the gui text field.
-            self.new_guiding_interval = str(self.input_guiding_interval.text())
+            new_guiding_interval = str(self.input_guiding_interval.text())
             # Check if the float entered is within the given bounds [0., 3.]. If the return value
             # is None, an error was detected. In this case give an example for a correct value.
-            if not Miscellaneous.testfloat(self.new_guiding_interval, 0., 3.):
+            if not Miscellaneous.testfloat(new_guiding_interval, 0., 3.):
                 Miscellaneous.show_input_error("Guiding interval", "0.2")
                 return
 
             # Repeat the same logic for all parameters.
-            self.new_wait_interval = str(self.input_wait_interval.text())
-            if not Miscellaneous.testfloat(self.new_wait_interval, 0., 20.):
+            new_wait_interval = str(self.input_wait_interval.text())
+            if not Miscellaneous.testfloat(new_wait_interval, 0., 20.):
                 Miscellaneous.show_input_error("Wait interval", "1.")
                 return
 
-            self.new_pulse_guide_speed_ra = str(self.input_pulse_guide_speed_ra.text())
-            if not Miscellaneous.testfloat(self.new_pulse_guide_speed_ra, 0., 0.1):
+            new_pulse_guide_speed_ra = str(self.input_pulse_guide_speed_ra.text())
+            if not Miscellaneous.testfloat(new_pulse_guide_speed_ra, 0., 0.1):
                 Miscellaneous.show_input_error("Pulse guide speed", "0.001")
                 return
 
-            self.new_pulse_guide_speed_de = str(self.input_pulse_guide_speed_de.text())
-            if not Miscellaneous.testfloat(self.new_pulse_guide_speed_de, 0., 0.1):
+            new_pulse_guide_speed_de = str(self.input_pulse_guide_speed_de.text())
+            if not Miscellaneous.testfloat(new_pulse_guide_speed_de, 0., 0.1):
                 Miscellaneous.show_input_error("Pulse guide speed", "0.001")
                 return
 
-            self.new_telescope_lookup_precision = str(self.input_telescope_lookup_precision.text())
-            if not Miscellaneous.testfloat(self.new_telescope_lookup_precision, 0.1, 10.):
+            new_telescope_lookup_precision = str(self.input_telescope_lookup_precision.text())
+            if not Miscellaneous.testfloat(new_telescope_lookup_precision, 0.1, 10.):
                 Miscellaneous.show_input_error("Telescope position lookup precision", "0.5")
                 return
 

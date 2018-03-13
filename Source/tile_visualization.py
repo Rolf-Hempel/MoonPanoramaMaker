@@ -122,6 +122,13 @@ class TileVisualization:
         self.y2 = -2.
         self.selection_rectangle = None
         self.reset_selection_rectangle()
+
+        # Initialize instance variables.
+        self.select_rect_x_min = None
+        self.select_rect_x_max = None
+        self.select_rect_y_min = None
+        self.select_rect_y_max = None
+
         self.fig.canvas.set_window_title("MoonPanoramaMaker: Tile Arrangement "
                                          "in normalized orientation (see user "
                                          "guide)")

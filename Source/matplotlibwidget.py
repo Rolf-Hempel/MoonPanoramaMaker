@@ -31,6 +31,7 @@ class MatplotlibWidget(Canvas):
     dialog.
     
     """
+
     def __init__(self, parent=None, hold=False):
         super(MatplotlibWidget, self).__init__(Figure())
 
@@ -53,8 +54,8 @@ class MatplotlibWidget(Canvas):
             ylabel.set_fontsize(8)
         plt.close()
 
-    def plotDataPoints(self, al_point_numbers, ra_corrections, de_corrections,
-                       first_index, last_index):
+    def plotDataPoints(self, al_point_numbers, ra_corrections, de_corrections, first_index,
+                       last_index):
         """
         Plot alignment data points.
         

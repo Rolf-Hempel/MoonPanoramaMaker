@@ -55,8 +55,7 @@ class Miscellaneous():
             if lower_bound <= fl <= upper_bound:
                 return fl
         except:
-            pass
-        return None
+            return None
 
     @staticmethod
     def testint(string, lower_bound, upper_bound):
@@ -74,8 +73,7 @@ class Miscellaneous():
             if lower_bound <= i <= upper_bound:
                 return i
         except:
-            pass
-        return None
+            return None
 
     @staticmethod
     def testbool(string):
@@ -127,6 +125,14 @@ class Miscellaneous():
 
     @staticmethod
     def show_detailed_error_message(message, details):
+        """
+        Open a window to display an error message. There is the option to extend the window to show
+        a more detailed explanation.
+
+        :param message: (short) error message
+        :param details: detailed explanatory text
+        :return: -
+        """
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Warning)
         msg.setText(message)
@@ -138,7 +144,7 @@ class Miscellaneous():
     @staticmethod
     def rotate(pos_angle, de_center, scale_factor, flip_x, flip_y, x, y):
         """
-        Rotate scale and mirror-reverse vector (x,y) into (diff_RA, diff_DE). The x axis is assumed
+        Rotate, scale and mirror-reverse vector (x,y) into (diff_RA, diff_DE). The x axis is assumed
         to point to the right, the y axis upwards (as used in class TileConstructor). If the x / and
         y axes are oriented differently, set parameters flip_x, flip_y accordingly.
         

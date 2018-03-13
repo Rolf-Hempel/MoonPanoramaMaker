@@ -42,15 +42,15 @@ class ShowLandmark(QtWidgets.QDialog, Ui_DisplayLandmark):
 
         QtWidgets.QDialog.__init__(self, parent)
         # Get the name of the currently selected landmark from the LandmarkSelection object.
-        self.landmark = ls.selected_landmark
+        landmark = ls.selected_landmark
         # The landmark pictures are stored in subdirectory "landmark_pictures".
         dirname, filename = os.path.split(os.path.abspath(__file__))
         self.picture_dir = os.path.join(dirname, 'landmark_pictures', '')
         self.setupUi(self)
         # Write the name of the landmark under the picture in the gui.
-        self.landmark_name.setText("Landmark selected: " + self.landmark)
+        self.landmark_name.setText("Landmark selected: " + landmark)
         # Load an image of the landmark to be displayed by the gui.
-        pixmap = QtGui.QPixmap(self.picture_dir + self.landmark + '.png')
+        pixmap = QtGui.QPixmap(self.picture_dir + landmark + '.png')
         self.landmark_picture.setPixmap(pixmap)
         self.buttonBox.accepted.connect(self.ok)
 

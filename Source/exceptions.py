@@ -20,6 +20,7 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+
 class TelescopeException(Exception):
     """
     Base exception for errors associated with the telescope interface.

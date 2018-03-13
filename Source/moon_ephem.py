@@ -45,10 +45,11 @@ class MoonEphem:
         :param configuration: object containing parameters set by the user
         :param date_time: datetime object of the time for which coordinates are to be computed
         :param debug: if debug=True, the value of date_time is ignored and a fixed time
-        (26 Oct. 2015, 21:55 CET) is used instead.
+        (15 Oct. 2017, 05:30 CEST) is used instead.
         """
 
         self.configuration = configuration
+
         # Look up geographical position of observer (for parallax computations) and time zone
         self.location_time = ephem.Observer()
         self.location_time.lon = (
@@ -60,12 +61,37 @@ class MoonEphem:
         self.tz = (pytz.timezone(self.configuration.conf.get("Geographical Position", "timezone")))
         self.debug = debug
         self.utc = pytz.utc
+
+        # Initialize instance variables.
+        self.moon = None
+        self.ra = None
+        self.de = None
+        self.radius = None
+        self.diameter = None
+        self.elongation = None
+        self.pos_angle_pole = None
+        self.pos_angle_sun = None
+        self.phase_angle = None
+        self.astrometric_lib_lat = None
+        self.astrometric_lib_long = None
+        self.topocentric_lib_lat = None
+        self.topocentric_lib_long = None
+        self.colong = None
+        self.pos_rot_north = None
+        self.stored_ra = None
+        self.stored_de = None
+        self.stored_time = None
+        self.sun_ra = None
+        self.sun_de = None
+
         # So far no position has been calculated. From the next call on, the previous position
         # will be used to compute the speed of the moon in (RA,DE) (finite difference).
         self.position_stored = False
+
         # Set rates for the moon's motion per second in (RA,DE) to average values.
         self.rate_ra = radians(38. / 60.) / 3600.
         self.rate_de = 0.
+
         # Compute the coordinates for date_time.
         self.update(date_time)
 
@@ -121,10 +147,12 @@ class MoonEphem:
         self.diameter = self.moon.radius * 2.
         self.sun_ra = s.ra
         self.sun_de = s.dec
+
         # Compute the distance between sun and moon in the sky.
         self.elongation = acos(
             sin(self.de) * sin(self.sun_de) + cos(self.de) * cos(self.sun_de) * cos(
                 self.sun_ra - self.ra))
+
         # Compute the position angles of the point on the moon limb pointing at the sun,
         # and of the North pole of the sunlit moon phase.
         self.pos_angle_sun = self.sun_direction()
@@ -132,11 +160,10 @@ class MoonEphem:
 
         c = sqrt(
             s.earth_distance ** 2 + self.moon.earth_distance ** 2 - 2. * s.earth_distance *
-            self.moon.earth_distance * cos(
-                self.elongation))
+            self.moon.earth_distance * cos(self.elongation))
         sina = s.earth_distance * sin(self.elongation) / c
         cosa = ((s.earth_distance ** 2 - c ** 2 - self.moon.earth_distance ** 2) / (
-            2. * c * self.moon.earth_distance))
+                2. * c * self.moon.earth_distance))
         # Compute the phase angle of the sunlit moon phase.
         self.phase_angle = atan2(sina, cosa)
 
@@ -190,7 +217,7 @@ class MoonEphem:
         lm = radians(218.31664563 + 481267.88119575 * t - 0.00146638 * t ** 2)
         i = acos(cos(cap_i) * cos(epsilon) + sin(cap_i) * sin(epsilon) * cos(omega))
         omega_prime = atan2(-sin(cap_i) * sin(omega) / sin(i), (
-            cos(cap_i) * sin(epsilon) - sin(cap_i) * cos(epsilon) * cos(omega)) / sin(i))
+                cos(cap_i) * sin(epsilon) - sin(cap_i) * cos(epsilon) * cos(omega)) / sin(i))
 
         self.pos_rot_north = atan2(-sin(i) * cos(omega_prime - self.ra),
                                    cos(self.de) * cos(i) - sin(self.de) * sin(i) * sin(
@@ -244,19 +271,19 @@ if __name__ == "__main__":
         print('Time (UT): ', me.location_time.date)
         print('Moon RA: %s, DE: %s, Diameter: %s' % (me.ra, me.de, ephem.degrees(me.diameter)))
         print('Astrometric libration in Latitude: ', me.astrometric_lib_lat, ", in longitude: ", \
-            me.astrometric_lib_long)
-        print("Topocentric libration in latitude: ", degrees(
-            me.topocentric_lib_lat), ", in longitude: ", degrees(me.topocentric_lib_long))
+              me.astrometric_lib_long)
+        print("Topocentric libration in latitude: ", degrees(me.topocentric_lib_lat),
+              ", in longitude: ", degrees(me.topocentric_lib_long))
         print("Position angle of North Pole: ", degrees(me.pos_rot_north))
         print('Selenographic Co-Longitude: ', me.colong)
-        print('Sunlit geographic longitudes between ', degrees(-me.colong), " and ", degrees(
-            -me.colong) + 180.)
+        print('Sunlit geographic longitudes between ', degrees(-me.colong), " and ",
+              degrees(-me.colong) + 180.)
         # print 'Sun RA: %s, DE: %s' % (me.sun_ra, me.sun_de)
         print('Elongation: %s' % (ephem.degrees(me.elongation)))
         print('Phase angle: %s' % (ephem.degrees(me.phase_angle)))
         print('Sun direction: %s' % (ephem.degrees(me.pos_angle_sun)))
-        print((
-            'Pos. angle pole (bright limb to the right): %s' % (ephem.degrees(me.pos_angle_pole))))
+        print(
+            ('Pos. angle pole (bright limb to the right): %s' % (ephem.degrees(me.pos_angle_pole))))
 
         length = 10
         ra_start = me.ra

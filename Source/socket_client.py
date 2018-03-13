@@ -80,8 +80,6 @@ class SocketClient:
         data = self.sock.recv(recv_count)
         if len(data) == 0:
             raise RuntimeError("Recv: socket connection broken")
-        # if data == 0:
-        #     return None
         total_rx = len(data)
         rcvd = data
         # Append more chunks until the expected number of characters are received.
@@ -89,8 +87,6 @@ class SocketClient:
             data = self.sock.recv(recv_count - total_rx)
             if len(data) == 0:
                 raise RuntimeError("Recv: socket connection broken")
-            # if data == 0:
-            #     return None
             total_rx += len(data)
             rcvd = rcvd + data
 

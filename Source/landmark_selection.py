@@ -40,6 +40,7 @@ class LandmarkSelection:
     RA and DE relative to the moon center.
     
     """
+
     def __init__(self, configuration):
         """
         Initialization of the landmark list. For each landmark there must be a file "landmark.png"
@@ -51,28 +52,17 @@ class LandmarkSelection:
         """
 
         # Dictionary with selenographic [longitude, latitude] for each available landmark.
-        self.landmarks = {
-            'Hansen': [72.54, 14.04],
-            'Langrenus': [61.04, -8.86],
-            'Proclus': [46.8, 16.1],
-            'Roemer': [36.41, 25.43],
-            'Posidonius-A': [29.52, 31.69],
-            'Theophilus': [26.25, -11.48],
-            'Eudoxus': [16.23, 44.27],
-            'Aristillus': [1.21, 33.88],
-            'Moon Center': [0., 0.],
-            'Alpetragius': [-4.51, -16.05],
-            'Tycho': [-11.22, -43.30],
-            'Eratosthenes': [-11.32, 14.47],
-            'Copernicus': [-20.08, 9.62],
-            'Kepler': [-38.01, 8.12],
-            'Aristarchus': [-47.49, 23.73],
-            'Krafft': [-72.72, 16.56],
-            'Ulugh Beigh': [-81.96, 32.67]
-        }
+        self.landmarks = {'Hansen': [72.54, 14.04], 'Langrenus': [61.04, -8.86],
+            'Proclus': [46.8, 16.1], 'Roemer': [36.41, 25.43], 'Posidonius-A': [29.52, 31.69],
+            'Theophilus': [26.25, -11.48], 'Eudoxus': [16.23, 44.27], 'Aristillus': [1.21, 33.88],
+            'Moon Center': [0., 0.], 'Alpetragius': [-4.51, -16.05], 'Tycho': [-11.22, -43.30],
+            'Eratosthenes': [-11.32, 14.47], 'Copernicus': [-20.08, 9.62], 'Kepler': [-38.01, 8.12],
+            'Aristarchus': [-47.49, 23.73], 'Krafft': [-72.72, 16.56],
+            'Ulugh Beigh': [-81.96, 32.67]}
         self.configuration = configuration
         # Initialize the selected landmark as empty string.
         self.selected_landmark = ""
+        self.landmark_selected = False
 
     def select_landmark(self, me, date_time):
         """
@@ -87,8 +77,7 @@ class LandmarkSelection:
         """
         me.update(date_time)
         me.compute_libration()
-        myapp = EditLandmarks(self.selected_landmark, self.landmarks,
-                              me.colong)
+        myapp = EditLandmarks(self.selected_landmark, self.landmarks, me.colong)
         myapp.exec_()
         if myapp.selected_landmark != "":
             self.selected_landmark = myapp.selected_landmark
@@ -113,9 +102,10 @@ class LandmarkSelection:
             longitude = radians(self.landmarks[landmark][0])
             latitude = radians(self.landmarks[landmark][1])
             if self.configuration.protocol_level > 0:
-                Miscellaneous.protocol("New Landmark selected: " + landmark +
-                    ", selenographic longitude: " + str(round(degrees(longitude), 3)) + ", latitude: " +
-                    str(round(degrees(latitude), 3)))
+                Miscellaneous.protocol(
+                    "New Landmark selected: " + landmark + ", selenographic longitude: " + str(
+                        round(degrees(longitude), 3)) + ", latitude: " + str(
+                        round(degrees(latitude), 3)))
             # Perform the coordinate transformation and return the offsets (in radians)
             return self.coord_translation(me, longitude, latitude)
         except:
@@ -136,21 +126,16 @@ class LandmarkSelection:
 
         # Look at the user's guide for algorithmic details. (da_prime, dd_prime) are the
         # displacements (radians) on the moon's disk, oriented with lunar north up.
-        da_prime = -sin(longitude - me.topocentric_lib_long) * cos(
-            latitude) * me.radius
-        y = -cos(longitude - me.topocentric_lib_long) * cos(
-            latitude) * me.radius
+        da_prime = -sin(longitude - me.topocentric_lib_long) * cos(latitude) * me.radius
+        y = -cos(longitude - me.topocentric_lib_long) * cos(latitude) * me.radius
         z = sin(latitude) * me.radius
-        y_prime = y * cos(me.topocentric_lib_lat) - z * sin(
-            me.topocentric_lib_lat)
-        dd_prime = y * sin(me.topocentric_lib_lat) + z * cos(
-            me.topocentric_lib_lat)
+        y_prime = y * cos(me.topocentric_lib_lat) - z * sin(me.topocentric_lib_lat)
+        dd_prime = y * sin(me.topocentric_lib_lat) + z * cos(me.topocentric_lib_lat)
         # Rotate for position angle of the moon's rotational axis. Apply approximate correction
         # to RA offset for the moon's declination angle.
-        offset_ra = (da_prime * cos(me.pos_rot_north) + dd_prime * sin(
-            me.pos_rot_north)) / cos(me.de)
-        offset_de = -da_prime * sin(me.pos_rot_north) + dd_prime * cos(
-            me.pos_rot_north)
+        offset_ra = (da_prime * cos(me.pos_rot_north) + dd_prime * sin(me.pos_rot_north)) / cos(
+            me.de)
+        offset_de = -da_prime * sin(me.pos_rot_north) + dd_prime * cos(me.pos_rot_north)
         return (offset_ra, offset_de)
 
 
@@ -165,9 +150,7 @@ if __name__ == "__main__":
 
     if ls.landmark_selected:
         print('Time (UT): ', me.location_time.date)
-        print('Moon RA: %s, DE: %s, Diameter: %s' % (me.ra, me.de,
-                                                     degrees(
-                                                         me.diameter)))
+        print('Moon RA: %s, DE: %s, Diameter: %s' % (me.ra, me.de, degrees(me.diameter)))
         print('Libration in Latitude: ', degrees(me.topocentric_lib_lat))
         print('Libration in Longitude: ', degrees(me.topocentric_lib_long))
         print('Pos. angle North Pole: ', degrees(me.pos_rot_north))
@@ -176,10 +159,9 @@ if __name__ == "__main__":
         print('Elongation: %s' % (degrees(me.elongation)))
         print('Phase angle: %s' % (degrees(me.phase_angle)))
         print('Sun direction: %s' % (degrees(me.pos_angle_sun)))
-        print(('Pos. angle Pole (bright limb to the right): %s' %
-               (degrees(me.pos_angle_pole))))
-        print("Landmark: ", ls.selected_landmark, ", Offset RA ('): ", degrees(
-            offsets[0]) * 60., ", Offset DE ('): ", degrees(offsets[1]) * 60.)
+        print(('Pos. angle Pole (bright limb to the right): %s' % (degrees(me.pos_angle_pole))))
+        print("Landmark: ", ls.selected_landmark, ", Offset RA ('): ", degrees(offsets[0]) * 60.,
+              ", Offset DE ('): ", degrees(offsets[1]) * 60.)
     else:
-        print("No landmark selected, Offset RA (Rad): ", offsets[
-            0], ", Offset DE (Rad): ", offsets[1])
+        print("No landmark selected, Offset RA (Rad): ", offsets[0], ", Offset DE (Rad): ",
+              offsets[1])

@@ -47,6 +47,7 @@ class EditLandmarks(QtWidgets.QDialog, Ui_ViewLandmarks):
 
         QtWidgets.QDialog.__init__(self, parent)
         self.selected_landmark = selected_landmark
+        self.combobox_filename = None
         # For each landmark a picture is stored in subdirectory "landmark_pictures".
         dirname, filename = os.path.split(os.path.abspath(__file__))
         self.picture_dir = os.path.join(dirname, 'landmark_pictures', '')
@@ -64,10 +65,11 @@ class EditLandmarks(QtWidgets.QDialog, Ui_ViewLandmarks):
             self.lower_longitude_limit = -colong
             self.upper_longitude_limit = pi / 2.
         # Set up the list of sunlit landmarks and add them to the comboBox of the gui.
-        self.filenames = self.combobox()
-        # If a landmark is selected, set the current comboBox index to this landmark, otherwise to 0.
+        filenames = self.combobox()
+        # If a landmark is selected, set the current comboBox index to this landmark, otherwise
+        # to 0.
         if self.selected_landmark != "":
-            self.comboBox.setCurrentIndex(self.filenames.index(self.selected_landmark))
+            self.comboBox.setCurrentIndex(filenames.index(self.selected_landmark))
         else:
             self.comboBox.setCurrentIndex(0)
         self.refresh()

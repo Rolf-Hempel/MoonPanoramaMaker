@@ -81,21 +81,31 @@ class Configuration:
         # in between exposures. Otherwise FireCapture might get stuck.
         self.camera_time_between_multiple_exposures = 1.
 
+        # If camera automation is switched on, the program communicates with a plugin in the camera
+        # control software FireCapture. The plugin acts as a server and listens on a fixed port
+        # number.
+        self.fire_capture_port_number = 9820
+
         # In several places polling is used to wait for an event. A short wait time is introduced
         # after each attempt to reduce CPU load. A time-out count keeps polling from continuing
-        # indefinitely.
+        # indefinitely. When the workflow thread is initialized, the GUI thread waits for a short
+        # time (in seconds) before it accesses its instance variables.
         self.polling_interval = 0.1
         self.polling_time_out_count = 200
+        self.wait_for_workflow_initialization = 2.
+
+        # The INDI telescope server uses a fixed port number for communication.
+        self.indi_port_number = 7624
 
         # A PulseGuide operation of "calibrate_pulse_length" milliseconds is used to find out if
         # the telescope operation is mirror-reversed in RA/DE.
         self.calibrate_pulse_length = 1000.
 
         # Minimum length of time interval for drift computation:
-        self.minimum_drift_seconds = 600.   # 10 minutes
+        self.minimum_drift_seconds = 600.  # 10 minutes
 
         # Resolution (in pixels) of overlap width in still pictures for shift determination:
-        self.pixels_in_overlap_width = 40   # 40 pixels
+        self.pixels_in_overlap_width = 40  # 40 pixels
 
         # Parameters used in auto-alignment:
         # In auto-alignment initialization the telescope mount is moved to two locations near
@@ -119,11 +129,11 @@ class Configuration:
 
         # Parameters for ORB keypoint detection:
         # WTA_K parameter:
-        self.orb_wta_k = 4              # originally: 3, optimized: 4
+        self.orb_wta_k = 4  # originally: 3, optimized: 4
         # Number of features:
         self.orb_nfeatures = 50
         # Edge threshold:
-        self.orb_edge_threshold = 0     # originally: 30, optimized: 0
+        self.orb_edge_threshold = 0  # originally: 30, optimized: 0
         # Patch size:
         self.orb_patch_size = 31
         # Scale factor:
@@ -135,7 +145,7 @@ class Configuration:
         # Cluster radius in pixels:
         self.dbscan_cluster_radius = 3.
         # Minimum sample size:
-        self.dbscan_minimum_sample = 5      # originally: 10, optimized: 5
+        self.dbscan_minimum_sample = 5  # originally: 10, optimized: 5
         # Minimum of measurements in cluster:
         self.dbscan_minimum_in_cluster = 5  # originally: 10, optimized: 5
 
@@ -148,7 +158,7 @@ class Configuration:
         self.file_new = not os.path.isfile(self.config_filename)
         self.file_identical = False
         self.file_compatible = False
-        
+
         # If an existing config file is found, read it in.
         if not self.file_new:
             self.conf = configparser.ConfigParser()
@@ -465,20 +475,20 @@ if __name__ == "__main__":
     editor.show()
     app.exec_()
 
-    print ("Current version: ", c.version)
-    print ("Configuration read from file: " + str(c.configuration_read))
-    print ("File identical: " + str(c.file_identical))
-    print ("File compatible: " + str(c.file_compatible))
+    print("Current version: ", c.version)
+    print("Configuration read from file: " + str(c.configuration_read))
+    print("File identical: " + str(c.file_identical))
+    print("File compatible: " + str(c.file_compatible))
 
     if editor.output_channel_changed:
-        print ("Output channel changed.")
-    print ("Protocol level: " + str(c.protocol_level))
+        print("Output channel changed.")
+    print("Protocol level: " + str(c.protocol_level))
     if editor.telescope_changed:
-        print ("Telescope changed.")
+        print("Telescope changed.")
     if editor.camera_automation_changed:
-        print ("Camera automation changed.")
+        print("Camera automation changed.")
     if editor.tesselation_changed:
-        print ("Tesselation changed.")
+        print("Tesselation changed.")
     if editor.configuration_changed or not c.configuration_read:
         print("Configuration has changed, write back config file. ")
         c.write_config()

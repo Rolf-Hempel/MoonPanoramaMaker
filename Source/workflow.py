@@ -107,6 +107,14 @@ class Workflow(QtCore.QThread):
         # Initialize some instance variables.
         self.active_tile_number = -1
         self.all_tiles_recorded = False
+        self.protocol_file = None
+        self.telescope = None
+        self.camera = None
+        self.date_time = None
+        self.me = None
+        self.tc = None
+        self.repeat_from_here = None
+        self.tile_indices_since_last_autoalign = None
 
         self.start()
 
@@ -126,7 +134,8 @@ class Workflow(QtCore.QThread):
             if self.output_channel_initialization_flag:
                 self.output_channel_initialization_flag = False
                 # Action required if configuration value does not match current redirection status.
-                if self.gui.configuration.conf.getboolean('Workflow', 'protocol to file') != self.output_redirected:
+                if self.gui.configuration.conf.getboolean('Workflow', 'protocol to file') != \
+                        self.output_redirected:
                     # Output currently redirected. Reset to stdout.
                     if self.output_redirected:
                         sys.stdout = self.stdout_saved
@@ -213,24 +222,22 @@ class Workflow(QtCore.QThread):
                 phase_angle = self.me.phase_angle
                 pos_angle = self.me.pos_angle_pole
                 # Compute the tesselation of the sunlit moon phase.
-                self.tc = TileConstructor(self.gui.configuration, de_center, m_diameter, phase_angle,
-                                          pos_angle)
+                self.tc = TileConstructor(self.gui.configuration, de_center, m_diameter,
+                                          phase_angle, pos_angle)
 
                 # Write the initialization message to stdout / file:
                 if self.gui.configuration.protocol_level > 0:
                     print("")
-                    Miscellaneous.protocol("MoonPanoramaMaker (re)started"
-                        "\n           ----------------------------------------------------\n" +
-                        "           " + str(datetime.now())[:10] + " " +
-                        self.gui.configuration.version + "\n" +
+                    Miscellaneous.protocol("MoonPanoramaMaker (re)started\n           "
+                        "----------------------------------------------------\n" + "           " +
+                        str(datetime.now())[:10] + " " + self.gui.configuration.version + "\n" +
                         "           ----------------------------------------------------")
-                    Miscellaneous.protocol("Moon center RA: " +
-                                    str(round(degrees(self.me.ra), 5)) + ", DE: " +
-                                    str(round(degrees(self.me.de), 5)) + " (degrees), " +
-                                    "diameter: " + str(round(degrees(m_diameter)*60., 3)) +
-                                    " ('), phase_angle: " + str(round(degrees(phase_angle), 2)) +
-                                    ", pos_angle: " + str(round(degrees(pos_angle), 2)) +
-                                    " (degrees)")
+                    Miscellaneous.protocol(
+                        "Moon center RA: " + str(round(degrees(self.me.ra), 5)) + ", DE: " + str(
+                            round(degrees(self.me.de), 5)) + " (degrees), " + "diameter: " + str(
+                            round(degrees(m_diameter) * 60., 3)) + " ('), phase_angle: " + str(
+                            round(degrees(phase_angle), 2)) + ", pos_angle: " + str(
+                            round(degrees(pos_angle), 2)) + " (degrees)")
 
                 self.tesselation_created = True
                 # print ("Signal the main GUI that the tesselation is initialized.")
@@ -369,56 +376,61 @@ class Workflow(QtCore.QThread):
                             # On first iteration only: check if time between alignments is to be
                             # adjusted.
                             if repetition_index == 0:
-                                # If error too large, reduce time between auto-alignments (within bounds
+                                # If error too large, reduce time between auto-alignments (within
+                                #  bounds
                                 # given by parameters "min_autoalign_interval" and
                                 # "max_autoalign_interval".
                                 if relative_alignment_error > self.gui.max_alignment_error:
                                     self.gui.max_seconds_between_autoaligns = max((
-                                        self.gui.max_seconds_between_autoaligns /
-                                        self.gui.configuration.align_interval_change_factor),
+                                            self.gui.max_seconds_between_autoaligns /
+                                            self.gui.configuration.align_interval_change_factor),
                                         self.gui.min_autoalign_interval)
                                     if self.gui.configuration.protocol_level > 0:
                                         Miscellaneous.protocol(
                                             "Auto-alignment inaccurate: Error is " + str(round(
-                                                relative_alignment_error / self.gui.max_alignment_error,
-                                                2)) + " times the maximum allowed, roll back to last "
-                                                      "" + "alignment point. New time between "
-                                                           "alignments: " + str(
-                                                self.gui.max_seconds_between_autoaligns) + " seconds.")
+                                            relative_alignment_error / self.gui.max_alignment_error,
+                                            2)) + " times the maximum allowed, roll back to "
+                                            "last alignment point. New time between alignments: " +
+                                            str(self.gui.max_seconds_between_autoaligns) +
+                                            " seconds.")
                                     # Videos since last auto-alignment have to be repeated.
                                     if len(self.tile_indices_since_last_autoalign) > 0:
                                         self.gui.tv.mark_unprocessed(
                                             self.tile_indices_since_last_autoalign)
                                         # Reset list of tiles since last auto-align (a fresh
-                                        # auto-align has been just performed). Save the lowest index of
-                                        # the invalidated tiles. When the TileConstructor method
-                                        # "find_next_unprocessed_tile" will look for the
+                                        # auto-align has been just performed). Save the lowest
+                                        # index of the invalidated tiles. When the TileConstructor
+                                        # method "find_next_unprocessed_tile" will look for the
                                         # next unprocessed tile, it will start with this one.
-                                        self.repeat_from_here = min(self.tile_indices_since_last_autoalign)
+                                        self.repeat_from_here = min(
+                                            self.tile_indices_since_last_autoalign)
                                         # Reset list of tiles to be repeated.
                                         self.tile_indices_since_last_autoalign = []
                                     else:
                                         self.repeat_from_here = -1
                                 else:
-                                    # Auto-alignment is accurate enough. Reset list of tiles since last
+                                    # Auto-alignment is accurate enough. Reset list of tiles
+                                    # since last
                                     # successful alignment.
                                     self.tile_indices_since_last_autoalign = []
                                     if self.gui.configuration.protocol_level > 0:
                                         Miscellaneous.protocol(
                                             "Auto-alignment accurate: Error is " + str(round(
-                                                relative_alignment_error / self.gui.max_alignment_error,
+                                                relative_alignment_error /
+                                                self.gui.max_alignment_error,
                                                 2)) + " times the maximum allowed.")
                                 # If the alignment error was very low, increase time between
                                 # auto-alignments (within bounds).
                                 if relative_alignment_error < self.gui.max_alignment_error / \
                                         self.gui.configuration.align_very_precise_factor:
                                     self.gui.max_seconds_between_autoaligns = min((
-                                        self.gui.max_seconds_between_autoaligns *
-                                        self.gui.configuration.align_interval_change_factor),
+                                            self.gui.max_seconds_between_autoaligns *
+                                            self.gui.configuration.align_interval_change_factor),
                                         self.gui.max_autoalign_interval)
                                     if self.gui.configuration.protocol_level > 0:
-                                        Miscellaneous.protocol("Relative alignment error very small, "
-                                                               "new time between alignments: " + str(
+                                        Miscellaneous.protocol(
+                                            "Relative alignment error very small, "
+                                            "new time between alignments: " + str(
                                             self.gui.max_seconds_between_autoaligns) + " seconds.")
                             if self.gui.configuration.protocol_level > 0:
                                 Miscellaneous.protocol("Auto-alignment successful")
@@ -429,7 +441,8 @@ class Workflow(QtCore.QThread):
                         except RuntimeError as e:
                             self.autoalignment_reset_signal.emit()
                             if self.gui.configuration.protocol_level > 0:
-                                Miscellaneous.protocol("Auto-alignment failed, revert to manual mode.")
+                                Miscellaneous.protocol(
+                                    "Auto-alignment failed, revert to manual mode.")
                             # No video acquisition because of missing alignment.
                             auto_alignment_disabled = True
                             break
@@ -441,13 +454,13 @@ class Workflow(QtCore.QThread):
                     "Moving telescope to tile " + str(self.active_tile_number) + ", please wait.")
                 if self.gui.configuration.protocol_level > 0:
                     print("")
-                    Miscellaneous.protocol("Moving telescope to tile " +
-                                           str(self.active_tile_number))
+                    Miscellaneous.protocol(
+                        "Moving telescope to tile " + str(self.active_tile_number))
                 if self.gui.configuration.protocol_level > 2:
-                    Miscellaneous.protocol("RA offset ('): " +
-                                str(round(degrees(self.gui.next_tile['delta_ra_center'])*60., 3)) +
-                                ", DE offset ('): " +
-                                str(round(degrees(self.gui.next_tile['delta_de_center'])*60., 3)))
+                    Miscellaneous.protocol("RA offset ('): " + str(
+                        round(degrees(self.gui.next_tile['delta_ra_center']) * 60.,
+                              3)) + ", DE offset ('): " + str(
+                        round(degrees(self.gui.next_tile['delta_de_center']) * 60., 3)))
                 (ra, de) = self.al.tile_to_telescope_coordinates(self.gui.next_tile)
                 self.telescope.slew_to(ra, de)
                 self.set_statusbar_signal.emit()
@@ -461,14 +474,15 @@ class Workflow(QtCore.QThread):
                 self.telescope.start_guiding(guiding_rate_ra, guiding_rate_de)
                 if self.gui.configuration.conf.getboolean("Workflow", "camera automation"):
                     # Wait a little until telescope pointing has stabilized.
-                    time.sleep(self.gui.configuration.conf.getfloat("Workflow", "camera trigger delay"))
+                    time.sleep(
+                        self.gui.configuration.conf.getfloat("Workflow", "camera trigger delay"))
                     # Send tile number to camera (for inclusion in video file name) and start
                     # camera.
                     self.camera.active_tile_number = self.active_tile_number
                     self.camera.triggered = True
                     if self.gui.configuration.protocol_level > 1:
-                        Miscellaneous.protocol("Exposure of tile " + str(self.active_tile_number) +
-                                               " started automatically.")
+                        Miscellaneous.protocol("Exposure of tile " + str(
+                            self.active_tile_number) + " started automatically.")
                     # If meanwhile the Esc key has been pressed, do not ask for pressing it again.
                     # Otherwise tell the user that he/she can interrupt by pressing 'Exc'.
                     if not self.escape_pressed_flag:
@@ -480,15 +494,16 @@ class Workflow(QtCore.QThread):
                     # Pressing it will continue workflow.
                     self.gui.gui_context = "start_continue_recording"
                     self.set_text_browser_signal.emit("Start video(s). After all videos for this "
-                        " tile are finished, confirm with 'enter'. Press 'Esc' to interrupt the "
-                        " recording workflow.")
+                                                      " tile are finished, confirm with 'enter'. "
+                                                      "Press 'Esc' to interrupt the "
+                                                      " recording workflow.")
 
             # Triggered by method "move_to_selected_tile" in moon_panorama_maker.
             elif self.move_to_selected_tile_flag:
                 self.move_to_selected_tile_flag = False
                 # First translate tile number into telescope coordinates.
-                (ra_selected_tile, de_selected_tile) = (
-                    self.al.tile_to_telescope_coordinates(self.gui.selected_tile))
+                (ra_selected_tile, de_selected_tile) = (self.al.tile_to_telescope_coordinates(
+                    self.tc.list_of_tiles_sorted[self.active_tile_number]))
                 # Move telescope to aim point. (This is a blocking operation.)
                 self.telescope.slew_to(ra_selected_tile, de_selected_tile)
                 self.set_text_browser_signal.emit("")
@@ -511,8 +526,7 @@ class Workflow(QtCore.QThread):
                 self.reset_key_status_signal.emit()
 
             # Sleep time inserted to limit CPU consumption by idle looping.
-            time.sleep(self.gui.configuration.polling_interval)
-            # print ("End of main loop")
+            time.sleep(self.gui.configuration.polling_interval)  # print ("End of main loop")
 
         # The "exiting" flag is set (by gui method "CloseEvent"). Terminate the telescope first.
         if self.telescope_connected:

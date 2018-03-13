@@ -57,13 +57,16 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.c = configuration
         # Set the flag indicating if the configuration was changed to False.
         self.configuration_changed = False
+        # These flags indicate which part of the initialization have to be repeated.
         self.output_channel_changed = False
         self.telescope_changed = False
         self.camera_automation_changed = False
         self.tesselation_changed = False
         # Remember if the ASCOM or INDI configuration editor was called. Changes made by this
         # editor are only applied in the end if the user accepts the changes in the main window.
+        self.ascomeditor = None
         self.ascomeditor_called = False
+        self.indieditor = None
         self.indieditor_called = False
 
         # Start filling the text fields of the GUI.
@@ -75,19 +78,18 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
             all_timezones.index(self.c.conf.get("Geographical Position", "timezone")))
 
         # Special treatment of available camera models: populate the camera_chooser with list.
-        self.camlist = self.c.get_camera_list()
-        self.camera_chooser.addItems(self.camlist)
-        self.camera_chooser.setCurrentIndex(self.camlist.index(self.c.conf.get("Camera", "name")))
+        camlist = self.c.get_camera_list()
+        self.camera_chooser.addItems(camlist)
+        self.camera_chooser.setCurrentIndex(camlist.index(self.c.conf.get("Camera", "name")))
 
         self.input_ip_address.setText(self.c.conf.get("Camera", "ip address"))
 
         self.input_focal_length.setText(self.c.conf.get("Telescope", "focal length"))
         # Prepare for alternative telescope interfaces (e.g. INDI).
-        self.interface_list = ["ASCOM", "INDI"]
-        # self.interface_list = ["ASCOM"]
-        self.mount_interface_chooser.addItems(self.interface_list)
+        interface_list = ["ASCOM", "INDI"]
+        self.mount_interface_chooser.addItems(interface_list)
         self.mount_interface_chooser.setCurrentIndex(
-            self.interface_list.index(self.c.conf.get("Telescope", "interface type")))
+            interface_list.index(self.c.conf.get("Telescope", "interface type")))
 
         protocol_levels = ['0', '1', '2', '3']
         self.protocol_level_chooser.addItems(protocol_levels)
@@ -240,9 +242,9 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         """
 
         camera_name = str(self.camera_chooser.currentText())
-        self.editor = CameraConfigurationEditor(self.c, camera_name)
-        self.editor.exec_()
-        if self.editor.configuration_changed:
+        editor = CameraConfigurationEditor(self.c, camera_name)
+        editor.exec_()
+        if editor.configuration_changed:
             self.tesselation_changed = True
             self.configuration_changed = True
 
@@ -253,21 +255,20 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         :return: -
         """
 
-        self.inputeditor = CameraConfigurationInput(self.c)
+        inputeditor = CameraConfigurationInput(self.c)
         # Start the input GUI.
-        self.inputeditor.exec_()
+        inputeditor.exec_()
         # Check if new parameters have been entered.
-        if self.inputeditor.configuration_changed:
+        if inputeditor.configuration_changed:
             # Mark the configuration object as changed.
             self.configuration_changed = True
             # Update the list of available cameras
-            self.camlist = self.c.get_camera_list()
+            camlist = self.c.get_camera_list()
             # Update the camera chooser to contain the extended list of camera names.
             self.camera_chooser.clear()
-            self.camera_chooser.addItems(self.camlist)
+            self.camera_chooser.addItems(camlist)
             # Set the current chooser entry to the new camera model.
-            self.camera_chooser.setCurrentIndex(
-                self.camlist.index(self.c.conf.get("Camera", "name")))
+            self.camera_chooser.setCurrentIndex(camlist.index(self.c.conf.get("Camera", "name")))
 
     def start_delete_camera_dialog(self):
         """
@@ -276,21 +277,21 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         :return: -
         """
 
-        self.deleteeditor = CameraConfigurationDelete()
+        deleteeditor = CameraConfigurationDelete()
         # Start the GUI.
-        self.deleteeditor.exec_()
+        deleteeditor.exec_()
         # Check if the selected camera is really deleted.
-        if self.deleteeditor.configuration_changed:
+        if deleteeditor.configuration_changed:
             # Mark the configuration object as changed.
             self.configuration_changed = True
             # Remove the section with parameters of the deleted camera model from configuration
             # object.
             self.c.conf.remove_section('Camera ' + str(self.camera_chooser.currentText()))
             # Update the list of available cameras
-            self.camlist = self.c.get_camera_list()
+            camlist = self.c.get_camera_list()
             # Update the camera chooser to contain the extended list of camera names.
             self.camera_chooser.clear()
-            self.camera_chooser.addItems(self.camlist)
+            self.camera_chooser.addItems(camlist)
             # The current camera is deleted, set the index of the chooser to 0 (default).
             self.camera_chooser.setCurrentIndex(0)
 
@@ -352,8 +353,12 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
             from ascom_configuration_editor import AscomConfigurationEditor
         except ImportError:
             Miscellaneous.show_detailed_error_message("The ASCOM interface does not seem to work.",
-                    "Most likely the ASCOM platform is not installed on this computer.\n\nIf this is a Linux system, "
-                    "there might be an INDI client available. In this case, try to use 'INDI' instead of 'ASCOM'.")
+                                                      "Most likely the ASCOM platform is not "
+                                                      "installed on this computer.\n\nIf this is "
+                                                      "a Linux system, "
+                                                      "there might be an INDI client available. "
+                                                      "In this case, try to use 'INDI' instead of "
+                                                      "'ASCOM'.")
             return
 
         self.ascomeditor = AscomConfigurationEditor(self.c, self.new_ascom_driver_name,
@@ -398,8 +403,12 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
             import PyIndi
         except ImportError:
             Miscellaneous.show_detailed_error_message("The INDI interface does not seem to work.",
-                    "Most likely PyIndi is not installed on this computer.\n\nIf this is a Windows system, "
-                    "there might be an ASCOM client available. In this case, try to use 'ASCOM' instead of 'INDI'.")
+                                                      "Most likely PyIndi is not installed on "
+                                                      "this computer.\n\nIf this is a Windows "
+                                                      "system, "
+                                                      "there might be an ASCOM client available. "
+                                                      "In this case, try to use 'ASCOM' instead "
+                                                      "of 'INDI'.")
             return
 
         from indi_configuration_editor import IndiConfigurationEditor
@@ -601,7 +610,8 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
                 Miscellaneous.show_input_error("Elevation", "250")
                 return
 
-            self.c.conf.set("Geographical Position", "timezone", self.timezone_chooser.currentText())
+            self.c.conf.set("Geographical Position", "timezone",
+                            self.timezone_chooser.currentText())
 
             input_string = str(self.input_ip_address.text())
             if Miscellaneous.testipaddress(input_string):

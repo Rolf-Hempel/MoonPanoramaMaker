@@ -61,23 +61,19 @@ class ImageShift:
         self.configuration = configuration
         self.camera_socket = camera_socket
         # Get camera and telescope parameters.
-        self.pixel_size = (self.configuration.conf.getfloat(
-            "Camera", "pixel size"))
-        self.focal_length = (self.configuration.conf.getfloat(
-            "Telescope", "focal length"))
-        self.ol_inner_min_pixel = (self.configuration.conf.getint(
-            "Camera", "tile overlap pixel"))
+        pixel_size = (self.configuration.conf.getfloat("Camera", "pixel size"))
+        self.focal_length = (self.configuration.conf.getfloat("Telescope", "focal length"))
+        ol_inner_min_pixel = (self.configuration.conf.getint("Camera", "tile overlap pixel"))
         # The still pictures produced by the camera are reduced both in x and y pixel directions
         # by "compression_factor". Set the compression factor such that the overlap between tiles
         # is resolved in a given number of pixels (pixels_in_overlap_width). This resolution should
         # be selected such that the telescope pointing can be determined precisely enough for
         # auto-alignment.
-        self.compression_factor = self.ol_inner_min_pixel / \
-                                  self.configuration.pixels_in_overlap_width
+        self.compression_factor = ol_inner_min_pixel / self.configuration.pixels_in_overlap_width
         # Compute the angle corresponding to a single pixel in the focal plane.
-        self.pixel_angle = atan(self.pixel_size / self.focal_length)
+        self.pixel_angle = atan(pixel_size / self.focal_length)
         # Compute the angle corresponding to the overlap between tiles.
-        self.ol_angle = self.ol_inner_min_pixel * self.pixel_angle
+        self.ol_angle = ol_inner_min_pixel * self.pixel_angle
         # The scale value is the angle corresponding to a single pixel in the compressed camera
         # images.
         self.scale = self.compression_factor * self.pixel_angle
@@ -112,7 +108,7 @@ class ImageShift:
 
         # Create CLAHE and ORB objects.
         self.clahe = cv2.createCLAHE(clipLimit=self.configuration.clahe_clip_limit, tileGridSize=(
-                self.configuration.clahe_tile_grid_size, self.configuration.clahe_tile_grid_size))
+            self.configuration.clahe_tile_grid_size, self.configuration.clahe_tile_grid_size))
         self.orb = cv2.ORB_create(WTA_K=self.configuration.orb_wta_k,
                                   nfeatures=self.configuration.orb_nfeatures,
                                   scoreType=cv2.ORB_HARRIS_SCORE,
@@ -128,25 +124,23 @@ class ImageShift:
                 # For debugging purposes: use stored image (already compressed) from observation run
                 # Begin with first stored image for every autoalignment initialization.
                 self.camera_socket.image_counter = 0
-                (reference_image_array, width, height, dynamic) = \
-                    self.camera_socket.acquire_still_image(1)
+                (reference_image_array, width, height,
+                 dynamic) = self.camera_socket.acquire_still_image(1)
             else:
                 # Capture the reference image which shows perfect alignment, apply compression.
-                (reference_image_array, width, height, dynamic) = \
-                    self.camera_socket.acquire_still_image(self.compression_factor)
+                (reference_image_array, width, height,
+                 dynamic) = self.camera_socket.acquire_still_image(self.compression_factor)
 
             # Normalize brightness and contrast, and determine keypoints and their descriptors.
-            (self.reference_image_array, self.reference_image,
-             self.reference_image_kp, self.reference_image_des) = \
-                self.normalize_and_analyze_image(reference_image_array,
-                                                 "alignment_reference_image.pgm")
+            (self.reference_image_array, self.reference_image, self.reference_image_kp,
+             self.reference_image_des) = self.normalize_and_analyze_image(reference_image_array,
+                                                                          "alignment_reference_image.pgm")
         except:
             raise RuntimeError
 
         # Draw only keypoints location, not size and orientation
         if self.debug:
-            img = cv2.drawKeypoints(self.reference_image_array,
-                                    self.reference_image_kp,
+            img = cv2.drawKeypoints(self.reference_image_array, self.reference_image_kp,
                                     self.reference_image_array)
             plt.imshow(img)
             plt.show()
@@ -180,10 +174,9 @@ class ImageShift:
         # Use the ORB for keypoint detection
         normalized_image_kp = self.orb.detect(normalized_image_array, None)
         # Compute the descriptors with ORB
-        normalized_image_kp, normalized_image_des = self.orb.compute(
-            normalized_image_array, normalized_image_kp)
-        return (normalized_image_array, normalized_image, normalized_image_kp,
-                normalized_image_des)
+        normalized_image_kp, normalized_image_des = self.orb.compute(normalized_image_array,
+                                                                     normalized_image_kp)
+        return (normalized_image_array, normalized_image, normalized_image_kp, normalized_image_des)
 
     def build_filename(self):
         """
@@ -211,12 +204,12 @@ class ImageShift:
         try:
             if self.configuration.camera_debug:
                 # For debugging purposes: use stored image (already compressed) from observation run
-                (shifted_image_array, width, height, dynamic) = \
-                    self.camera_socket.acquire_still_image(1)
+                (shifted_image_array, width, height,
+                 dynamic) = self.camera_socket.acquire_still_image(1)
             else:
                 # Acquire a still image, apply compression.
-                (shifted_image_array, width, height, dynamic) = \
-                    self.camera_socket.acquire_still_image(self.compression_factor)
+                (shifted_image_array, width, height,
+                 dynamic) = self.camera_socket.acquire_still_image(self.compression_factor)
 
         except:
             raise RuntimeError("Acquisition of still image failed.")
@@ -224,16 +217,14 @@ class ImageShift:
         try:
             # Normalize and analyze the image.
             (self.shifted_image_array, self.shifted_image, self.shifted_image_kp,
-             self.shifted_image_des) = \
-                self.normalize_and_analyze_image(shifted_image_array,
-                                                 filename_appendix)
+             self.shifted_image_des) = self.normalize_and_analyze_image(shifted_image_array,
+                                                                        filename_appendix)
         except:
             raise RuntimeError("Still image normalization failed.")
 
         try:
-        # Match descriptors.
-            matches = self.bf.match(self.reference_image_des,
-                                    self.shifted_image_des)
+            # Match descriptors.
+            matches = self.bf.match(self.reference_image_des, self.shifted_image_des)
         except:
             raise RuntimeError("Descriptor matching failed.")
 
@@ -242,11 +233,9 @@ class ImageShift:
 
         # Draw first 10 matches.
         if self.debug:
-            img3 = cv2.drawMatches(self.reference_image_array,
-                                   self.reference_image_kp,
-                                   self.shifted_image_array,
-                                   self.shifted_image_kp,
-                                   matches[:10], None, flags=2)
+            img3 = cv2.drawMatches(self.reference_image_array, self.reference_image_kp,
+                                   self.shifted_image_array, self.shifted_image_kp, matches[:10],
+                                   None, flags=2)
             plt.imshow(img3), plt.show()
 
         # Set up a matrix containing for all matches the pixel shifts in x and y.
@@ -260,7 +249,8 @@ class ImageShift:
                              self.reference_image_kp[reference_index].pt[1]
 
         try:
-            # Use DBSCAN to find the cluster with consistent shifts. Set the cluster radius and minimum
+            # Use DBSCAN to find the cluster with consistent shifts. Set the cluster radius and
+            # minimum
             # sample size.
             db = DBSCAN(eps=self.configuration.dbscan_cluster_radius,
                         min_samples=self.configuration.dbscan_minimum_sample).fit(X_matrix)
@@ -278,22 +268,19 @@ class ImageShift:
         for m in range(len(matches)):
             if labels[m] == 0:
                 x_shift += X_matrix[m][0]
-                y_shift += X_matrix[m][1]
-                # For debugging: print detailed shift values for cluster members and outliers.
-                # print "in Cluster: x=", X_matrix[m][0], ", y=", X_matrix[m][1]
-            # else:
-            #     print "out of Cluster: x=", X_matrix[m][0], ", y=", X_matrix[m][1]
+                y_shift += X_matrix[m][
+                    1]  # For debugging: print detailed shift values for cluster members and   #
+                # outliers.  # print "in Cluster: x=", X_matrix[m][0], ", y=", X_matrix[m][1]  #
+                #  else:  #     print "out of Cluster: x=", X_matrix[m][0], ", y=", X_matrix[m][1]
         self.alignment_image_counter += 1
         # Count the matches outside the cluster (i.e. with label!=0).
         outliers = count_nonzero(labels)
         # Compute number of matches in the cluster. If it is too low (<10), raise a RuntimeError.
         in_cluster = (len(labels) - outliers)
         if in_cluster < self.configuration.dbscan_minimum_in_cluster:
-            raise RuntimeError(
-                "Image shift computation # " +
-                str(self.alignment_image_counter - 1) +
-                " failed, consistent shifts: " + str(in_cluster) +
-                ", outliers: " + str(outliers))
+            raise RuntimeError("Image shift computation # " + str(
+                self.alignment_image_counter - 1) + " failed, consistent shifts: " + str(
+                in_cluster) + ", outliers: " + str(outliers))
         # Translate the average shift values into radians.
         else:
             x_shift = (x_shift / in_cluster) * self.scale
@@ -308,7 +295,7 @@ if __name__ == "__main__":
 
     configuration = Configuration()
     host = 'localhost'
-    port = 9820
+    port = configuration.fire_capture_port_number
     mysocket = SocketClientDebug(host, port, configuration.camera_debug_delay)
     print("Client: socket connected")
     iso = ImageShift(configuration, mysocket, debug=configuration.alignment_debug)
