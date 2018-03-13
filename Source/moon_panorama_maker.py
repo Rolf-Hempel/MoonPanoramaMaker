@@ -25,7 +25,6 @@ from math import degrees
 
 import matplotlib.pyplot as plt
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 from compute_drift_rate import ComputeDriftRate
 from configuration import Configuration
 from configuration_editor import ConfigurationEditor
@@ -188,11 +187,11 @@ class StartQT5(QtWidgets.QMainWindow):
         self.tv = None
         self.max_alignment_error = None
         self.max_seconds_between_autoaligns = None
-        self.all_tiles_recorded = None
         self.camera_interrupted = None
         self.selected_tile_numbers = None
         self.selected_tile_numbers_string = None
         self.saved_key_status = None
+        self.next_tile = None
 
         self.set_text_browser("Press:\n - 'Edit configuration - C'  to set/review configuration "
                               "parameters first, or\n - '(Re-)Start - S'  to start the workflow "
@@ -227,6 +226,17 @@ class StartQT5(QtWidgets.QMainWindow):
         editor.exec_()
         if editor.configuration_changed:
             self.configuration.write_config()
+            if editor.camera_automation_changed:
+                if self.configuration.conf.getboolean("Workflow", "camera automation"):
+                    if self.camera_rotated:
+                        # If camera automation is on, and camera rotation is finished, enable the
+                        # autoalignment key.
+                        self.enable_keys([self.ui.autoalignment])
+                else:
+                    # If camera automation has been switched off, reset autoalignment and disable
+                    # the key.
+                    self.reset_autoalignment()
+                    self.disable_keys([self.ui.autoalignment])
 
         # Select which parts of the initialization chain have to be executed. Keep flags active
         # which are still set from the initialization phase.
@@ -237,6 +247,7 @@ class StartQT5(QtWidgets.QMainWindow):
         self.camera_initialization_flag = self.camera_initialization_flag or \
                                           editor.camera_automation_changed
         self.new_tesselation_flag = self.new_tesselation_flag or editor.tesselation_changed
+
         # The focus can be set on a surface area or a star, depending on a configuration
         # parameter. Adjust the text on the GUI buttons according to the current choice.
         self.set_focus_button_labels()
@@ -386,12 +397,15 @@ class StartQT5(QtWidgets.QMainWindow):
         # disconnected.
         self.workflow.camera_initialization_flag = True
 
+    def camera_connect_request_denied(self):
+        print ("This is performed if the user hits the escape key.")
+
     def camera_connection_failed(self, message):
         '''
         There is a problem with the connection to FireCapture. Prompt the user to check the
         FireCapture status and restart the workflow.
 
-        :param message: Detailed error message from low-level telescope interface.
+        :param message: Detailed error message from low-level camera interface.
         :return: -
         '''
 
@@ -449,7 +463,7 @@ class StartQT5(QtWidgets.QMainWindow):
             self.new_tesselation_flag = False
 
         # Just in case: reset autoalignment.
-        self.reset_autoalignment()
+        # self.reset_autoalignment()
 
         # Initialization is complete, set the main GUI status bar.
         self.initialized = True
@@ -840,8 +854,8 @@ class StartQT5(QtWidgets.QMainWindow):
              self.ui.set_tile_unprocessed, self.ui.set_all_tiles_unprocessed,
              self.ui.set_all_tiles_processed, self.ui.set_tile_processed])
         # Auto-alignment is possible only when camera_automation is active.
-        self.ui.autoalignment.setEnabled(
-            self.configuration.conf.getboolean("Workflow", "camera automation"))
+        if self.configuration.conf.getboolean("Workflow", "camera automation"):
+            self.enable_keys([self.ui.autoalignment])
         # When the camera orientation has changed, all tiles are marked "unprocessed"
         self.tv.mark_all_unprocessed()
         self.workflow.active_tile_number = -1
@@ -975,13 +989,13 @@ class StartQT5(QtWidgets.QMainWindow):
             if self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number]['processed']:
                 self.mark_processed()
         # Look for the next unprocessed tile.
-        (next_tile, next_tile_index) = self.workflow.tc.find_next_unprocessed_tile(self.workflow)
+        (self.next_tile, next_tile_index) = self.workflow.tc.find_next_unprocessed_tile(
+            self.workflow)
 
         # There is no unprocessed tile left, set the "all_tiles_recorded" flag, display a message,
         # re-activate GUI keys and exit the viceo acquisition loop
-        if next_tile is None:
-            self.all_tiles_recorded = True
-            # self.ui.move_to_selected_tile.setEnabled(False)
+        if self.next_tile is None:
+            self.workflow.all_tiles_recorded = True
             self.set_statusbar()
             self.set_text_browser("All tiles have been recorded.")
             if self.configuration.protocol_level > 0:
@@ -992,6 +1006,7 @@ class StartQT5(QtWidgets.QMainWindow):
         # it to True during video acquisition.) Finally, trigger the workflow thread to record the
         # video.
         else:
+            self.workflow.all_tiles_recorded = False
             self.workflow.active_tile_number = next_tile_index
             self.tv.mark_active(self.workflow.active_tile_number)
             if self.configuration.conf.getboolean("Workflow", "camera automation"):
@@ -1100,7 +1115,7 @@ class StartQT5(QtWidgets.QMainWindow):
             Miscellaneous.protocol(
                 "Tile(s) " + self.selected_tile_numbers_string + " are marked unprocessed.")
         # Since at least one tile is unprocessed now, reset the "all_tiles_recorded" flag.
-        self.all_tiles_recorded = False
+        self.workflow.all_tiles_recorded = False
         self.set_text_browser("")
         self.set_statusbar()
 
@@ -1142,6 +1157,7 @@ class StartQT5(QtWidgets.QMainWindow):
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol(
                 "Tile(s) " + self.selected_tile_numbers_string + " are marked processed.")
+        self.set_statusbar()
         self.set_text_browser("")
 
     def set_all_tiles_unprocessed(self):
@@ -1167,7 +1183,7 @@ class StartQT5(QtWidgets.QMainWindow):
 
         # Perform the task in class TileVisualization.
         self.tv.mark_all_unprocessed()
-        self.all_tiles_recorded = False
+        self.workflow.all_tiles_recorded = False
         # Reset the active tile number. Processing will start from the beginning.
         self.workflow.active_tile_number = -1
         self.set_text_browser("")
@@ -1197,9 +1213,10 @@ class StartQT5(QtWidgets.QMainWindow):
 
         self.tv.mark_all_processed()
         # Mark the recording process as finished. No more tiles to record.
-        self.all_tiles_recorded = True
+        self.workflow.all_tiles_recorded = True
         self.workflow.active_tile_number = -1
         self.set_text_browser("All tiles are marked as processed.")
+        self.set_statusbar()
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol("All tiles are marked as processed.")
 
@@ -1379,7 +1396,12 @@ class StartQT5(QtWidgets.QMainWindow):
             elif event.key() == QtCore.Qt.Key_Escape:
                 # If "key_status_saved" is True, keys are disabled because an operation
                 # is going on.
-                if self.key_status_saved:
+                if self.gui_context == "camera connect request":
+                    if self.configuration.protocol_level > 0:
+                        Miscellaneous.protocol("The user has denied the FireCapture connection.")
+                    self.gui_context = ""
+                    self.camera_connect_request_denied()
+                elif self.key_status_saved:
                     # Tell the user to be patient (no immediate action)
                     self.set_text_browser("Please wait")
                     if self.configuration.protocol_level > 0:
@@ -1497,7 +1519,8 @@ class StartQT5(QtWidgets.QMainWindow):
         # Ask the user for confirmation.
         quit_msg = "Are you sure you want to exit the MoonPanoramaMaker " \
                    "program?"
-        reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg, QtWidgets.QMessageBox.Yes,
+        reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
+                                               QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
                                                QtWidgets.QMessageBox.No)
         # Positive reply: Do it.
         if reply == QtWidgets.QMessageBox.Yes:
