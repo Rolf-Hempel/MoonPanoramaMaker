@@ -92,6 +92,11 @@ class AscomConfigurationEditor(QtWidgets.QDialog, Ui_AscomDialog):
             if self.c.protocol_level > 0:
                 Miscellaneous.protocol("Unable to access the ASCOM telescope chooser. Please check"
                                        " the ASCOM platform installation.")
+            Miscellaneous.show_detailed_error_message("Unable to access the ASCOM telescope "
+                                                      "chooser", "Is the ASCOM Platform "
+                                                                 "installed on this "
+                                                                 "computer? Please check the "
+                                                                 "installation.")
 
     # The following methods are invoked if a text field is changed by the user.
     def guiding_interval_write(self):

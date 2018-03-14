@@ -164,7 +164,7 @@ class SocketClient:
                     (height, width))
         else:
             return None
-        return (image_array, width, height, dynamic)
+        return image_array, width, height, dynamic
 
     def close(self):
         """
@@ -271,7 +271,7 @@ class SocketClientDebug:
         dynamic = 1
         self.image_counter += 1
         # Return the image in the same format as the real socket client would do.
-        return (still_image_array, new_width, new_height, dynamic)
+        return still_image_array, new_width, new_height, dynamic
 
     def close(self):
         """

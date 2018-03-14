@@ -123,6 +123,9 @@ class OperateTelescopeASCOM(threading.Thread):
         self.direction_east = 2
         self.direction_west = 3
 
+        # Initialize instance variables.
+        self.tel = None
+
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol("OperateTelescopeASCOM thread initialized.")
 
@@ -247,7 +250,7 @@ class OperateTelescopeASCOM(threading.Thread):
 
         try:
             import pythoncom
-        except ImportError as e:
+        except ImportError:
             # Save the error message to be looked up by high-level telescope thread.
             self.initialization_error = "Pythoncom module could not be imported. " \
                                         "Is this a Windows system?"
@@ -612,7 +615,6 @@ class OperateTelescopeINDI(threading.Thread):
         Access the telescope driver via the INDI server, connect to it, and find out if it supports
         the functions required by MoonPanoramaMaker.
 
-        :param driver_name: Name of the telescope driver, as returned by the INDI server.
         :return: -
         """
 
@@ -640,7 +642,7 @@ class OperateTelescopeINDI(threading.Thread):
                     self.indiclnt.getPort()) + ".")
 
         # Get the list of available devices.
-        for iter in range(self.configuration.polling_time_out_count):
+        for iteration in range(self.configuration.polling_time_out_count):
             time.sleep(self.configuration.polling_interval)
             if len(self.device_list) > 0:
                 break
@@ -652,7 +654,7 @@ class OperateTelescopeINDI(threading.Thread):
         self.device_telescope = None
         for device in self.device_list:
             driver_info = device.getText("DRIVER_INFO")
-            for iter in range(self.configuration.polling_time_out_count):
+            for iteration in range(self.configuration.polling_time_out_count):
                 time.sleep(self.configuration.polling_interval)
                 if driver_info:
                     break
@@ -672,7 +674,7 @@ class OperateTelescopeINDI(threading.Thread):
             raise INDIConnectException("INDI: Unable to find a driver of type 'telescope'")
 
         # Wait for the CONNECTION property be defined for telescope.
-        for iter in range(self.configuration.polling_time_out_count):
+        for iteration in range(self.configuration.polling_time_out_count):
             time.sleep(self.configuration.polling_interval)
             self.telescope_connect = self.device_telescope.getSwitch("CONNECTION")
             if self.telescope_connect:
@@ -691,7 +693,7 @@ class OperateTelescopeINDI(threading.Thread):
             self.indiclnt.sendNewSwitch(self.telescope_connect)  # send this new value to the device
 
         # Wait for the CONNECTION property be defined for telescope.
-        for iter in range(self.configuration.polling_time_out_count):
+        for iteration in range(self.configuration.polling_time_out_count):
             time.sleep(self.configuration.polling_interval)
             if self.device_telescope.isConnected():
                 break
@@ -699,7 +701,7 @@ class OperateTelescopeINDI(threading.Thread):
             raise INDIConnectException("INDI: Unable to connect with the telescope")
 
         # Get the RA/DE coordinate object.
-        for iter in range(self.configuration.polling_time_out_count):
+        for iteration in range(self.configuration.polling_time_out_count):
             self.telescope_radec = self.device_telescope.getNumber("EQUATORIAL_EOD_COORD")
             time.sleep(self.configuration.polling_interval)
             if self.telescope_radec:
@@ -712,14 +714,14 @@ class OperateTelescopeINDI(threading.Thread):
                 round(self.telescope_radec[1].value, 5)) + " (degrees)")
 
         # Get pulse guide objects.
-        for iter in range(self.configuration.polling_time_out_count):
+        for iteration in range(self.configuration.polling_time_out_count):
             self.telescope_guideNS = self.device_telescope.getNumber("TELESCOPE_TIMED_GUIDE_NS")
             time.sleep(self.configuration.polling_interval)
             if self.telescope_guideNS:
                 break
         if not self.telescope_guideNS:
             raise INDIConnectException("INDI: Unable to get the guideNS object")
-        for iter in range(self.configuration.polling_time_out_count):
+        for iteration in range(self.configuration.polling_time_out_count):
             self.telescope_guideWE = self.device_telescope.getNumber("TELESCOPE_TIMED_GUIDE_WE")
             time.sleep(self.configuration.polling_interval)
             if self.telescope_guideWE:
@@ -738,7 +740,7 @@ class OperateTelescopeINDI(threading.Thread):
         import PyIndi
         # We want to set the ON_COORD_SET switch to engage tracking after goto. "device.getSwitch"
         # is a helper to retrieve a property vector.
-        for iter in range(self.configuration.polling_time_out_count):
+        for iteration in range(self.configuration.polling_time_out_count):
             self.telescope_on_coord_set = self.device_telescope.getSwitch("ON_COORD_SET")
             if self.telescope_on_coord_set:
                 break
@@ -773,7 +775,7 @@ class OperateTelescopeINDI(threading.Thread):
         pulse_guide_speed = ['SLEW_GUIDE', 'SLEW_CENTERING', 'SLEW_FIND', 'SLEW_MAX'][
             pulse_guide_speed_index]
         prate = self.device_telescope.getSwitch("TELESCOPE_SLEW_RATE")
-        while not (prate) or type(prate) != PyIndi.ISwitchVectorProperty:
+        while not prate or type(prate) != PyIndi.ISwitchVectorProperty:
             prate = self.device_telescope.getSwitch("TELESCOPE_SLEW_RATE")
             time.sleep(0.2)
         if len(prate) < 1:  # no slew rate
@@ -1249,7 +1251,7 @@ class Telescope:
         self.optel.instructions.insert(0, lookup_tel_position_instruction)
         while not lookup_tel_position_instruction['finished']:
             time.sleep(self.configuration.polling_interval)
-        return (lookup_tel_position_instruction['ra'], lookup_tel_position_instruction['de'])
+        return lookup_tel_position_instruction['ra'], lookup_tel_position_instruction['de']
 
     def lookup_tel_position(self):
         """

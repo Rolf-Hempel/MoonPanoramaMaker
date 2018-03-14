@@ -29,7 +29,7 @@ class Ui_ConfigurationDialog(object):
         self.scrollArea.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 602, 766))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 604, 772))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -439,7 +439,7 @@ class Ui_ConfigurationDialog(object):
 
     def retranslateUi(self, ConfigurationDialog):
         _translate = QtCore.QCoreApplication.translate
-        ConfigurationDialog.setWindowTitle(_translate("ConfigurationDialog", "Confgturation"))
+        ConfigurationDialog.setWindowTitle(_translate("ConfigurationDialog", "Configuration"))
         self.name.setToolTip(_translate("ConfigurationDialog", "Any text to represent camera, must be unique in list"))
         self.name.setText(_translate("ConfigurationDialog", "Brand / Name"))
         self.longitude.setToolTip(_translate("ConfigurationDialog", "Geographical longitude, counted from Greenwich, in degrees plus decimal fraction. Must be between -360. and 360."))

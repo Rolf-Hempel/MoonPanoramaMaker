@@ -42,7 +42,7 @@ class Configuration:
         """
 
         # The version number is displayed on the MPM main GUI title line.
-        self.version = "MoonPanoramaMaker 0.9.6"
+        self.version = "MoonPanoramaMaker 1.0.0"
 
         ############################################################################################
         # Switch on/off debug modes:
@@ -306,8 +306,30 @@ class Configuration:
             # camera model.
             self.copy_camera_configuration(self.conf.get('Camera', 'name'))
 
+        # Initialize instance variables.
+        self.old_versions = None
+        self.protocol_level = None
+        self.section_name = None
+
         # Set the "protocol_level" variable. This will control the amount of protocol output.
         self.set_protocol_level()
+
+    def set_parameter(self, section, name, value):
+        """
+        Assign a new value to a parameter in the configuration object. The value is not checked for
+        validity. Therefore, this method should be used with well-defined values internally only.
+
+        :param section: section name (e.g. 'Workflow') within the JSON data object
+        :param name: name of the parameter (e.g. 'protocol level')
+        :param value: new value to be assigned to the parameter (type str)
+        :return: True, if the parameter was assigned successfully. False, otherwise.
+        """
+
+        try:
+            self.conf.set(section, name, value)
+            return True
+        except:
+            return False
 
     def check_for_compatibility(self):
         """
@@ -405,7 +427,7 @@ class Configuration:
             # Update the version number.
             self.conf.set('Hidden Parameters', 'version', self.version)
 
-        return (file_identical, file_compatible)
+        return file_identical, file_compatible
 
     def set_protocol_level(self):
         """
@@ -492,3 +514,7 @@ if __name__ == "__main__":
     if editor.configuration_changed or not c.configuration_read:
         print("Configuration has changed, write back config file. ")
         c.write_config()
+
+    print("Setting protocol level to '2'. Success: " +
+           str(c.set_parameter('Workflow', 'protocol level', '2')))
+    c.write_config()

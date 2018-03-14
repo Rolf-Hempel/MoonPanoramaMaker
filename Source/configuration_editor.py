@@ -23,16 +23,17 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
 
-basePath = os.path.dirname(os.path.abspath(sys.argv[0]))
-sys.path.insert(0, basePath)
-
 from PyQt5 import QtWidgets
 from pytz import all_timezones
-from configuration_dialog import Ui_ConfigurationDialog
+
+from camera_configuration_delete import CameraConfigurationDelete
 from camera_configuration_editor import CameraConfigurationEditor
 from camera_configuration_input import CameraConfigurationInput
-from camera_configuration_delete import CameraConfigurationDelete
+from configuration_dialog import Ui_ConfigurationDialog
 from miscellaneous import Miscellaneous
+
+basePath = os.path.dirname(os.path.abspath(sys.argv[0]))
+sys.path.insert(0, basePath)
 
 
 class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):

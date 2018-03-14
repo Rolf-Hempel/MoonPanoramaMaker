@@ -438,7 +438,7 @@ class Workflow(QtCore.QThread):
                         # method "wait_for_autoalignment_off" (reset auto-alignment, including gui
                         # button, enable manual alignment button, and prompt user to continue
                         # manually.)
-                        except RuntimeError as e:
+                        except RuntimeError:
                             self.autoalignment_reset_signal.emit()
                             if self.gui.configuration.protocol_level > 0:
                                 Miscellaneous.protocol(
@@ -516,7 +516,7 @@ class Workflow(QtCore.QThread):
                 self.escape_pressed_flag = False
                 # Wait while camera is active.
                 if self.gui.configuration.conf.getboolean("Workflow", "camera automation"):
-                    while (self.camera.active):
+                    while self.camera.active:
                         time.sleep(self.gui.configuration.polling_interval)
                 # After video(s) are finished, stop telescope guiding, blank out text browser and
                 # give key control back to the user.

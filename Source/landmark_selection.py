@@ -46,8 +46,7 @@ class LandmarkSelection:
         Initialization of the landmark list. For each landmark there must be a file "landmark.png"
         in the subdirectory "landmark_pictures". This picture shows a section of the moon with
         arrows pointing at the selected landmark.
-        
-        :param me: object with positions of the sun and moon, including libration info
+
         :param configuration: object containing parameters set by the user
         """
 
@@ -85,7 +84,7 @@ class LandmarkSelection:
             return self.compute_landmark_offsets(me, self.selected_landmark)
         else:
             self.landmark_selected = False
-            return (1., 1.)
+            return 1., 1.
 
     def compute_landmark_offsets(self, me, landmark):
         """
@@ -112,9 +111,10 @@ class LandmarkSelection:
         except:
             # This is an internal error and should not occur.
             print("Error in landmark_selection: unknown landmark", file=sys.stderr)
-            return (0., 0.)
+            return 0., 0.
 
-    def coord_translation(self, me, longitude, latitude):
+    @staticmethod
+    def coord_translation(me, longitude, latitude):
         """
         Translate selenographic coordinates on the moon into true topocentric displacements in
         (RA, DE).
@@ -130,14 +130,14 @@ class LandmarkSelection:
         da_prime = -sin(longitude - me.topocentric_lib_long) * cos(latitude) * me.radius
         y = -cos(longitude - me.topocentric_lib_long) * cos(latitude) * me.radius
         z = sin(latitude) * me.radius
-        y_prime = y * cos(me.topocentric_lib_lat) - z * sin(me.topocentric_lib_lat)
+        # y_prime = y * cos(me.topocentric_lib_lat) - z * sin(me.topocentric_lib_lat)
         dd_prime = y * sin(me.topocentric_lib_lat) + z * cos(me.topocentric_lib_lat)
         # Rotate for position angle of the moon's rotational axis. Apply approximate correction
         # to RA offset for the moon's declination angle.
         offset_ra = (da_prime * cos(me.pos_rot_north) + dd_prime * sin(me.pos_rot_north)) / cos(
             me.de)
         offset_de = -da_prime * sin(me.pos_rot_north) + dd_prime * cos(me.pos_rot_north)
-        return (offset_ra, offset_de)
+        return offset_ra, offset_de
 
 
 if __name__ == "__main__":

@@ -99,6 +99,8 @@ class Alignment:
         self.true_de_focus = None
         self.ra_offset_focus_area = None
         self.de_offset_focus_area = None
+        self.ra_offset_landmark = None
+        self.de_offset_landmark = None
 
     def set_moon_ephem(self, moon_ephem):
         """
@@ -269,7 +271,7 @@ class Alignment:
         try:
             # Capture an alignment reference frame
             self.im_shift = ImageShift(self.configuration, camera_socket, debug=self.debug)
-        except RuntimeError as e:
+        except RuntimeError:
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol(
                     "Autoalign initialization failed in capturing alignment reference frame.")
@@ -293,7 +295,8 @@ class Alignment:
             # because the rotate function assumes the y coordinate to point up, whereas the y pixel
             # coordinate is pointing down (see comment in method align.
             (shift_angle_ra, shift_angle_de) = Miscellaneous.rotate(self.me.pos_angle_pole,
-                self.me.de, 1., 1., -1., shift[0], shift[1])
+                                                                    self.me.de, 1., 1., -1.,
+                                                                    shift[0], shift[1])
             # Drive the telescope to the computed position in the sky.
             self.tel.slew_to(ra_landmark + shift_angle_ra, de_landmark + shift_angle_de)
             # Wait until the telescope orientation has stabilized.
@@ -454,11 +457,11 @@ class Alignment:
         # Before the first alignment, set offsets to zero and print a warning to stdout.
         else:
             if self.configuration.protocol_level > 2:
-                Miscellaneous.protocol("Info: I will apply zero coordinate correction before " \
+                Miscellaneous.protocol("Info: I will apply zero coordinate correction before "
                                        "alignment.")
             ra_offset = 0.
             de_offset = 0.
-        return (ra_offset, de_offset)
+        return ra_offset, de_offset
 
     def ephemeris_to_telescope_coordinates(self, ra, de):
         """
@@ -474,13 +477,13 @@ class Alignment:
         telescope_ra = ra + correction[0]
         telescope_de = de + correction[1]
         if self.configuration.protocol_level > 2:
-            Miscellaneous.protocol("Translating equatorial to telescope coordinates, " \
+            Miscellaneous.protocol("Translating equatorial to telescope coordinates, "
                                    "correction in RA: " + str(
                 round(degrees(correction[0]), 5)) + ", in DE: " + str(
                 round(degrees(correction[1]), 5)) + ", Telescope RA: " + str(
                 round(degrees(telescope_ra), 5)) + ", Telescope DE: " + str(
                 round(degrees(telescope_de), 5)) + " (all in degrees)")
-        return (telescope_ra, telescope_de)
+        return telescope_ra, telescope_de
 
     def telescope_to_ephemeris_coordinates(self, ra, de):
         """
@@ -495,7 +498,7 @@ class Alignment:
         correction = self.compute_coordinate_correction()
         # Subtract corrections from telescope coordinates to get true
         # coordinates
-        return (ra - correction[0], de - correction[1])
+        return ra - correction[0], de - correction[1]
 
     def center_offset_to_telescope_coordinates(self, delta_ra, delta_de):
         """
@@ -510,7 +513,7 @@ class Alignment:
         # Compute current position of the moon.
         self.me.update(datetime.now())
         if self.configuration.protocol_level > 2:
-            Miscellaneous.protocol("Translating center offset to equatorial coordinates, " \
+            Miscellaneous.protocol("Translating center offset to equatorial coordinates, "
                                    "center offsets: RA: " + str(
                 round(degrees(delta_ra), 5)) + ", DE: " + str(
                 round(degrees(delta_de), 5)) + ", moon position (center): RA: " + str(
@@ -530,7 +533,7 @@ class Alignment:
         """
 
         return self.center_offset_to_telescope_coordinates(self.ra_offset_landmark,
-            self.de_offset_landmark)
+                                                           self.de_offset_landmark)
 
     def compute_telescope_coordinates_of_focus_area(self):
         """
@@ -556,9 +559,10 @@ class Alignment:
         """
 
         return self.center_offset_to_telescope_coordinates(tile['delta_ra_center'],
-            tile['delta_de_center'])
+                                                           tile['delta_de_center'])
 
-    def current_time_seconds(self, current_time):
+    @staticmethod
+    def current_time_seconds(current_time):
         """
         Compute the current time (in consecutive seconds), including fractional part.
         

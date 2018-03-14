@@ -175,7 +175,7 @@ class TileConstructor:
         else:
             for j in range(max_cols):
                 for i in range(n_rows_corrected):
-                    if (j) < len(self.lists_of_tiles[i]):
+                    if j < len(self.lists_of_tiles[i]):
                         self.list_of_tiles_sorted.append(
                             self.lists_of_tiles[i][len(self.lists_of_tiles[i]) - j - 1])
 
@@ -227,7 +227,7 @@ class TileConstructor:
                 next_tile_index = i
                 break
 
-        return (next_tile, next_tile_index)
+        return next_tile, next_tile_index
 
 
 if __name__ == "__main__":

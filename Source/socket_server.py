@@ -48,12 +48,14 @@ class SocketServer:
         self.serversocket.listen(1)
         print("Server started")
 
-    def mysend(self, sock, msg):
+    @staticmethod
+    def mysend(sock, msg):
         sent = sock.send(msg)
         if sent == 0:
             raise RuntimeError("socket connection broken")
 
-    def myreceive(self, sock):
+    @staticmethod
+    def myreceive(sock):
         try:
             rcvd = sock.recv(9)
         except:

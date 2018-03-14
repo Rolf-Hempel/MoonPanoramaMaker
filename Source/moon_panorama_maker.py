@@ -36,18 +36,18 @@ from tile_visualization import TileVisualization
 from workflow import Workflow
 
 
-class StartQT5(QtWidgets.QMainWindow):
+class MoonPanoramaMaker(QtWidgets.QMainWindow):
     """
-    This class is the main class of the MoonPanoramaMaker software. It implements the main GUI and
-    through it communicates with the user. It creates the workflow thread which asynchronously
-    controls all program activities.
-    
+    This class is the main class of the MoonPanoramaMaker software. It implements the main GUI
+    for the communication with the user. It creates the workflow thread which controls all program
+    activities asynchronously.
+
     """
 
     def __init__(self, parent=None):
         """
         Initialize the MoonPanoramaMaker environment.
-        
+
         :param parent: None
         """
 
@@ -192,6 +192,8 @@ class StartQT5(QtWidgets.QMainWindow):
         self.selected_tile_numbers_string = None
         self.saved_key_status = None
         self.next_tile = None
+        self.min_autoalign_interval = None
+        self.max_autoalign_interval = None
 
         self.set_text_browser("Press:\n - 'Edit configuration - C'  to set/review configuration "
                               "parameters first, or\n - '(Re-)Start - S'  to start the workflow "
@@ -304,7 +306,7 @@ class StartQT5(QtWidgets.QMainWindow):
         self.redirect_stdout()
 
     def redirect_stdout(self):
-        '''
+        """
         This is the first in four initialization steps (output channel, telescope, camera and
         tesselation. In each step the GUI thread sets a flag in the workflow thread where the
         action is performed. When finished, the workflow thread sends a signal back to the GUI and
@@ -315,7 +317,7 @@ class StartQT5(QtWidgets.QMainWindow):
         completion, the workflow thread will trigger the "initialize_telescope" method below.
 
         :return: -
-        '''
+        """
 
         # This point is reached by pressing either Restart or Configuration at program start.
         # Next time Restart is pressed, the user is asked for acknowledgement.
@@ -327,13 +329,13 @@ class StartQT5(QtWidgets.QMainWindow):
             self.initialize_telescope()
 
     def initialize_telescope(self):
-        '''
+        """
         If the telescope_initialization_flag is set, trigger the workflow thread to connect the
         telescope driver. After completion, the workflow thread will trigger the "initialize_camera"
         method below.
 
         :return: -
-        '''
+        """
 
         if self.telescope_initialization_flag:
             self.workflow.telescope_initialization_flag = True
@@ -342,28 +344,29 @@ class StartQT5(QtWidgets.QMainWindow):
             self.initialize_camera()
 
     def telescope_connection_failed(self, message):
-        '''
+        """
         There is a problem with the ASCOM telescope driver. Prompt the user to check the ASCOM
         configuration and restart the workflow.
 
         :param message: Detailed error message from low-level telescope interface.
         :return: -
-        '''
+        """
 
         self.set_text_browser("The telescope driver does not work properly. Check the interface "
-                              "configuration and re-start the workflow.")
+                              "configuration and re-start the workflow.\n"
+                              "Detailed error message: " + message + ".")
         # Mark the telescope as not initialized.
         self.telescope_initialization_flag = True
 
     def initialize_camera(self):
-        '''
+        """
         If the camera_initialization_flag is set, trigger the workflow thread to disconnect an
         active connection to FireCapture. If camera automation is switched on in the configuration
         object, re-establish the connection to FireCapture. After completion, the workflow thread
         will trigger the "initialize_tesselation" method below.
 
         :return: -
-        '''
+        """
 
         if self.camera_initialization_flag:
             if self.configuration.conf.getboolean("Workflow", "camera automation"):
@@ -375,7 +378,9 @@ class StartQT5(QtWidgets.QMainWindow):
                 # "Enter" key.
                 self.set_text_browser("Make sure that FireCapture is started, and that "
                                       "'MoonPanoramaMaker' is selected in the PreProcessing "
-                                      "section. Confirm with 'enter', otherwise press 'esc'.")
+                                      "section.\nConfirm with 'enter', otherwise press 'esc'. "
+                                      "In the latter case, camera automation will be switched "
+                                      "back to manual mode.")
             else:
                 self.camera_connect_request_answered()
         else:
@@ -391,29 +396,56 @@ class StartQT5(QtWidgets.QMainWindow):
         :return: -
         """
 
-        # print("in MPM: camera connect request answered")
         # The workflow activity is triggered even if camera automation is set to false. The reason:
         # A camera connection (which was established before the configuration was changed) is
         # disconnected.
         self.workflow.camera_initialization_flag = True
 
     def camera_connect_request_denied(self):
-        print ("This is performed if the user hits the escape key.")
+        """
+        The user has selected camera automation in the configuration dialog. When he/she was asked
+        to confirm that FireCapture is running, however, he/she did not confirm that ('Esc' key
+        pressed). In this case the camera automation must be reset to manual mode.
+
+        :return: -
+        """
+
+        # Reset 'camera automation' to manual mode and write configuration to the config file.
+        self.configuration.set_parameter('Workflow', 'camera automation', 'False')
+        self.configuration.write_config()
+        self.set_text_browser("'Camera automation' has been reset to manual mode.")
+        if self.configuration.protocol_level > 0:
+            print("")
+            Miscellaneous.protocol("The user has not acknowledged the connection to FireCapture. "
+                                   "'Camera automation' has been reset to manual mode.")
+        self.initialize_tesselation()
+
+        # The following code should not be necessary. First try to do without it. If the FireCapture
+        # connect request denial handling does not work otherwise, however, activate it.
+        #
+        # Invalidate all GUI buttons except for 'Re-start', 'Configuration' and 'Exit'
+        # self.disable_keys(
+        #     [self.ui.alignment, self.ui.configure_drift_correction, self.ui.rotate_camera,
+        #      self.ui.set_focus_area, self.ui.goto_focus_area, self.ui.start_continue_recording,
+        #      self.ui.select_tile, self.ui.move_to_selected_tile, self.ui.set_tile_unprocessed,
+        #      self.ui.set_all_tiles_unprocessed, self.ui.set_all_tiles_processed,
+        #      self.ui.new_landmark_selection, self.ui.show_landmark, self.ui.autoalignment,
+        #      self.ui.set_tile_processed])
 
     def camera_connection_failed(self, message):
-        '''
+        """
         There is a problem with the connection to FireCapture. Prompt the user to check the
         FireCapture status and restart the workflow.
 
         :param message: Detailed error message from low-level camera interface.
         :return: -
-        '''
+        """
 
         self.set_text_browser("Unable to connect to FireCapture. Check the status of FireCapture "
                               " and re-start the workflow.\nDetailed error info: " + message)
 
     def initialize_tesselation(self):
-        '''
+        """
         Before dealing with the tesselation and its visualization, first connect the camera with
         the "signal_from_camera" GUI method (if a new camera object was created in the workflow
         thread).
@@ -423,7 +455,7 @@ class StartQT5(QtWidgets.QMainWindow):
         completion, the workflow thread will trigger the "start_workflow" method below.
 
         :return: -
-        '''
+        """
 
         # If camera automation is on and a new camera has been connected in the workflow thread,
         # connect the signal by which the camera signalizes the completion of a video with the
@@ -435,6 +467,8 @@ class StartQT5(QtWidgets.QMainWindow):
         self.camera_initialization_flag = False
 
         if self.new_tesselation_flag:
+            # Just in case: reset autoalignment.
+            self.reset_autoalignment()
             # If a tesselation is active already, disable it and close the Matplotlib window.
             if self.workflow.tesselation_created:
                 try:
@@ -451,7 +485,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         Initialization is complete. Start the observation workflow. Continue with the appropriate
         activity, based on status flags set during previous operations.
-        
+
         :return: -
         """
 
@@ -461,9 +495,6 @@ class StartQT5(QtWidgets.QMainWindow):
             # Initialize all tiles as unprocessed.
             self.tv.mark_all_unprocessed()
             self.new_tesselation_flag = False
-
-        # Just in case: reset autoalignment.
-        # self.reset_autoalignment()
 
         # Initialization is complete, set the main GUI status bar.
         self.initialized = True
@@ -486,7 +517,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         This method is invoked by pressing the GUI button "New Landmark Selection". Before doing
         so, ask the user for acknowledgement. Hitting "Enter" leads to method "select_new_landmark".
-        
+
         :return: -
         """
 
@@ -499,7 +530,7 @@ class StartQT5(QtWidgets.QMainWindow):
         Discard any previously selected landmark. Ask the user to select a new landmark.
         When the selection is done, compute the offset of the landmark relative to the moon center
         and enable further GUI activities.
-        
+
         :return: -
         """
 
@@ -531,7 +562,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         The "Alignment" GUI button is pressed. Ask the user for acknowledgement before a new
         alignment is done.
-        
+
         :return: -
         """
 
@@ -543,7 +574,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         Either the "Enter" key is pressed for acknowledgement, or "select_new_landmark" has been
         executed. Slew the telescope to the expected position of the alignment point in the sky.
-        
+
         :return: -
         """
 
@@ -565,7 +596,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         The workflow thread has sent the "alignment_point_reached_signal". Prompt the user to center
         the landmark in the camera live view.
-        
+
         :return: -
         """
 
@@ -585,7 +616,7 @@ class StartQT5(QtWidgets.QMainWindow):
     def perform_alignment(self):
         """
         The user has centered the landmark. Now take the alignment point.
-        
+
         :return: -
         """
 
@@ -595,7 +626,7 @@ class StartQT5(QtWidgets.QMainWindow):
     def alignment_performed(self):
         """
         Triggered by the workflow thread when the alignment point has been processed.
-        
+
         :return: -
         """
 
@@ -619,7 +650,7 @@ class StartQT5(QtWidgets.QMainWindow):
         auxiliary method resets the button to its original (not triggered) state and reconnects it
         with the method which is invoked to start autoalignment. Finally, flags which indicate
         autoalignment to be active are reset to their original state.
-        
+
         :return: -
         """
 
@@ -638,7 +669,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         The auto-alignment button is pressed. Prompt the user for acknowledgement and set the
         context for the "Enter" key.
-        
+
         :return: -
         """
 
@@ -650,7 +681,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         The user has acknowledged that auto-alignment is to be switched on. Change the appearance of
         the GUI button and slew to the alignment point.
-        
+
         :return: -
         """
 
@@ -685,7 +716,7 @@ class StartQT5(QtWidgets.QMainWindow):
         When the user has acknowledged that the landmark is properly centered, the reference frame
         still image is captured. In later alignment operations the shift relative to this reference
         frame is measured and used to determine the misalignment angles.
-        
+
         :return: -
         """
 
@@ -699,7 +730,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         The "Enter" key was pressed in context "autoalignment_point_reached". Trigger the workflow
         thread to initialize autoalignment.
-        
+
         :return: -
         """
 
@@ -712,7 +743,7 @@ class StartQT5(QtWidgets.QMainWindow):
         Triggered by the "autoalignment_performed_signal" in the workflow thread. Auto-alignment
         initialization might have failed, e.g. if the reference frame captured was too blurry. In
         this case de-activate auto-alignment and re-activate manual alignment.
-        
+
         :param success: True if auto-alignment initialization was successful, False otherwise.
         :return: -
         """
@@ -746,7 +777,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         Connected to the "Auto-Align off" GUI button while auto-alignment is active. Ask the user
         before really switching back to manual alignment.
-        
+
         :return: -
         """
 
@@ -759,7 +790,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         Invoked either automatically (auto-alignment failed) or by the user. Switch back to
         manual alignment and reset auto-alignment button.
-        
+
         :return: -
         """
 
@@ -778,7 +809,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         The "Correct for Drift" button is pressed. Open a GUI dialog for displaying available
         alignment points and selecting points used for drift determination.
-        
+
         :return: -
         """
 
@@ -790,7 +821,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         The "Camera Orientation" button is pressed. Prompt the user for acknowledgement, because
         in the middle of video acquisition this operation has severe consequences.
-        
+
         :return: -
         """
 
@@ -804,7 +835,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         Invoked either automatically after first alignment (method "alignment_performed") or on
         user request.
-        
+
         :return: -
         """
 
@@ -825,7 +856,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         Triggered by the workflow thread ("moon_limb_centered_signal") when the telescope has
         reached the moon limb midpoint. Prompt the user to turn the camera properly.
-        
+
         :return: -
         """
 
@@ -839,7 +870,7 @@ class StartQT5(QtWidgets.QMainWindow):
         The user has rotated the camera and acknowledged by pressing "Enter". The system is now
         ready for video acquisition. Activate the buttons of the record group and display an
         info message in the text browser.
-        
+
         :return: -
         """
 
@@ -874,7 +905,7 @@ class StartQT5(QtWidgets.QMainWindow):
         manually to an appropriate location for focus checking, and to confirm the position with
         pressing "Enter". This position is stored. The telescope can be moved back to this point
         later by pressing "Goto Focus Area".
-        
+
         :return: -
         """
 
@@ -895,7 +926,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         The user has acknowledged the position of the focus area. Trigger the workflow thread to
         capture the position.
-        
+
         :return: -
         """
 
@@ -910,7 +941,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         Triggered by the "focus_area_set_signal" from the workflow thread. The focus area position
         is captured. Now the user may proceed with video acquisition.
-        
+
         :return: -
         """
 
@@ -925,7 +956,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         Triggered by pressing the "Goto Focus Area" button. Move the telescope to the recorded
         position where camera focus can be checked.
-        
+
         :return: -
         """
 
@@ -943,7 +974,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         The user can choose to focus on a star or on a surface feature. Set the button labels
         accordingly.
-        
+
         :return: -
         """
 
@@ -964,12 +995,12 @@ class StartQT5(QtWidgets.QMainWindow):
         trigger the workflow thread to move the telescope to the tile's location and record the
         video. Otherwise issue a message that all tiles have been recorded, and stop the video
         acquisition loop.
-        
+
         This method is invoked from three places:
         - Manually by pressing the GUI button "Start / Continue Recording"
         - In manual camera mode, by pressing the enter key when the user has taken a video.
         - In automatic camera mode, when the "signal_from_camera" method is executed.
-        
+
         :return: -
         """
 
@@ -1034,7 +1065,7 @@ class StartQT5(QtWidgets.QMainWindow):
         Change the color of the currently "active_tile_number" in the tile visualization window to
         indicate that it is "processed". If auto-alignment is active, keep a list of tiles processed
         since last alignment point (for later rollback).
-        
+
         :return: -
         """
 
@@ -1050,15 +1081,15 @@ class StartQT5(QtWidgets.QMainWindow):
         Triggered by pressing the "Select Tile" GUI button. Open a GUI for selecting a tile index.
         Then enable the "Move to Selected Tile" button which can be used to drive the mount to the
         tile's position.
-        
+
         :return: -
         """
 
         if self.workflow.active_tile_number > -1:
             # There is an active tile. If it is still unprocessed, mark it as such in the tile
             # visualization window. Otherwise mark it as processed.
-            if (self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
-                'processed'] == False):
+            if not self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
+                'processed']:
                 self.tv.mark_unprocessed([self.workflow.active_tile_number])
             else:
                 self.tv.mark_processed([self.workflow.active_tile_number])
@@ -1082,7 +1113,7 @@ class StartQT5(QtWidgets.QMainWindow):
         window, or by the variable "active_tile_number" of the workflow object not being set to -1.
         First, check if one mechanism results in an non-empty list. If so, present the list to the
         user and ask for acknowledgement that these tiles should be marked as unprocessed.
-        
+
         :return: -
         """
 
@@ -1105,7 +1136,7 @@ class StartQT5(QtWidgets.QMainWindow):
         The user has confirmed that the selected tile numbers should be marked unprocessed. Method
         "mark_unprocessed" in class "TileVisualization" both sets the corresponding flags and
         changes the color of the tiles in the visualization window.
-        
+
         :return: -
         """
 
@@ -1164,7 +1195,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         Triggered by pressing the "Set All Tiles Unprocessed" button. Set the context for the
         "Enter" key and ask the user for confirmation.
-        
+
         :return: -
         """
 
@@ -1177,7 +1208,7 @@ class StartQT5(QtWidgets.QMainWindow):
         The user has confirmed that all tiles should be set unprocessed by pressing the "Enter" key.
         Method "mark_all_unprocessed" in class "TileVisualization" both sets the corresponding flags
         and changes the color of the tiles in the visualization window.
-        
+
         :return: -
         """
 
@@ -1194,7 +1225,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         Triggered by pressing the "Set All Tiles Processed" button. Set the context for the
         "Enter" key and ask the user for confirmation.
-        
+
         :return: -
         """
 
@@ -1207,7 +1238,7 @@ class StartQT5(QtWidgets.QMainWindow):
         The user has confirmed that all tiles should be set processed by pressing the "Enter" key.
         Method "mark_all_processed" in class "TileVisualization" both sets the corresponding flags
         and changes the color of the tiles in the visualization window.
-        
+
         :return: -
         """
 
@@ -1224,7 +1255,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         Triggered by the GUI button "Move to Selected Tile". Mark the tile active in the tile
         visualization window and trigger the workflow thread to move the telescope to the tile.
-        
+
         :return: -
         """
 
@@ -1247,14 +1278,14 @@ class StartQT5(QtWidgets.QMainWindow):
         If a tile has been selected as active, but then it is not processed, it can be reset with
         this method. It is marked as unprocessed in the TileConstructor object and in the tile
         visualization window, and the currently "active_tile_number" is reset to -1.
-        
+
         :return: -
         """
 
         # There is a selected active tile.
         if self.workflow.active_tile_number > -1:
-            if (self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
-                'processed'] == False):
+            if not self.workflow.tc.list_of_tiles_sorted[self.workflow.active_tile_number][
+                'processed']:
                 self.tv.mark_unprocessed([self.workflow.active_tile_number])
             else:
                 self.mark_processed()
@@ -1264,7 +1295,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         For all buttons of the main GUI: save the current state (enabled / disabled), then disable
         all buttons. The saved state is restored with method "reset_key_status".
-        
+
         :return: -
         """
 
@@ -1284,7 +1315,7 @@ class StartQT5(QtWidgets.QMainWindow):
         This method is used if in such a situation the saved status of a button must be changed. At
         the next call of "reset_key_status" this button will then be changed to this new status
         insted to the one saved originally.
-        
+
         :param button: button object in self.button_list
         :param new_status: new saved status of this button. True if "isEnabled", otherwise False.
         :return: -
@@ -1297,7 +1328,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         Reverse operation to save_key_status: Restore the status of all GUI buttons and reset the
         flag "key_status_saved" to False.
-        
+
         :return: -
         """
 
@@ -1305,10 +1336,11 @@ class StartQT5(QtWidgets.QMainWindow):
             list(map(lambda x, y: x.setEnabled(y), self.button_list, self.saved_key_status))
             self.key_status_saved = False
 
-    def disable_keys(self, button_list):
+    @staticmethod
+    def disable_keys(button_list):
         """
         Disable a specific list of GUI buttons.
-        
+
         :param button_list: list with selected GUI buttons
         :return: -
         """
@@ -1316,7 +1348,8 @@ class StartQT5(QtWidgets.QMainWindow):
         for item in button_list:
             item.setEnabled(False)
 
-    def enable_keys(self, button_list):
+    @staticmethod
+    def enable_keys(button_list):
         """
         Enable a specific list of GUI buttons.
 
@@ -1331,7 +1364,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         Define activities to be performed when specific keyboard keys are pressed. This method
         overrides the standard activity of the main window class.
-        
+
         :param event: event object
         :return: -
         """
@@ -1430,7 +1463,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         The telescope moves as long as an arrow key is pressed. When it is released, tell the
         telescope thread to stop the motion.
-        
+
         :param event: event object
         :return: -
         """
@@ -1448,7 +1481,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         Display a text in the text browser field of the main GUI. This is used for messages to the
         user and for prompts for user actions.
-        
+
         :param text: string to be displayed in the text browser
         :return: -
         """
@@ -1462,7 +1495,7 @@ class StartQT5(QtWidgets.QMainWindow):
         not be available. Read out flags to decide which infos to present. The status information
         is concatenated into a single "status_text" which eventually is written into the main GUI
         status bar.
-        
+
         :return: -
         """
 
@@ -1552,7 +1585,7 @@ class StartQT5(QtWidgets.QMainWindow):
         """
         This event is triggered when the user closes the main window by clicking on the cross in
         the window corner.
-        
+
         :param evnt: event object
         :return: -
         """
@@ -1564,13 +1597,13 @@ class TileNumberInput(QtWidgets.QDialog, Ui_TileNumberInputDialog):
     """
     This class extends the (generated) class Ui_TileNumberInputDialog. Methods __init__ and accept
     override their parent versions.
-    
+
     """
 
     def __init__(self, max_value, start_value, value_context, parent=None):
         """
         Initialization of the TileNumberInputDialog.
-        
+
         :param max_value: maximum value for the spinBox.
         :param start_value: the spinBox is preset at this particular start value.
         :param value_context: name of an object where the entered spinBox value is to be stored.
@@ -1587,7 +1620,7 @@ class TileNumberInput(QtWidgets.QDialog, Ui_TileNumberInputDialog):
     def accept(self):
         """
         On exit from the dialog, save the selected tile number.
-        
+
         :return: -
         """
 
@@ -1613,6 +1646,6 @@ if __name__ == "__main__":
         sys.path.insert(1, here)
 
     app = QtWidgets.QApplication(sys.argv)
-    myapp = StartQT5()
+    myapp = MoonPanoramaMaker()
     myapp.show()
     sys.exit(app.exec_())

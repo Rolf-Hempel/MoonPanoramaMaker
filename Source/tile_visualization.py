@@ -310,7 +310,6 @@ class TileVisualization:
 
 
 if __name__ == "__main__":
-    import time
 
     configuration = configuration.Configuration()
 
@@ -324,24 +323,19 @@ if __name__ == "__main__":
     tv = TileVisualization(configuration, tc)
 
     for i in range(len(tv.tiles)):
-        # plt.pause(0.1)
         plt.pause(0.1)
         tv.mark_active(i)
-        # plt.pause(0.1)
         plt.pause(0.1)
         tv.mark_processed([i])
 
-    # plt.pause(2.)
     plt.pause(2.)
 
     tv.mark_all_unprocessed()
 
-    # plt.pause(2.)
     plt.pause(2.)
 
     tv.mark_all_processed()
 
-    # plt.pause(2.)
     plt.pause(2.)
 
     tv.close_tile_visualization()

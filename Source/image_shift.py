@@ -42,17 +42,17 @@ class ImageShift:
     of the telescope. At initialization time, a reference picture is taken (at this time the user
     has brought the landmark under the camera cross hairs). During auto-alignment operations, new
     images are taken and their offset versus the reference frame is determined.
-    
+
     ImageShift uses the ORB keypoint detection mechanism from OpenCV. For outlier detection in
     shift computation it uses the DBSCAN clustering algorithm from scikit-learn.
-    
+
     """
 
     def __init__(self, configuration, camera_socket, debug=False):
         """
         Initialize the ImageShift object, capture the reference frame and find keypoints in the
         reference frame.
-        
+
         :param configuration: object containing parameters set by the user
         :param camera_socket: the socket_client object used by the camera
         :param debug: if set to True, display keypoints and matches in Matplotlib windows.
@@ -60,6 +60,13 @@ class ImageShift:
 
         self.configuration = configuration
         self.camera_socket = camera_socket
+
+        # Initialize instance variables.
+        self.shifted_image_array = None
+        self.shifted_image = None
+        self.shifted_image_kp = None
+        self.shifted_image_des = None
+
         # Get camera and telescope parameters.
         pixel_size = (self.configuration.conf.getfloat("Camera", "pixel size"))
         self.focal_length = (self.configuration.conf.getfloat("Telescope", "focal length"))
@@ -134,7 +141,7 @@ class ImageShift:
             # Normalize brightness and contrast, and determine keypoints and their descriptors.
             (self.reference_image_array, self.reference_image, self.reference_image_kp,
              self.reference_image_des) = self.normalize_and_analyze_image(reference_image_array,
-                                                                          "alignment_reference_image.pgm")
+                                                                    "alignment_reference_image.pgm")
         except:
             raise RuntimeError
 
@@ -149,8 +156,8 @@ class ImageShift:
         """
         For an image array (as produced by the camera), optimize brightness and contrast. Store the
         image in the reference image directory. Then use ORB for keypoint detection and descriptor
-        computation. 
-        
+        computation.
+
         :param image_array: Numpy array with image as produced by the camera object.
         :param filename_appendix: String to be appended to filename. The filename begins with
         the current time (hours, minutes, seconds) for later reference.
@@ -158,7 +165,7 @@ class ImageShift:
         keypoints, and the keypoint descriptors.
         """
 
-        height, width = image_array.shape[:2]
+        # height, width = image_array.shape[:2]
 
         # Optimize the contrast in the image.
         normalized_image_array = self.clahe.apply(image_array)
@@ -176,13 +183,13 @@ class ImageShift:
         # Compute the descriptors with ORB
         normalized_image_kp, normalized_image_des = self.orb.compute(normalized_image_array,
                                                                      normalized_image_kp)
-        return (normalized_image_array, normalized_image, normalized_image_kp, normalized_image_des)
+        return normalized_image_array, normalized_image, normalized_image_kp, normalized_image_des
 
     def build_filename(self):
         """
         Create the filename for an alignment image. The name begins with time info
         (hour-minutes-seconds), followed by an underscore.
-        
+
         :return: filename
         """
 
@@ -194,7 +201,7 @@ class ImageShift:
         """
         Take an image through the camera_socket, normalize and analyze it, and compute the shift
         (linear translation) of this image as compared to the reference frame.
-        
+
         :return: A tuple of four objects: shift in x (radians), shift in y (radians), number of
         keypoints with consistent shift values, number of outliers
         """
@@ -239,13 +246,13 @@ class ImageShift:
             plt.imshow(img3), plt.show()
 
         # Set up a matrix containing for all matches the pixel shifts in x and y.
-        X_matrix = ndarray(shape=(len(matches), 2), dtype=float)
+        x_matrix = ndarray(shape=(len(matches), 2), dtype=float)
         for m in range(len(matches)):
             reference_index = matches[m].queryIdx
             shifted_index = matches[m].trainIdx
-            X_matrix[m][0] = self.shifted_image_kp[shifted_index].pt[0] - \
+            x_matrix[m][0] = self.shifted_image_kp[shifted_index].pt[0] - \
                              self.reference_image_kp[reference_index].pt[0]
-            X_matrix[m][1] = self.shifted_image_kp[shifted_index].pt[1] - \
+            x_matrix[m][1] = self.shifted_image_kp[shifted_index].pt[1] - \
                              self.reference_image_kp[reference_index].pt[1]
 
         try:
@@ -253,7 +260,7 @@ class ImageShift:
             # minimum
             # sample size.
             db = DBSCAN(eps=self.configuration.dbscan_cluster_radius,
-                        min_samples=self.configuration.dbscan_minimum_sample).fit(X_matrix)
+                        min_samples=self.configuration.dbscan_minimum_sample).fit(x_matrix)
             core_samples_mask = zeros_like(db.labels_, dtype=bool)
             core_samples_mask[db.core_sample_indices_] = True
             # The list "labels" defines the cluster number for each match. Only the first cluster
@@ -267,11 +274,12 @@ class ImageShift:
         y_shift = 0.
         for m in range(len(matches)):
             if labels[m] == 0:
-                x_shift += X_matrix[m][0]
-                y_shift += X_matrix[m][
-                    1]  # For debugging: print detailed shift values for cluster members and   #
-                # outliers.  # print "in Cluster: x=", X_matrix[m][0], ", y=", X_matrix[m][1]  #
-                #  else:  #     print "out of Cluster: x=", X_matrix[m][0], ", y=", X_matrix[m][1]
+                x_shift += x_matrix[m][0]
+                y_shift += x_matrix[m][1]
+            #     # For debugging: print detailed shift values for cluster members and outliers.
+            #     print("in Cluster: x=" + str(x_matrix[m][0]) + ", y=" + str(x_matrix[m][1]))
+            # else:
+            #     print("out of Cluster: x=" + str(x_matrix[m][0]) + ", y=" + str(x_matrix[m][1]))
         self.alignment_image_counter += 1
         # Count the matches outside the cluster (i.e. with label!=0).
         outliers = count_nonzero(labels)

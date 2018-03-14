@@ -28,7 +28,7 @@ from PyQt5 import QtWidgets
 from show_input_error import ShowInputError
 
 
-class Miscellaneous():
+class Miscellaneous:
     """
     This class provides static methods for various auxiliary purposes.
     
@@ -96,7 +96,7 @@ class Miscellaneous():
         """
         Test if the input string represents a valid IP address or 'localhost'.
 
-        :param string: string representation of the IP address
+        :param address: string representation of the IP address
         :return: True if given address is valid. Otherwise False.
         """
 

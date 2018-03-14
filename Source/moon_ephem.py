@@ -270,7 +270,7 @@ if __name__ == "__main__":
 
         print('Time (UT): ', me.location_time.date)
         print('Moon RA: %s, DE: %s, Diameter: %s' % (me.ra, me.de, ephem.degrees(me.diameter)))
-        print('Astrometric libration in Latitude: ', me.astrometric_lib_lat, ", in longitude: ", \
+        print('Astrometric libration in Latitude: ', me.astrometric_lib_lat, ", in longitude: ",
               me.astrometric_lib_long)
         print("Topocentric libration in latitude: ", degrees(me.topocentric_lib_lat),
               ", in longitude: ", degrees(me.topocentric_lib_long))
@@ -292,7 +292,7 @@ if __name__ == "__main__":
         me.update(end_time)
         ra_end = me.ra
         de_end = me.de
-        rate_ra = degrees((ra_end - ra_start) / (length) * 3600.) * 60.
-        rate_de = degrees((de_end - de_start) / (length) * 3600.) * 60.  #
+        rate_ra = degrees((ra_end - ra_start) / length * 3600.) * 60.
+        rate_de = degrees((de_end - de_start) / length * 3600.) * 60.  #
         print("rate_ra: ", rate_ra, ", rate_de: ", rate_de)
         print("")
