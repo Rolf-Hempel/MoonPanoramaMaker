@@ -193,7 +193,7 @@ class Ui_MainWindow(object):
         self.alignment.setText(_translate("MainWindow", "Align mount - A"))
         self.alignment.setShortcut(_translate("MainWindow", "A"))
         self.autoalignment.setToolTip(_translate("MainWindow", "Switch on / off auto-alignment"))
-        self.autoalignment.setText(_translate("MainWindow", "Switch on Auto-alignment - B"))
+        self.autoalignment.setText(_translate("MainWindow", "Switch on auto-alignment - B"))
         self.autoalignment.setShortcut(_translate("MainWindow", "B"))
         self.set_tile_processed.setToolTip(_translate("MainWindow", "Add current tile number to list of processed tiles"))
         self.set_tile_processed.setText(_translate("MainWindow", "Mark tile(s) processed - P"))

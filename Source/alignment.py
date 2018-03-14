@@ -42,16 +42,16 @@ class Alignment:
     alignment error is determined either with the help of the user or automatically (auto-
     alignment). The change of the alignment error, called drift rate, is computed as soon as
     enough alignment measurements are available.
-    
+
     Additionally, class Alignment provides methods for transformations between various coordinate
     systems
-    
+
     """
 
     def __init__(self, configuration, debug=False):
         """
         Initialization of instance variables
-        
+
         :param configuration: object containing parameters set by the user
         :param debug: if set to True, display keypoints and shifts during auto-alignment
         """
@@ -124,7 +124,7 @@ class Alignment:
         """
         Let the user select the landmark used for telescope alignment and compute its offset
         from the moon center, including libration and topocentric parallax.
-        
+
         :return: -
         """
 
@@ -145,7 +145,7 @@ class Alignment:
         """
         Determine the current error in telescope pointing, either with the help of the user
         (manual mode) or automatically (auto-alignment).
-        
+
         :param alignment_manual: True if the telescope has been aimed at landmark by the user
         :return: In case alignment_manual=False (auto-alignment), return the relative alignment
                  error. The deviation of the current positioning as compared to the expected
@@ -172,7 +172,7 @@ class Alignment:
         else:
             # Automatic alignment: check if auto-alignment has been initialized
             if not self.autoalign_initialized:
-                raise RuntimeError("Error: Attempt to do autoalign before initialization")
+                raise RuntimeError("Error: Attempt to do an auto-alignment before initialization")
             # Move telescope to expected coordinates of alignment point
             (ra_landmark, de_landmark) = (self.compute_telescope_coordinates_of_landmark())
             self.tel.slew_to(ra_landmark, de_landmark)
@@ -261,7 +261,7 @@ class Alignment:
         image of the Moon (x positive to the east, y positive southwards) and the (x,y) coordinates
         of the normalized plane in which the tile construction is done (x positive to the right,
         y positive upwards). Take into account potential mirror inversion in the optical system.
-        
+
         :param camera_socket: interface to the camera to capture videos and still images
         :return: fraction of alignment error as compared to width of overlap between tiles
         """
@@ -274,7 +274,7 @@ class Alignment:
         except RuntimeError:
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol(
-                    "Autoalign initialization failed in capturing alignment reference frame.")
+                    "Auto-alignment initialization failed in capturing alignment reference frame.")
             raise RuntimeError
 
         if self.configuration.protocol_level > 1:
@@ -312,7 +312,7 @@ class Alignment:
                     Miscellaneous.protocol(str(e))
                 raise RuntimeError
             if self.configuration.protocol_level > 2:
-                Miscellaneous.protocol("Frame captured for autoalignment, x_shift: " + str(
+                Miscellaneous.protocol("Frame captured for auto-alignment, x_shift: " + str(
                     round(x_shift / self.im_shift.pixel_angle, 1)) + ", y_shift: " + str(
                     round(y_shift / self.im_shift.pixel_angle,
                           1)) + " (pixels), # consistent shifts: " + str(
@@ -332,13 +332,13 @@ class Alignment:
         self.flip_y = np.sign(shift_vector_2_measured[1])
         if self.configuration.protocol_level > 2:
             if self.flip_x < 0:
-                Miscellaneous.protocol("Autoalign, image flipped horizontally.")
+                Miscellaneous.protocol("Auto-alignment, image flipped horizontally.")
             else:
-                Miscellaneous.protocol("Autoalign, image not flipped horizontally.")
+                Miscellaneous.protocol("Auto-alignment, image not flipped horizontally.")
             if self.flip_y < 0:
-                Miscellaneous.protocol("Autoalign, image flipped vertically.")
+                Miscellaneous.protocol("Auto-alignment, image flipped vertically.")
             else:
-                Miscellaneous.protocol("Autoalign, image not flipped vertically.")
+                Miscellaneous.protocol("Auto-alignment, image not flipped vertically.")
         # Determine how much the measured shifts deviate from the expected shifts in the focal
         # plane. If the difference is too large, auto-alignment initialization is interpreted as
         # not successful.
@@ -355,13 +355,13 @@ class Alignment:
         if error > self.configuration.align_max_autoalign_error:
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol(
-                    "Autoalign initialization failed, focal length error in x: " + str(
+                    "Auto-alignment initialization failed, focal length error in x: " + str(
                         round(error_x * 100., 1)) + ", in y: " + str(
                         round(error_y * 100., 1)) + " (percent)")
             raise RuntimeError
         else:
             if self.configuration.protocol_level > 0:
-                Miscellaneous.protocol("Autoalign successful, focal length error in x: " + str(
+                Miscellaneous.protocol("Auto-alignment successful, focal length error in x: " + str(
                     round(error_x * 100., 1)) + ", in y: " + str(
                     round(error_y * 100., 1)) + " (percent)")
         self.autoalign_initialized = True
@@ -373,7 +373,7 @@ class Alignment:
         Compute the drift rate of the telescope mount, based on two alignment points. By default,
         the first and last alignment point are used. Other indices may have been selected by the
         user.
-        
+
         :return: -
         """
 
@@ -403,12 +403,12 @@ class Alignment:
         The user may select a place on the moon where lighting conditions are optimal for setting
         the focus. This method stores the current location, so the telescope can be moved to it
         later to update the focus setting.
-        
+
         The user may opt to focus on a star rather than on a moon feature (by setting the
         "focus on star" configuration parameter). In this case the focus position does not move
         with the moon among the stars. Therefore, rather than computing the center offset in this
         case the RA,DE coordinates are used directly.
-        
+
         :return: -
         """
 
@@ -433,8 +433,8 @@ class Alignment:
         """
         Compute the current difference between telescope and celestial coordinates, including
         alignment and (if available) drift rate.
-        
-        :return: telescope - celestial coordinates: (Offset in RA, Offset in DE) 
+
+        :return: telescope - celestial coordinates: (Offset in RA, Offset in DE)
         """
 
         # If an alignment has been performed, compute offsets in RA and DE.
@@ -466,7 +466,7 @@ class Alignment:
     def ephemeris_to_telescope_coordinates(self, ra, de):
         """
         Translate celestial equatorial coordinates into coordinates of telescope mount.
-        
+
         :param ra: Celestial right ascension
         :param de: Celestial declination
         :return: Equatorial mount coordinates (RA, DE)
@@ -489,7 +489,7 @@ class Alignment:
         """
         Translate coordinates of telescope mount into celestial equatorial coordinates (inverse
         operation to ephemeris_to_telescope_coordinates).
-        
+
         :param ra: RA of telescope mount
         :param de: DE of telescope mount
         :return: Celestial coordinates (ra, de)
@@ -504,7 +504,7 @@ class Alignment:
         """
         Translate offset angles relative to moon center into equatorial coordinates (RA, DE) in
         the coordinate system of the telescope mount.
-        
+
         :param delta_ra: Center offset angle in ra
         :param delta_de: Center offset angle in de
         :return: Equatorial telescope mount coordinates (RA, DE)
@@ -528,7 +528,7 @@ class Alignment:
     def compute_telescope_coordinates_of_landmark(self):
         """
         Compute the current position of the landmark in the equatorial mount coordinate system.
-        
+
         :return: Equatorial telescope mount coordinates (RA, DE) of landmark.
         """
 
@@ -539,7 +539,7 @@ class Alignment:
         """
         Compute the current position of the focus area / focus star in the equatorial mount
         coordinate system.
-        
+
         :return: Equatorial telescope mount coordinates (RA, DE) of the focus area or focus star.
         """
 
@@ -553,7 +553,7 @@ class Alignment:
         """
         Compute the current position of the center of a panorama tile in the equatorial mount
         coordinate system.
-        
+
         :param tile: Index of panorama tile
         :return: Equatorial telescope mount coordinates (RA, DE) of the tile center.
         """
@@ -565,7 +565,7 @@ class Alignment:
     def current_time_seconds(current_time):
         """
         Compute the current time (in consecutive seconds), including fractional part.
-        
+
         :param current_time: Datetime object
         :return: time measured in consecutive seconds
         """
@@ -579,7 +579,7 @@ class Alignment:
     def seconds_since_last_alignment(self):
         """
         Compute time (in seconds) since last alignment.
-        
+
         :return: time measured in consecutive seconds
         """
 
@@ -638,7 +638,7 @@ if __name__ == "__main__":
 
     for alignment_count in range(2):
         print(" ")
-        print("Perform an autoalignment")
+        print("Perform an auto-alignment")
         al.align(alignment_manual=False)
 
         print(datetime.now())

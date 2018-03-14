@@ -201,7 +201,7 @@
        <string>Switch on / off auto-alignment</string>
       </property>
       <property name="text">
-       <string>Switch on Auto-alignment - B</string>
+       <string>Switch on auto-alignment - B</string>
       </property>
       <property name="shortcut">
        <string>B</string>
