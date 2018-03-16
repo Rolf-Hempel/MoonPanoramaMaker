@@ -181,7 +181,7 @@ class Alignment:
                 # Measure shift against reference frame
                 (x_shift, y_shift, in_cluster, outliers) = self.im_shift.shift_vs_reference()
                 if self.configuration.protocol_level > 1:
-                    Miscellaneous.protocol("New alignment frame captured, x_shift: " + str(
+                    Miscellaneous.protocol("New alignment frame analyzed, x_shift: " + str(
                         round(x_shift / self.im_shift.pixel_angle, 1)) + ", y_shift: " + str(
                         round(y_shift / self.im_shift.pixel_angle,
                               1)) + " (pixels), # consistent shifts: " + str(

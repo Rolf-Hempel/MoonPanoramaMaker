@@ -186,6 +186,9 @@ class ImageShift:
         # Write the normalized image to disk.
         normalized_image_filename = self.build_filename() + filename_appendix
         normalized_image.save(normalized_image_filename)
+        if self.configuration.protocol_level > 1:
+            Miscellaneous.protocol("Still image '" + filename_appendix +
+                                   " captured for auto-alignment.")
         # Use the ORB for keypoint detection
         normalized_image_kp = self.orb.detect(normalized_image_array, None)
         # Compute the descriptors with ORB

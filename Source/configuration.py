@@ -120,8 +120,8 @@ class Configuration:
         self.align_interval_change_factor = 1.5
         # Criterion for very precise alignment:
         self.align_very_precise_factor = 4.
-        # Delete alignment pictures if they are older than the given retention period (in seconds)
-        self.alignment_pictures_retention_time = 86400.
+        # Delete alignment pictures if they are older than the given retention period (in seconds).
+        self.alignment_pictures_retention_time = 43200.
 
         # Parameters in CLAHE image normalization:
         # Clip limit:
