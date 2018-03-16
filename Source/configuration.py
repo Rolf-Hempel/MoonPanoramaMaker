@@ -32,13 +32,13 @@ class Configuration:
     """
     The Configuration class is used to manage all parameters which can be changed or set by the
     user. This includes input / output to file for persistent storage.
-    
+
     """
 
     def __init__(self):
         """
         Initialize the configuration object.
-        
+
         """
 
         # The version number is displayed on the MPM main GUI title line.
@@ -120,6 +120,8 @@ class Configuration:
         self.align_interval_change_factor = 1.5
         # Criterion for very precise alignment:
         self.align_very_precise_factor = 4.
+        # Delete alignment pictures if they are older than the given retention period (in seconds)
+        self.alignment_pictures_retention_time = 86400.
 
         # Parameters in CLAHE image normalization:
         # Clip limit:
@@ -337,7 +339,7 @@ class Configuration:
         current version. If so, change / add parameters to make them compatible with the current
         version. At program termination the new parameter set will be written, so next time the
         parameters will be consistent.
-        
+
         :return: (file_identical, file_compatible), where:
                   file_identical: True if the data was imported from a file with the same format
                                   as the current one. False, if the format was different.
@@ -438,7 +440,7 @@ class Configuration:
             no details
         2:  Quantitative information on high-level activities
         3:  Detailed information also on low-level activities (only for debugging)
-        
+
         :return: -
         """
 
@@ -447,7 +449,7 @@ class Configuration:
     def get_camera_list(self):
         """
         Look up all camera models, for which parameters are stored in the configuration object.
-        
+
         :return: list of all available camera names (strings)
         """
 
@@ -458,7 +460,7 @@ class Configuration:
         Copy the parameters stored for a given camera model into the section "Camera" of the
         configuration object. The parameters in this section are used by MoonPanoramaMaker's
         computations.
-        
+
         :param name: Name (string) of the selected camera model
         :return: -
         """
@@ -481,7 +483,7 @@ class Configuration:
         """
         Write the contentes of the configuration object back to the configuration file in the
         user's home directory.
-        
+
         :return: -
         """
 

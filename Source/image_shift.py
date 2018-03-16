@@ -21,6 +21,7 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import datetime
+import time
 import os
 import shutil
 from math import atan
@@ -87,28 +88,35 @@ class ImageShift:
         self.debug = debug
 
         # During auto-alignment all still images captured are stored in a directory in the user's
-        # home directory. If such a directory is found from an earlier MPM run, delete it first.
+        # home directory. If such a directory is found from an old MPM run, delete it first.
         home = os.path.expanduser("~")
         self.image_dir = os.path.join(home, ".MoonPanoramaMaker_alignment_images")
-        try:
-            shutil.rmtree(self.image_dir)
-        except:
-            pass
-        # Create directory for still images. In Windows this operation sometimes fails. Therefore,
-        # retry until the operation is successful.
-        success = False
-        for retry in range(200):
+
+        # If the directory is old, delete it first.
+        if os.path.exists(self.image_dir) and time.time() - os.path.getmtime(
+                self.image_dir) > self.configuration.alignment_pictures_retention_time:
             try:
-                os.mkdir(self.image_dir)
-                success = True
-                break
+                shutil.rmtree(self.image_dir)
             except:
-                if self.configuration.protocol_level > 1:
-                    Miscellaneous.protocol("Warning: In imageShift, mkdir failed, retrying...")
-                plt.pause(0.1)
-        # Raise a runtime error if all loop iterations were unsuccessful.
-        if not success:
-            raise RuntimeError
+                raise RuntimeError
+
+        # If the directory does not exist or has just been deleted, create a new one.
+        if not os.path.exists(self.image_dir):
+                # Create directory for still images. In Windows this operation sometimes fails.
+                # Therefore, retry until the operation is successful.
+                success = False
+                for retry in range(self.configuration.polling_time_out_count):
+                    try:
+                        os.mkdir(self.image_dir)
+                        success = True
+                        break
+                    except:
+                        if self.configuration.protocol_level > 1:
+                            Miscellaneous.protocol("Warning: In imageShift, mkdir failed, retrying...")
+                        plt.pause(0.1)
+                # Raise a runtime error if all loop iterations were unsuccessful.
+                if not success:
+                    raise RuntimeError
 
         # The counter is used to number the alignment images captured during auto-alignment.
         self.alignment_image_counter = 0
