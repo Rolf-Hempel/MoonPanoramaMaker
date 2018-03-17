@@ -372,7 +372,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
             if self.configuration.conf.getboolean("Workflow", "camera automation"):
                 # Pressing the "Enter" key in this context will invoke method
                 # "camera_connect_request_answered"
-                self.gui_context = "camera connect request"
+                self.gui_context = "camera_connect_request"
                 # If camera automation is switched on, first prompt the user to start the external
                 # FireCapture program. Execution will continue only after the user has hit the
                 # "Enter" key.
@@ -392,7 +392,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         Start camera initialization in workflow thread, if camera automation is active. This method
         is either invoked directly from method "initialize_camera" (if no camera is to be connected,
         i.e., the user does not have to acknowledge FireCapture to be started), or by hitting the
-        "Enter" key within the "camera connect request" context.
+        "Enter" key within the "camera_connect_request" context.
 
         :return: -
         """
@@ -1372,7 +1372,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
                 if self.gui_context == "restart":
                     self.gui_context = ""
                     self.restart_acknowledged()
-                elif self.gui_context == "camera connect request":
+                elif self.gui_context == "camera_connect_request":
                     self.gui_context = ""
                     self.camera_connect_request_answered()
                 elif self.gui_context == "new_landmark_selection":
@@ -1424,11 +1424,17 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
             elif event.key() == QtCore.Qt.Key_Escape:
                 # If "key_status_saved" is True, keys are disabled because an operation
                 # is going on.
-                if self.gui_context == "camera connect request":
+                if self.gui_context == "camera_connect_request":
                     if self.configuration.protocol_level > 0:
                         Miscellaneous.protocol("The user has denied the FireCapture connection.")
                     self.gui_context = ""
                     self.camera_connect_request_denied()
+                elif self.gui_context == "autoalignment_point_reached":
+                    if self.configuration.protocol_level > 0:
+                        Miscellaneous.protocol(
+                            "The user has denied the auto-alignment initialization.")
+                    self.gui_context = ""
+                    self.wait_for_autoalignment_off()
                 elif self.key_status_saved:
                     # Tell the user to be patient (no immediate action)
                     self.set_text_browser("Please wait")
