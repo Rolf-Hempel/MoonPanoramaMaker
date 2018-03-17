@@ -882,7 +882,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
             self.enable_keys([self.ui.autoalignment])
         # When the camera orientation has changed, all tiles are marked "unprocessed"
         self.tv.mark_all_unprocessed()
-        self.workflow.active_tile_number = -1
+        self.reset_active_tile()
         # Update the status bar and display message.
         self.set_statusbar()
         if self.configuration.conf.getboolean("Workflow", "focus on star"):
@@ -1209,7 +1209,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         self.tv.mark_all_unprocessed()
         self.workflow.all_tiles_recorded = False
         # Reset the active tile number. Processing will start from the beginning.
-        self.workflow.active_tile_number = -1
+        self.reset_active_tile()
         self.set_text_browser("")
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol("All tiles are marked as unprocessed.")
@@ -1238,7 +1238,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         self.tv.mark_all_processed()
         # Mark the recording process as finished. No more tiles to record.
         self.workflow.all_tiles_recorded = True
-        self.workflow.active_tile_number = -1
+        self.reset_active_tile()
         self.set_text_browser("All tiles are marked as processed.")
         self.set_statusbar()
         if self.configuration.protocol_level > 0:
@@ -1283,6 +1283,8 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
             else:
                 self.mark_processed()
         self.workflow.active_tile_number = -1
+        # De-activate the "move to selected tile" button.
+        self.disable_keys([self.ui.move_to_selected_tile])
 
     def save_key_status(self):
         """
