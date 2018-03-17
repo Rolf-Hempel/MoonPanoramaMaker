@@ -381,6 +381,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
                                       "section.\nConfirm with 'enter', otherwise press 'esc'. "
                                       "In the latter case, camera automation will be switched "
                                       "back to manual mode.")
+                self.save_key_status()
             else:
                 self.camera_connect_request_answered()
         else:
@@ -414,23 +415,13 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         self.configuration.set_parameter('Workflow', 'camera automation', 'False')
         self.configuration.write_config()
         self.set_text_browser("'Camera automation' has been reset to manual mode.")
+        self.disable_keys([self.ui.autoalignment])
+        self.change_saved_key_status(self.ui.autoalignment, False)
         if self.configuration.protocol_level > 0:
             print("")
             Miscellaneous.protocol("The user has not acknowledged the connection to FireCapture. "
                                    "'Camera automation' has been reset to manual mode.")
         self.initialize_tesselation()
-
-        # The following code should not be necessary. First try to do without it. If the FireCapture
-        # connect request denial handling does not work otherwise, however, activate it.
-        #
-        # Invalidate all GUI buttons except for 'Re-start', 'Configuration' and 'Exit'
-        # self.disable_keys(
-        #     [self.ui.alignment, self.ui.configure_drift_correction, self.ui.rotate_camera,
-        #      self.ui.set_focus_area, self.ui.goto_focus_area, self.ui.start_continue_recording,
-        #      self.ui.select_tile, self.ui.move_to_selected_tile, self.ui.set_tile_unprocessed,
-        #      self.ui.set_all_tiles_unprocessed, self.ui.set_all_tiles_processed,
-        #      self.ui.new_landmark_selection, self.ui.show_landmark, self.ui.autoalignment,
-        #      self.ui.set_tile_processed])
 
     def camera_connection_failed(self, message):
         """
@@ -489,6 +480,8 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         :return: -
         """
 
+        # Enable keys further down in the workflow.
+        self.reset_key_status()
         # If a new tesselation is computed, display it in a new Matplotlib window.
         if self.new_tesselation_flag:
             self.tv = TileVisualization(self.configuration, self.workflow.tc)
