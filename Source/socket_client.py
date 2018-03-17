@@ -203,6 +203,7 @@ class SocketClientDebug:
         self.image_counter = 0
         # Create list of images stored in the image_directory.
         self.image_file_list = listdir(self.image_directory)
+        self.image_file_list.sort()
         # Set the delay for exposure time emulation.
         self.camera_delay = delay
 
