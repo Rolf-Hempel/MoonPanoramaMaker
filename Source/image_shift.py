@@ -34,7 +34,7 @@ from sklearn.cluster import DBSCAN
 
 from configuration import Configuration
 from miscellaneous import Miscellaneous
-from socket_client import SocketClientDebug
+from socket_client import SocketClient, SocketClientDebug
 
 
 class ImageShift:
@@ -315,7 +315,10 @@ if __name__ == "__main__":
     configuration = Configuration()
     host = 'localhost'
     port = configuration.fire_capture_port_number
-    mysocket = SocketClientDebug(host, port, configuration.camera_debug_delay)
+    if configuration.camera_debug:
+        mysocket = SocketClientDebug(host, port, configuration.camera_debug_delay)
+    else:
+        mysocket = SocketClient(host, port)
     print("Client: socket connected")
     iso = ImageShift(configuration, mysocket, debug=configuration.alignment_debug)
     try:

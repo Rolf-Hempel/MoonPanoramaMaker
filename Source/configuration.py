@@ -49,7 +49,7 @@ class Configuration:
         #
         # Debug mode for camera emulation: In the socket client, the interface to FireCapture is
         # emulated. FireCapture does not need to be started. No videos are captured, though.
-        self.camera_debug = True
+        self.camera_debug = False
         # If camera is emulated, insert a delay (in seconds) before sending the acknowledgement
         # message (to emulate exposure time).
         self.camera_debug_delay = 2.

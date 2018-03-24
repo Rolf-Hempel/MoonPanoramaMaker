@@ -434,6 +434,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
 
         self.set_text_browser("Unable to connect to FireCapture. Check the status of FireCapture "
                               " and re-start the workflow.\nDetailed error info: " + message)
+        self.reset_key_status()
 
     def initialize_tesselation(self):
         """

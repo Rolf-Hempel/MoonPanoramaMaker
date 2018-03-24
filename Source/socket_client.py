@@ -262,8 +262,8 @@ class SocketClientDebug:
         still_image = Image.open(self.image_directory + "/" + still_image_file).convert('L')
         # Look up size info and compute new size after compression.
         (width, height) = still_image.size
-        new_width = width / compression_factor
-        new_height = height / compression_factor
+        new_width = int(width / compression_factor)
+        new_height = int(height / compression_factor)
         # If compression is active, resize the image.
         if compression_factor != 1:
             still_image = still_image.resize((new_width, new_height), Image.ANTIALIAS)
