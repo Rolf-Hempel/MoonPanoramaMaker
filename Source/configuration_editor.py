@@ -649,14 +649,14 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
                 return
 
             input_string = str(self.input_fig_size_horizontal.text())
-            if Miscellaneous.testfloat(input_string, 0., 25.):
+            if Miscellaneous.testfloat(input_string, 2., 25.):
                 self.c.conf.set("Tile Visualization", "figsize horizontal", input_string)
             else:
                 Miscellaneous.show_input_error("Figure size horizontal", "10.")
                 return
 
             input_string = str(self.input_fig_size_vertical.text())
-            if Miscellaneous.testfloat(input_string, 0., 25.):
+            if Miscellaneous.testfloat(input_string, 2., 25.):
                 self.c.conf.set("Tile Visualization", "figsize vertical", input_string)
             else:
                 Miscellaneous.show_input_error("Figure size vertical", "10.")

@@ -31,7 +31,7 @@ from show_input_error import ShowInputError
 class Miscellaneous:
     """
     This class provides static methods for various auxiliary purposes.
-    
+
     """
 
     @staticmethod
@@ -43,19 +43,21 @@ class Miscellaneous:
     def testfloat(string, lower_bound, upper_bound):
         """
         Test if a floating point parameter is within given bounds.
-        
+
         :param string: string representation of the parameter
         :param lower_bound: lower bound of allowed interval
         :param upper_bound: upper bound of allowed interval
-        :return: the parameter converted to float, if okay. Else return None.
+        :return: True, if the input parameter is within bounds. Otherwise return False.
         """
 
         try:
             fl = float(string)
             if lower_bound <= fl <= upper_bound:
-                return fl
+                return True
+            else:
+                return False
         except:
-            return None
+            return False
 
     @staticmethod
     def testint(string, lower_bound, upper_bound):
@@ -65,15 +67,17 @@ class Miscellaneous:
         :param string: string representation of the parameter
         :param lower_bound: lower bound of allowed interval
         :param upper_bound: upper bound of allowed interval
-        :return: the parameter converted to int, if okay. Else return None.
+        :return: True, if the input parameter is within bounds. Otherwise return False.
         """
 
         try:
             i = int(string)
             if lower_bound <= i <= upper_bound:
-                return i
+                return True
+            else:
+                return False
         except:
-            return None
+            return False
 
     @staticmethod
     def testbool(string):
@@ -114,7 +118,7 @@ class Miscellaneous:
     def show_input_error(parameter_string, example_string):
         """
         Open a window which shows an invalid input parameter together with a valid example.
-        
+
         :param parameter_string: string representation of the invalid parameter
         :param example_string: example string showing a valid value for this parameter
         :return: -
@@ -147,7 +151,7 @@ class Miscellaneous:
         Rotate, scale and mirror-reverse vector (x,y) into (diff_RA, diff_DE). The x axis is assumed
         to point to the right, the y axis upwards (as used in class TileConstructor). If the x / and
         y axes are oriented differently, set parameters flip_x, flip_y accordingly.
-        
+
         :param pos_angle: angle between origin and target coordinate systems (counterclockwise)
         :param de_center: declination (used for approximate correction of RA displacement)
         :param scale_factor: scale factor between origin and target coordinate systems

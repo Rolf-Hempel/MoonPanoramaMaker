@@ -47,8 +47,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>604</width>
-        <height>772</height>
+        <width>602</width>
+        <height>766</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -172,7 +172,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>Horizontal dimension of tile visualization window in inches. Must be between 0. and 25.</string>
+            <string>Horizontal dimension of tile visualization window in inches. Must be between 2. and 25.</string>
            </property>
            <property name="text">
             <string>Figure size horizontal (inch)</string>
@@ -529,7 +529,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>Vertical dimension of tile visualization window in inches. Must be between 0. and 25.</string>
+            <string>Vertical dimension of tile visualization window in inches. Must be between 2. and 25.</string>
            </property>
            <property name="text">
             <string>Figure size vertical (inch)</string>

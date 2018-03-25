@@ -35,7 +35,7 @@ class CameraConfigurationInput(QtWidgets.QDialog, Ui_CameraDialog):
     def __init__(self, configuration, parent=None):
         """
         Open an editor gui for entering parameters for a new camera model.
-        
+
         :param configuration: object containing parameters set by the user
         """
 
@@ -85,7 +85,7 @@ class CameraConfigurationInput(QtWidgets.QDialog, Ui_CameraDialog):
         This method is invoked when the OK button is pressed. If at least one parameter has been
         changed, all text fields are tested for valid input data. Valid data are stored in the
         configuration object. If a test fails, a dialog prompts the user for correction.
-        
+
         :return: -
         """
 
@@ -105,33 +105,33 @@ class CameraConfigurationInput(QtWidgets.QDialog, Ui_CameraDialog):
             new_pixel_size = str(self.input_pixel_size.text())
             # Check if the float entered is within the given bounds [0., 0.02]. If the return value
             # is None, an error was detected. In this case give an example for a correct value.
-            if Miscellaneous.testfloat(new_pixel_size, 0., 0.02) is None:
+            if not Miscellaneous.testfloat(new_pixel_size, 0., 0.02):
                 Miscellaneous.show_input_error("Pixel size (mm)", "0.00375")
                 return
 
             # Repeat the same logic for all parameters.
             new_pixel_horizontal = str(self.input_pixel_horizontal.text())
-            if Miscellaneous.testint(new_pixel_horizontal, 1, 20000) is None:
+            if not Miscellaneous.testint(new_pixel_horizontal, 1, 20000):
                 Miscellaneous.show_input_error("Pixel count horizontal", "1280")
                 return
 
             new_pixel_vertical = str(self.input_pixel_vertical.text())
-            if Miscellaneous.testint(new_pixel_vertical, 1, 20000) is None:
+            if not Miscellaneous.testint(new_pixel_vertical, 1, 20000):
                 Miscellaneous.show_input_error("Pixel count vertical", "960")
                 return
 
             new_repetition_count = str(self.input_repetition_count.text())
-            if Miscellaneous.testint(new_repetition_count, 1, 10) is None:
+            if not Miscellaneous.testint(new_repetition_count, 1, 10):
                 Miscellaneous.show_input_error("Repetition count", "3")
                 return
 
             new_external_margin_pixel = str(self.input_external_margin.text())
-            if Miscellaneous.testint(new_external_margin_pixel, 1, 10000) is None:
+            if not Miscellaneous.testint(new_external_margin_pixel, 1, 10000):
                 Miscellaneous.show_input_error("External margin pixel", "300")
                 return
 
             new_tile_overlap_pixel = str(self.input_tile_overlap.text())
-            if Miscellaneous.testint(new_tile_overlap_pixel, 1, 5000) is None:
+            if not Miscellaneous.testint(new_tile_overlap_pixel, 1, 5000):
                 Miscellaneous.show_input_error("Tile overlap pixels", "150")
                 return
 
