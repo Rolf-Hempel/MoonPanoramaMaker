@@ -42,7 +42,7 @@ class Workflow(QtCore.QThread):
     between the main gui and the workflow thread is realized as follows: Actions in this
     thread are triggered by flags set in the main gui thread. In the reverse direction, this
     thread emits signals which are connected with methods in the main gui.
-    
+
     """
 
     # Define the list of signals with which this thread communicates with the main gui.
@@ -67,7 +67,7 @@ class Workflow(QtCore.QThread):
         """
         Establish the connection with the main gui, set some instance variables and initialize all
         flags to False.
-        
+
         :param gui: main gui object
         """
 
@@ -123,7 +123,7 @@ class Workflow(QtCore.QThread):
         Execute the workflow thread. Its main part is a permanent loop which looks for activity
         flags set by the main gui. When a flag is true, the corresponding action is performed.
         On completion, a signal is emitted.
-        
+
         :return: -
         """
 
@@ -397,6 +397,9 @@ class Workflow(QtCore.QThread):
                                     if len(self.tile_indices_since_last_autoalign) > 0:
                                         self.gui.tv.mark_unprocessed(
                                             self.tile_indices_since_last_autoalign)
+                                        # Just in case the currently active tile has just be marked
+                                        # unprocessed, set it to active again.
+                                        self.gui.tv.mark_active(self.active_tile_number)
                                         # Reset list of tiles since last auto-align (a fresh
                                         # auto-align has been just performed). Save the lowest
                                         # index of the invalidated tiles. When the TileConstructor
