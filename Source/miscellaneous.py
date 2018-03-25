@@ -35,7 +35,25 @@ class Miscellaneous:
     """
 
     @staticmethod
+    def time_string():
+        """
+        Build a time string in the form "2018-03-25_18-07" representing the current time.
+
+        :return: -
+        """
+
+        now = str(datetime.now())
+        return now[0:10] + "_" + now[11:13] + "-" + now[14:16]
+
+    @staticmethod
     def protocol(string):
+        """
+        Print a message plus time stamp to standard output.
+
+        :param string: Message to be printed after the time stamp
+        :return: -
+        """
+
         print(str(datetime.now())[11:21], string)
         sys.stdout.flush()
 

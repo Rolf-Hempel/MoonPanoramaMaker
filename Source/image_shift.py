@@ -21,19 +21,18 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import datetime
-import time
 import os
 import shutil
+import time
 from math import atan
 
 import cv2
 import matplotlib.pyplot as plt
 from PIL.Image import fromarray
-from numpy import ndarray, zeros_like, count_nonzero
-from sklearn.cluster import DBSCAN
-
 from configuration import Configuration
 from miscellaneous import Miscellaneous
+from numpy import ndarray, zeros_like, count_nonzero
+from sklearn.cluster import DBSCAN
 from socket_client import SocketClient, SocketClientDebug
 
 
@@ -89,8 +88,8 @@ class ImageShift:
 
         # During auto-alignment all still images captured are stored in a directory in the user's
         # home directory. If such a directory is found from an old MPM run, delete it first.
-        home = os.path.expanduser("~")
-        self.image_dir = os.path.join(home, ".MoonPanoramaMaker_alignment_images")
+        self.image_dir = os.path.join(self.configuration.home,
+                                      ".MoonPanoramaMaker_alignment_images")
 
         # If the directory is old, delete it first.
         if os.path.exists(self.image_dir) and time.time() - os.path.getmtime(

@@ -26,6 +26,7 @@ import sys
 
 from PyQt5 import QtWidgets
 from configuration_editor import ConfigurationEditor
+from miscellaneous import Miscellaneous
 
 
 class Configuration:
@@ -153,9 +154,9 @@ class Configuration:
 
         # The config file for persistent parameter storage is located in the user's home
         # directory, as is the detailed MoonPanoramaMaker logfile.
-        home = os.path.expanduser("~")
-        self.config_filename = os.path.join(home, ".MoonPanoramaMaker.ini")
-        self.protocol_filename = os.path.join(home, "MoonPanoramaMaker.log")
+        self.home = os.path.expanduser("~")
+        self.config_filename = os.path.join(self.home, ".MoonPanoramaMaker.ini")
+        self.protocol_filename = os.path.join(self.home, "MoonPanoramaMaker.log")
 
         self.file_new = not os.path.isfile(self.config_filename)
         self.file_identical = False

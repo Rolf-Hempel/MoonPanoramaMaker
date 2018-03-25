@@ -488,6 +488,18 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
             self.tv = TileVisualization(self.configuration, self.workflow.tc)
             # Initialize all tiles as unprocessed.
             self.tv.mark_all_unprocessed()
+            # If the protocol is to be written to a file, also write the tile layout to a file in
+            # the user's home directory.
+            if self.configuration.conf.getboolean('Workflow', 'protocol to file'):
+                try:
+                    layout_file = "MoonPanoramaMaker_" + Miscellaneous.time_string() + \
+                                  "_Tile-Layout.png"
+                    tile_layout_path = os.path.join(self.configuration.home, layout_file)
+                    self.tv.save_tile_layout(tile_layout_path)
+                    if self.configuration.protocol_level > 0:
+                        Miscellaneous.protocol("Tile layout written to file: " + tile_layout_path)
+                except:
+                    pass
             self.new_tesselation_flag = False
 
         # Initialization is complete, set the main GUI status bar.
