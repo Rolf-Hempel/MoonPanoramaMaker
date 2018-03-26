@@ -43,12 +43,13 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
     """
 
-    def __init__(self, configuration, parent=None):
+    def __init__(self, configuration, initialized, parent=None):
         """
         Initialize the text fields in the GUI based on the configuration object, and connect
         gui signals with methods to update the configuration object entries.
 
         :param configuration: object containing parameters set by the user
+        :param initialized: True if program initialization is completed, False otherwise.
         :param parent:
         """
 
@@ -56,6 +57,10 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.setupUi(self)
         # Configuration object c
         self.c = configuration
+        # The flag "initialized" indicates if the editor is called later in the workflow. In that
+        # case a warning is issued if the user wants to change a parameter which invalidates the
+        # current tesselation.
+        self.initialized = initialized
         # Set the flag indicating if the configuration was changed to False.
         self.configuration_changed = False
         # These flags indicate which part of the initialization have to be repeated.
@@ -574,8 +579,8 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
         if self.configuration_changed:
             # If the tesselation is changed, most of the work done so far has to be repeated.
-            # Ask the user if this is really what he/she wants to do.
-            if self.tesselation_changed:
+            # If not at begin of execution, ask the user if this is really what he/she wants to do.
+            if self.initialized and self.tesselation_changed:
                 # Ask the user for confirmation.
                 quit_msg = "The configuration change will invalidate the videos recorded so far. " \
                            "Do you really want to restart the recording workflow?"

@@ -496,7 +496,8 @@ if __name__ == "__main__":
     c = Configuration()
     camera_list = c.get_camera_list()
     app = QtWidgets.QApplication(sys.argv)
-    editor = ConfigurationEditor(c)
+    initialized = True
+    editor = ConfigurationEditor(c, initialized)
     editor.show()
     app.exec_()
 

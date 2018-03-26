@@ -57,6 +57,41 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         self.setChildrenFocusPolicy(QtCore.Qt.NoFocus)
 
+        # Set status flags.
+        self.initialized = False
+        self.camera_rotated = False
+        self.focus_area_set = False
+        self.autoalign_enabled = False
+
+        # Before GUI buttons are de-activated, the activation status of all keys is saved for later
+        # restoration. At the moment, no key status is saved.
+        self.key_status_saved = False
+
+        # The gui_context variable is used to know, at which point of program execution, for
+        # example, the "Enter" key was pressed.
+        self.gui_context = ""
+
+        # The program workflow will do a fresh start next time the (Re-)Start button is pressed.
+        self.first_start = True
+
+        # At the first workflow start, all initialization steps have to be executed.
+        self.output_channel_initialization_flag = True
+        self.telescope_initialization_flag = True
+        self.camera_initialization_flag = True
+        self.new_tesselation_flag = True
+
+        # Initialize instance variables.
+        self.tv = None
+        self.max_alignment_error = None
+        self.max_seconds_between_autoaligns = None
+        self.camera_interrupted = None
+        self.selected_tile_numbers = None
+        self.selected_tile_numbers_string = None
+        self.saved_key_status = None
+        self.next_tile = None
+        self.min_autoalign_interval = None
+        self.max_autoalign_interval = None
+
         # Build a list of GUI buttons. It is used to control the de-activation and re-activation of
         # GUI buttons at runtime. Also, connect GUI events with method invocations.
         self.button_list = []
@@ -127,7 +162,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         # been set so far), or it was imported from an old file format, open the configuration
         # editor GUI to let the user make adjustments if necessary.
         if not self.configuration.file_identical:
-            editor = ConfigurationEditor(self.configuration)
+            editor = ConfigurationEditor(self.configuration, self.initialized)
             editor.exec_()
             if editor.configuration_changed:
                 self.configuration.write_config()
@@ -160,41 +195,6 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         self.workflow.reset_key_status_signal.connect(self.reset_key_status)
         self.workflow.set_text_browser_signal.connect(self.set_text_browser)
 
-        # Set status flags.
-        self.initialized = False
-        self.camera_rotated = False
-        self.focus_area_set = False
-        self.autoalign_enabled = False
-
-        # Before GUI buttons are de-activated, the activation status of all keys is saved for later
-        # restoration. At the moment, no key status is saved.
-        self.key_status_saved = False
-
-        # The gui_context variable is used to know, at which point of program execution, for
-        # example, the "Enter" key was pressed.
-        self.gui_context = ""
-
-        # The program workflow will do a fresh start next time the (Re-)Start button is pressed.
-        self.first_start = True
-
-        # At the first workflow start, all initialization steps have to be executed.
-        self.output_channel_initialization_flag = True
-        self.telescope_initialization_flag = True
-        self.camera_initialization_flag = True
-        self.new_tesselation_flag = True
-
-        # Initialize instance variables.
-        self.tv = None
-        self.max_alignment_error = None
-        self.max_seconds_between_autoaligns = None
-        self.camera_interrupted = None
-        self.selected_tile_numbers = None
-        self.selected_tile_numbers_string = None
-        self.saved_key_status = None
-        self.next_tile = None
-        self.min_autoalign_interval = None
-        self.max_autoalign_interval = None
-
         self.set_text_browser("Press:\n - 'Edit configuration - C'  to set/review configuration "
                               "parameters first, or\n - '(Re-)Start - S'  to start the workflow "
                               "directly, using the parameters from previous session.")
@@ -224,7 +224,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         :return: -
         """
 
-        editor = ConfigurationEditor(self.configuration)
+        editor = ConfigurationEditor(self.configuration, self.initialized)
         editor.exec_()
         if editor.configuration_changed:
             self.configuration.write_config()
