@@ -224,6 +224,8 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         :return: -
         """
 
+        # Clear the text browser.
+        self.set_text_browser("")
         editor = ConfigurationEditor(self.configuration, self.initialized)
         editor.exec_()
         if editor.configuration_changed:
@@ -254,9 +256,18 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         # parameter. Adjust the text on the GUI buttons according to the current choice.
         self.set_focus_button_labels()
 
-        # The initialization chain starts with "redirect_stdout". When the chain is finished, the
-        # workflow is started with "start_workflow".
-        self.redirect_stdout()
+        # If the initialization phase has been executed already, don't ask again what to do.
+        if self.initialized:
+            # The initialization chain starts with "redirect_stdout". When the chain is finished,
+            # the workflow is started with "start_workflow".
+            self.redirect_stdout()
+        else:
+            # The configuration file was edited at program start. Prompt the user to make more
+            # parameter changes, or to start the workflow.
+            self.set_text_browser(
+                "Press:\n - 'Edit configuration - C'  to set/review configuration "
+                "parameters again, or\n - '(Re-)Start - S'  to start the workflow "
+                "now.")
 
     def restart(self):
         """
@@ -270,7 +281,10 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         :return: -
         """
 
+        # Disable all keys during the preparatory phase.
+        self.save_key_status()
         if self.first_start:
+            self.set_text_browser("")
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol("Program start: Build the execution environment.")
 
@@ -381,7 +395,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
                                       "section.\nConfirm with 'enter', otherwise press 'esc'. "
                                       "In the latter case, camera automation will be switched "
                                       "back to manual mode.")
-                self.save_key_status()
+                # self.save_key_status()
             else:
                 self.camera_connect_request_answered()
         else:
@@ -1302,18 +1316,21 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
     def save_key_status(self):
         """
         For all buttons of the main GUI: save the current state (enabled / disabled), then disable
-        all buttons. The saved state is restored with method "reset_key_status".
+        all buttons, except the last one ("Exit"). The saved state is restored with method
+        "reset_key_status".
 
         :return: -
         """
 
         # Initialize the status list.
         self.saved_key_status = []
-        # For each button store a boolean indicating its being enabled / disabled.
-        for button in self.button_list:
+        # For each button (except "Exit") store a boolean indicating its being enabled / disabled.
+        for button in self.button_list[:-1]:
             self.saved_key_status.append(button.isEnabled())
             # Disable the button.
             button.setEnabled(False)
+        # Append "True" as the status of the "Exit" key.
+        self.saved_key_status.append(True)
         # Set a flag indicating that the key status has been saved.
         self.key_status_saved = True
 
