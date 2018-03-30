@@ -30,8 +30,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>522</width>
-        <height>275</height>
+        <width>520</width>
+        <height>270</height>
        </rect>
       </property>
       <widget class="QWidget" name="layoutWidget">
@@ -153,7 +153,7 @@
            <string>Enter either 'localhost' or a valid IP address.</string>
           </property>
           <property name="text">
-           <string>URL of the INDI server</string>
+           <string>IP address of the INDI server</string>
           </property>
          </widget>
         </item>
