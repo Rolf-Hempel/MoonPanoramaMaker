@@ -30,12 +30,12 @@ class SocketServer:
     and FireCapture. The SocketServer is a stand-alone application which emulates the MPM plugin
     in FireCapture. It takes reqests to start video capturing and sends faked acknowledgements back
     to MPM.
-    
+
     The class is obsolete because it does not implement the still image capturing required by
     auto-alignment. Today MPM can be tested without the SocketServer by seeting the "camera_debug"
     flag in configuration.py to True. Then, on the client side, the video and still-image requests
     are handled by mockup class SocketClientDebug which does not communicate with FireCapture.
-    
+
     """
 
     def __init__(self, host, port):
@@ -52,16 +52,16 @@ class SocketServer:
     def mysend(sock, msg):
         sent = sock.send(msg)
         if sent == 0:
-            raise RuntimeError("socket connection broken")
+            raise RuntimeError("Socket connection broken.")
 
     @staticmethod
     def myreceive(sock):
         try:
             rcvd = sock.recv(9)
         except:
-            raise RuntimeError("socket connection terminated")
+            raise RuntimeError("Socket connection terminated.")
         if rcvd == '':
-            raise RuntimeError("socket connection broken")
+            raise RuntimeError("Socket connection broken.")
         return rcvd
 
 

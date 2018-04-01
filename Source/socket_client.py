@@ -64,7 +64,7 @@ class SocketClient:
 
         sent = self.sock.send(msg.encode())
         if sent == 0:
-            raise RuntimeError("Send: socket connection broken")
+            raise RuntimeError("Send: socket connection broken.")
 
     def myreceive(self, recv_count):
         """
@@ -79,14 +79,14 @@ class SocketClient:
         # Recieve the first chunk of data.
         data = self.sock.recv(recv_count)
         if len(data) == 0:
-            raise RuntimeError("Recv: socket connection broken")
+            raise RuntimeError("Recv: socket connection broken.")
         total_rx = len(data)
         rcvd = data
         # Append more chunks until the expected number of characters are received.
         while total_rx < recv_count:
             data = self.sock.recv(recv_count - total_rx)
             if len(data) == 0:
-                raise RuntimeError("Recv: socket connection broken")
+                raise RuntimeError("Recv: socket connection broken.")
             total_rx += len(data)
             rcvd = rcvd + data
 
@@ -111,7 +111,7 @@ class SocketClient:
         elif length == 8:
             return unpack('!q', self.myreceive(8))[0]
         else:
-            raise Exception("Error in myreceive_int: unsupported int length " + str(length))
+            raise Exception("Error in myreceive_int: unsupported int length " + str(length) + ".")
 
     def acquire_video(self, file_name_appendix):
         """
@@ -256,7 +256,7 @@ class SocketClientDebug:
 
         # Test if there is an unread image left in the local directory.
         if self.image_counter >= len(self.image_file_list):
-            raise RuntimeError("still image counter out of range")
+            raise RuntimeError("Still image counter out of range.")
         # Read the image from the file, and extract the luminance channel.
         still_image_file = self.image_file_list[self.image_counter]
         still_image = Image.open(self.image_directory + "/" + still_image_file).convert('L')

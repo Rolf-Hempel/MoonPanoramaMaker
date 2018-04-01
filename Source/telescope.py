@@ -39,7 +39,6 @@ from enum import IntEnum
 from math import degrees, radians, pi
 
 import numpy
-
 from exceptions import TelescopeException, ASCOMImportException, ASCOMConnectException, \
     ASCOMPropertyException, INDIImportException, INDIConnectException, INDIPropertyException
 from miscellaneous import Miscellaneous
@@ -148,7 +147,7 @@ class OperateTelescopeASCOM(threading.Thread):
         try:
             telescope_driver = win32com.client.Dispatch(driver_name)
         except:
-            raise ASCOMConnectException("ASCOM: Unable to access telescope driver")
+            raise ASCOMConnectException("ASCOM: Unable to access telescope driver.")
 
         # Check if the driver is already connected to the telescope. If not, try to establish the
         # connection.
@@ -164,11 +163,11 @@ class OperateTelescopeASCOM(threading.Thread):
                         Miscellaneous.protocol(
                             "OperateTelescopeASCOM: The telescope is connected now.")
                 else:
-                    raise ASCOMConnectException("ASCOM: Unable to connect to telescope driver")
+                    raise ASCOMConnectException("ASCOM: Unable to connect to telescope driver.")
         except:
             # The "Connected" property of the driver cannot be accessed properly.
             raise ASCOMPropertyException(
-                "ASCOM: Unable to access the 'Connected' property of the telescope driver")
+                "ASCOM: Unable to access the 'Connected' property of the telescope driver.")
 
         # Check the availability of fundamental driver properties needed by MoonPanoramaMaker. Raise
         # an exception if one property is missing.
@@ -179,19 +178,20 @@ class OperateTelescopeASCOM(threading.Thread):
             can_set_guide_rates = telescope_driver.CanSetGuideRates
         except:
             raise ASCOMConnectException(
-                "ASCOM: The telescope driver does not support required property lookups")
+                "ASCOM: The telescope driver does not support required property lookups.")
 
         if not can_slew:
-            raise ASCOMPropertyException("ASCOM: The telescope driver is not able to slew to RA/DE")
+            raise ASCOMPropertyException(
+                "ASCOM: The telescope driver is not able to slew to RA/DE.")
         elif not can_set_tracking:
             raise ASCOMPropertyException(
-                "ASCOM: The telescope driver cannot be set to track in RA/DE")
+                "ASCOM: The telescope driver cannot be set to track in RA/DE.")
         elif not can_pulse_guide:
             raise ASCOMPropertyException(
-                "ASCOM: The telescope driver is not able to do pulse guide corrections")
+                "ASCOM: The telescope driver is not able to do pulse guide corrections.")
         elif not can_set_guide_rates:
             raise ASCOMPropertyException(
-                "ASCOM: The telescope driver is not able to set guide rates")
+                "ASCOM: The telescope driver is not able to set guide rates.")
 
         # Return a reference to the driver object.
         return telescope_driver
@@ -212,7 +212,7 @@ class OperateTelescopeASCOM(threading.Thread):
                     Miscellaneous.protocol("OperateTelescopeASCOM: telescope tracking has been "
                                            "switched on.")
         except:
-            raise ASCOMPropertyException("ASCOM: Telescope tracking could not be switched on")
+            raise ASCOMPropertyException("ASCOM: Telescope tracking could not be switched on.")
 
     def set_pulse_guide_speed(self):
         """
@@ -233,7 +233,7 @@ class OperateTelescopeASCOM(threading.Thread):
                     "OperateTelescopeASCOM: pulse guide speed in RA set to " + str(
                         self.configuration.conf.get("ASCOM",
                                                     "pulse guide speed RA")) + ", in DE to " + str(
-                        self.configuration.conf.get("ASCOM", "pulse guide speed DE")))
+                        self.configuration.conf.get("ASCOM", "pulse guide speed DE")) + ".")
         except:
             raise ASCOMPropertyException(
                 "ASCOM: The 'pulse guide speed' value set by the user in the "
@@ -255,7 +255,7 @@ class OperateTelescopeASCOM(threading.Thread):
             self.initialization_error = "Pythoncom module could not be imported. " \
                                         "Is this a Windows system?"
             if self.configuration.protocol_level > 0:
-                Miscellaneous.protocol("Ending OperateTelescopeASCOM thread")
+                Miscellaneous.protocol("Ending OperateTelescopeASCOM thread.")
             return
         # This is necessary because Windows COM objects are shared between threads.
         pythoncom.CoInitialize()
@@ -274,7 +274,7 @@ class OperateTelescopeASCOM(threading.Thread):
             # Clean up the low-level telescope thread and exit.
             pythoncom.CoUninitialize()
             if self.configuration.protocol_level > 0:
-                Miscellaneous.protocol("Ending OperateTelescopeASCOM thread")
+                Miscellaneous.protocol("Ending OperateTelescopeASCOM thread.")
             return
 
         # After successful connection to the telescope driver, mark the interface initialized.
@@ -293,7 +293,7 @@ class OperateTelescopeASCOM(threading.Thread):
                     if self.configuration.protocol_level > 1:
                         Miscellaneous.protocol("ASCOM: Slewing telescope to RA " + str(
                             round(instruction['rect'] * 15., 5)) + ", DE " + str(
-                            round(instruction['decl'], 5)) + " (degrees)")
+                            round(instruction['decl'], 5)) + " (degrees).")
                     # Instruct the ASCOM driver to execute the SlewToCoordinates instruction.
                     # Please note that coordinates are in hours (RA) and degrees (DE).
                     self.tel.SlewToCoordinates(instruction['rect'], instruction['decl'])
@@ -322,7 +322,8 @@ class OperateTelescopeASCOM(threading.Thread):
                         Miscellaneous.protocol(
                             "OperateTelescopeASCOM: Position looked-up, RA " + str(
                                 round(rect * 15., 5)) + ", DE " + str(
-                                round(decl, 5)) + " (degrees), iterations: " + str(iter_count))
+                                round(decl, 5)) + " (degrees), iterations: " + str(
+                                iter_count) + ".")
 
                 # Find out which ASCOM directions correspond to directions in the sky.
                 elif instruction['name'] == "calibrate":
@@ -391,13 +392,13 @@ class OperateTelescopeASCOM(threading.Thread):
                     # The telescope has been moved too little in RA. Issue a PulseGuide.
                     if abs(target_ra - start_ra) > abs(current_ra - start_ra):
                         if self.configuration.protocol_level > 2:
-                            Miscellaneous.protocol("OperateTelescopeASCOM: Pulse guide in RA")
+                            Miscellaneous.protocol("OperateTelescopeASCOM: Pulse guide in RA.")
                         self.tel.PulseGuide(direction_ra, int(
                             self.configuration.conf.getfloat("ASCOM", "guiding interval") * 1000.))
                     # The telescope has been moved too little in DE. Issue a PulseGuide.
                     if abs(target_de - start_de) > abs(current_de - start_de):
                         if self.configuration.protocol_level > 2:
-                            Miscellaneous.protocol("OperateTelescopeASCOM: Pulse guide in DE")
+                            Miscellaneous.protocol("OperateTelescopeASCOM: Pulse guide in DE.")
                         self.tel.PulseGuide(direction_de, int(
                             self.configuration.conf.getfloat("ASCOM", "guiding interval") * 1000.))
                     # Re-insert this instruction into the queue.
@@ -479,7 +480,7 @@ class OperateTelescopeASCOM(threading.Thread):
         # See comment at the beginning of this method.
         pythoncom.CoUninitialize()
         if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("Ending OperateTelescopeASCOM thread")
+            Miscellaneous.protocol("Ending OperateTelescopeASCOM thread.")
 
     def remove_instruction(self, instruction):
         """
@@ -633,7 +634,7 @@ class OperateTelescopeINDI(threading.Thread):
             server_port = self.configuration.indi_port_number
             self.indiclnt.setServer(server_address, server_port)
         except:
-            raise INDIConnectException("Unable to connect to INDI client")
+            raise INDIConnectException("Unable to connect to INDI client.")
 
         # Try to connect to the INDI server.
         if not (self.indiclnt.connectServer()):
@@ -647,7 +648,7 @@ class OperateTelescopeINDI(threading.Thread):
             if len(self.device_list) > 0:
                 break
         if len(self.device_list) == 0:
-            raise INDIConnectException("INDI: Unable to get the device list")
+            raise INDIConnectException("INDI: Unable to get the device list.")
 
         # Look for a device which implements the TELESCOPE_INTERFACE. Exit the
         # loop when the first such driver is found.
@@ -660,7 +661,7 @@ class OperateTelescopeINDI(threading.Thread):
                     break
                 driver_info = device.getText("DRIVER_INFO")
             if not driver_info:
-                raise INDIConnectException("INDI: Unable to get driver info")
+                raise INDIConnectException("INDI: Unable to get driver info.")
             # The driver info is available, check the interface types it implements.
             if int(driver_info[3].text) & interfaceType.TELESCOPE_INTERFACE:
                 if self.configuration.protocol_level > 0:
@@ -671,7 +672,7 @@ class OperateTelescopeINDI(threading.Thread):
                 break
         # There is no device which implements the TELESCOPE_INTERFACE. Raise an exception.
         if not self.device_telescope:
-            raise INDIConnectException("INDI: Unable to find a driver of type 'telescope'")
+            raise INDIConnectException("INDI: Unable to find a driver of type 'telescope'.")
 
         # Wait for the CONNECTION property be defined for telescope.
         for iteration in range(self.configuration.polling_time_out_count):
@@ -680,7 +681,7 @@ class OperateTelescopeINDI(threading.Thread):
             if self.telescope_connect:
                 break
         if not self.telescope_connect:
-            raise INDIConnectException("INDI: Unable to get the telescope connection switch")
+            raise INDIConnectException("INDI: Unable to get the telescope connection switch.")
 
         # Check if the telescope device is already connected to the telescope. If not, try to
         # establish the connection.
@@ -698,7 +699,7 @@ class OperateTelescopeINDI(threading.Thread):
             if self.device_telescope.isConnected():
                 break
         if not self.device_telescope.isConnected():
-            raise INDIConnectException("INDI: Unable to connect with the telescope")
+            raise INDIConnectException("INDI: Unable to connect with the telescope.")
 
         # Get the RA/DE coordinate object.
         for iteration in range(self.configuration.polling_time_out_count):
@@ -707,11 +708,11 @@ class OperateTelescopeINDI(threading.Thread):
             if self.telescope_radec:
                 break
         if not self.telescope_radec:
-            raise INDIConnectException("INDI: Unable to get the RA/DE coordinate object")
+            raise INDIConnectException("INDI: Unable to get the RA/DE coordinate object.")
         if self.configuration.protocol_level > 2:
             Miscellaneous.protocol("OperateTelescopeINDI: Scope init done, RA " + str(
                 round(self.telescope_radec[0].value * 15., 5)) + ", DE " + str(
-                round(self.telescope_radec[1].value, 5)) + " (degrees)")
+                round(self.telescope_radec[1].value, 5)) + " (degrees).")
 
         # Get pulse guide objects.
         for iteration in range(self.configuration.polling_time_out_count):
@@ -720,14 +721,14 @@ class OperateTelescopeINDI(threading.Thread):
             if self.telescope_guideNS:
                 break
         if not self.telescope_guideNS:
-            raise INDIConnectException("INDI: Unable to get the guideNS object")
+            raise INDIConnectException("INDI: Unable to get the guideNS object.")
         for iteration in range(self.configuration.polling_time_out_count):
             self.telescope_guideWE = self.device_telescope.getNumber("TELESCOPE_TIMED_GUIDE_WE")
             time.sleep(self.configuration.polling_interval)
             if self.telescope_guideWE:
                 break
         if not self.telescope_guideWE:
-            raise INDIConnectException("INDI: Unable to get the guideWE object")
+            raise INDIConnectException("INDI: Unable to get the guideWE object.")
 
     def switch_on_tracking(self):
         """
@@ -746,7 +747,7 @@ class OperateTelescopeINDI(threading.Thread):
                 break
             time.sleep(self.configuration.polling_interval)
         if not self.telescope_on_coord_set:
-            raise INDIPropertyException("INDI: Unable to get the 'ON_COORD_SET' switch")
+            raise INDIPropertyException("INDI: Unable to get the 'ON_COORD_SET' switch.")
 
         try:
             # The order below is defined in the property vector, look at the standard Properties
@@ -759,7 +760,7 @@ class OperateTelescopeINDI(threading.Thread):
                 Miscellaneous.protocol("OperateTelescopeINDI: telescope tracking has been "
                                        "switched on.")
         except:
-            raise INDIPropertyException("INDI: Telescope tracking could not be switched on")
+            raise INDIPropertyException("INDI: Telescope tracking could not be switched on.")
 
     def set_pulse_guide_speed(self):
         """
@@ -781,8 +782,8 @@ class OperateTelescopeINDI(threading.Thread):
         if len(prate) < 1:  # no slew rate
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol(
-                    "OperateTelescopeINDI: The telescope driver provides zero slew rates")
-            raise INDIPropertyException("INDI: No slew rate provided by telescope driver")
+                    "OperateTelescopeINDI: The telescope driver provides zero slew rates.")
+            raise INDIPropertyException("INDI: No slew rate provided by telescope driver.")
         else:
             if self.configuration.protocol_level > 2:
                 Miscellaneous.protocol(
@@ -799,10 +800,10 @@ class OperateTelescopeINDI(threading.Thread):
             else:
                 # The selected slew rate is not among the rates provided by the driver.
                 raise INDIPropertyException("INDI: The user selected a pulse guide "
-                                            "speed not supporded by telescope driver")
+                                            "speed not supporded by telescope driver.")
             if self.configuration.protocol_level > 1:
                 Miscellaneous.protocol(
-                    "OperateTelescopeINDI: pulse guide speed set to " + pulse_guide_speed)
+                    "OperateTelescopeINDI: pulse guide speed set to " + pulse_guide_speed + ".")
         return
 
     def run(self):
@@ -824,7 +825,7 @@ class OperateTelescopeINDI(threading.Thread):
             self.initialization_error = str(e)
             # Clean up the low-level telescope thread and exit.
             if self.configuration.protocol_level > 0:
-                Miscellaneous.protocol("Ending OperateTelescopeINDI thread")
+                Miscellaneous.protocol("Ending OperateTelescopeINDI thread.")
             return
 
         # After successful connection to the telescope driver, mark the interface initialized.
@@ -844,7 +845,7 @@ class OperateTelescopeINDI(threading.Thread):
                         Miscellaneous.protocol(
                             "OperateTelescopeINDI: Slewing telescope to: RA " + str(
                                 round(instruction['rect'] * 15., 5)) + ", DE " + str(
-                                round(instruction['decl'], 5)) + " degrees")
+                                round(instruction['decl'], 5)) + " (degrees).")
                     # Instruct the INDI driver to execute the SlewToCoordinates instruction.
                     # Please note that coordinates are in hours (RA) and degrees (DE).
                     self.telescope_radec[0].value = instruction['rect']
@@ -876,7 +877,7 @@ class OperateTelescopeINDI(threading.Thread):
                             "OperateTelescopeINDI: Position looked-up: RA " + str(
                                 round(self.telescope_radec[0].value * 15., 5)) + ", DE " + str(
                                 round(self.telescope_radec[1].value,
-                                      5)) + " (degrees), iterations: " + str(iter_count))
+                                      5)) + " (degrees), iterations: " + str(iter_count) + ".")
                     # Signal that the instruction is finished.
                     instruction['finished'] = True
 
@@ -955,7 +956,7 @@ class OperateTelescopeINDI(threading.Thread):
                     # The telescope has been moved too little in RA. Issue a PulseGuide.
                     if abs(target_ra - start_ra) > abs(current_ra - start_ra):
                         if self.configuration.protocol_level > 2:
-                            Miscellaneous.protocol("OperateTelescopeINDI: Pulse guide in RA")
+                            Miscellaneous.protocol("OperateTelescopeINDI: Pulse guide in RA.")
                         if direction_ra == 2:
                             self.telescope_guideWE[0].value = 0
                             self.telescope_guideWE[1].value = int(
@@ -971,7 +972,7 @@ class OperateTelescopeINDI(threading.Thread):
                     # The telescope has been moved too little in DE. Issue a PulseGuide.
                     if abs(target_de - start_de) > abs(current_de - start_de):
                         if self.configuration.protocol_level > 2:
-                            Miscellaneous.protocol("OperateTelescopeINDI: Pulse guide in DE")
+                            Miscellaneous.protocol("OperateTelescopeINDI: Pulse guide in DE.")
                         if direction_de == 1:
                             self.telescope_guideNS[0].value = 0
                             self.telescope_guideNS[1].value = int(
@@ -1106,14 +1107,14 @@ class OperateTelescopeINDI(threading.Thread):
         # Terminate the main loop (after executing the "terminate" instruction).
         # Disconnect all INDI devices and the server from the INDI client first.
         if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("Disconnecting INDI devices")
+            Miscellaneous.protocol("Disconnecting INDI devices.")
         for name in self.device_name_list:
             self.indiclnt.disconnectDevice(name)
         if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("Disconnecting INDI server")
+            Miscellaneous.protocol("Disconnecting INDI server.")
         self.indiclnt.disconnectServer()
         if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("Ending OperateTelescopeINDI thread")
+            Miscellaneous.protocol("Ending OperateTelescopeINDI thread.")
 
     def remove_instruction(self, instruction):
         """
@@ -1133,13 +1134,13 @@ class Telescope:
     """
     This class provides the interface to the low-level class "OperateTelescope". The methods of
     class "Telescope" are used by MoonPanoramaMaker to handle telescope operations.
-    
+
     """
 
     def __init__(self, configuration):
         """
         Look up configuration parameters and initialize some instance variables.
-        
+
         :param configuration: object containing parameters set by the user
         """
 
@@ -1167,7 +1168,7 @@ class Telescope:
                 break
             time.sleep(self.configuration.polling_interval)
         if not self.optel.initialized:
-            raise TelescopeException("Timeout in connecting to telescope driver")
+            raise TelescopeException("Timeout in connecting to telescope driver.")
 
         if self.configuration.protocol_level > 2:
             Miscellaneous.protocol("High-level telescope interface initialized properly.")
@@ -1180,13 +1181,13 @@ class Telescope:
         """
         Check if movements in RA,DE are mirror-reversed. Directions will be corrected in future
         instructions. This method blocks until the low-level instruction is finished.
-        
+
         :return: -
         """
 
         if self.configuration.protocol_level > 2:
             Miscellaneous.protocol("Calibrating guiding direction, time interval (ms): " + str(
-                self.configuration.calibrate_pulse_length))
+                self.configuration.calibrate_pulse_length) + ".")
         # Choose the instruction, and set the pulse length.
         calibrate_instruction = self.optel.calibrate
         calibrate_instruction['calibrate_pulse_length'] = self.configuration.calibrate_pulse_length
@@ -1198,19 +1199,19 @@ class Telescope:
             time.sleep(self.configuration.polling_interval)
         if self.configuration.protocol_level > 2:
             if self.optel.direction_east == 2:
-                Miscellaneous.protocol("Direction for corrections in RA: normal")
+                Miscellaneous.protocol("Direction for corrections in RA: normal.")
             else:
-                Miscellaneous.protocol("Direction for corrections in RA: reversed")
+                Miscellaneous.protocol("Direction for corrections in RA: reversed.")
             if self.optel.direction_north == 0:
-                Miscellaneous.protocol("Direction for corrections in DE: normal")
+                Miscellaneous.protocol("Direction for corrections in DE: normal.")
             else:
-                Miscellaneous.protocol("Direction for corrections in DE: reversed")
+                Miscellaneous.protocol("Direction for corrections in DE: reversed.")
 
     def slew_to(self, ra, de):
         """
         Move the telescope to a given position (ra, de) in the sky. This method blocks until the
         position is reached.
-        
+
         :param ra: Target right ascension (radians)
         :param de: Target declination (radians)
         :return: -
@@ -1235,14 +1236,14 @@ class Telescope:
         if self.configuration.protocol_level > 2:
             Miscellaneous.protocol("New coordinate read-out correction computed (deg.): RA: " + str(
                 round(degrees(self.readout_correction_ra), 5)) + ", DE: " + str(
-                round(degrees(self.readout_correction_de), 5)) + " (degrees)")
+                round(degrees(self.readout_correction_de), 5)) + " (degrees).")
 
     def lookup_tel_position_uncorrected(self):
         """
         Look up the current telescope position. Block until the low-level instruction is finished
         and return its results. The result is not corrected for the potential mismatch between
         slew-to and look-up coordinates.
-        
+
         :return: (RA, DE) where the telescope is currently pointing (coordinates in radians).
         """
 
@@ -1255,7 +1256,7 @@ class Telescope:
 
     def lookup_tel_position(self):
         """
-        Look up the current telescope position. Block until the low-level instruction is 
+        Look up the current telescope position. Block until the low-level instruction is
         finished and return its results. If a slew-to operation was performed before calling this
         method, the result is corrected for the potential mismatch between slew-to and look-up
         coordinates.
@@ -1271,7 +1272,7 @@ class Telescope:
     def start_guiding(self, rate_ra, rate_de):
         """
         Start guiding a moving target with given rates in (RA, DE). This method does not block.
-        
+
         :param rate_ra: speed of the object in right ascension (in radians/sec.)
         :param rate_de: speed of the object in declination (in radians/sec.)
         :return: -
@@ -1286,7 +1287,7 @@ class Telescope:
                 round(degrees(start_guiding_instruction['rate_ra']) * 216000.,
                       3)) + ", Rate(DE): " + str(
                 round(degrees(start_guiding_instruction['rate_de']) * 216000.,
-                      3)) + " (arc min. / hour)")
+                      3)) + " (arc min. / hour).")
         # Insert the instruction into the queue.
         self.optel.instructions.insert(0, start_guiding_instruction)
         # Set the "guiding_active" flag to True.
@@ -1296,12 +1297,12 @@ class Telescope:
         """
         Stop guiding the moving target. This method blocks until an acknowledgement is received
         from the OperateTelescope thread.
-        
+
         :return: -
         """
 
         if self.configuration.protocol_level > 2:
-            Miscellaneous.protocol("Stop guiding")
+            Miscellaneous.protocol("Stop guiding.")
         # Insert the instruction into the low-level queue and wait until it is finished.
         stop_guiding_instruction = self.optel.stop_guiding
         stop_guiding_instruction['finished'] = False
@@ -1315,7 +1316,7 @@ class Telescope:
         """
         Start to move the telescope north. This method is non-blocking. The motion will end only
         when the "stop_move_north" method is called.
-        
+
         :return: -
         """
 
@@ -1324,7 +1325,7 @@ class Telescope:
     def stop_move_north(self):
         """
         Stop moving the telescope north. This method blocks until the motion is ended.
-        
+
         :return: -
         """
 
@@ -1337,7 +1338,7 @@ class Telescope:
 
     def move_south(self):
         """
-        Start to move the telescope south. This method is non-blocking. The motion will 
+        Start to move the telescope south. This method is non-blocking. The motion will
         end only when the "stop_move_south" method is called.
 
         :return: -
@@ -1361,7 +1362,7 @@ class Telescope:
 
     def move_east(self):
         """
-        Start to move the telescope east. This method is non-blocking. The motion will 
+        Start to move the telescope east. This method is non-blocking. The motion will
         end only when the "stop_move_east" method is called.
 
         :return: -
@@ -1385,7 +1386,7 @@ class Telescope:
 
     def move_west(self):
         """
-        Start to move the telescope west. This method is non-blocking. The motion will 
+        Start to move the telescope west. This method is non-blocking. The motion will
         end only when the "stop_move_west" method is called.
 
         :return: -
@@ -1412,7 +1413,7 @@ class Telescope:
         Issue a pulse correction of given length into a given direction. If the "calibrate" method
         was called before, the direction is corrected for a potential mirror-reversal in the mount.
         The method blocks until the pulse correction is finished.
-        
+
         :param direction: one of 0, 1 ,2, 3 for north, south, east, west
         :param pulse_length: length (in milliseconds)
         :return: -
@@ -1430,15 +1431,15 @@ class Telescope:
         """
         Insert a "terminate" instruction into the queue, wait for the OperateTelescope thread to
         finish and write a message to the protocol file.
-        
-        :return: 
+
+        :return:
         """
 
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol("High-level telescope interface: "
-                                   "Terminating OperateTelescope thread")
+                                   "Terminating OperateTelescope thread.")
         self.optel.instructions.insert(0, self.optel.terminate)
         self.optel.join()
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol("High-level telescope interface: "
-                                   "OperateTelescope thread terminated")
+                                   "OperateTelescope thread terminated.")

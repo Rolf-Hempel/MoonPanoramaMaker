@@ -111,7 +111,8 @@ class ImageShift:
                         break
                     except:
                         if self.configuration.protocol_level > 1:
-                            Miscellaneous.protocol("Warning: In imageShift, mkdir failed, retrying...")
+                            Miscellaneous.protocol(
+                                "Warning: In imageShift, mkdir failed, retrying...")
                         plt.pause(0.1)
                 # Raise a runtime error if all loop iterations were unsuccessful.
                 if not success:
@@ -298,7 +299,7 @@ class ImageShift:
         if in_cluster < self.configuration.dbscan_minimum_in_cluster:
             raise RuntimeError("Image shift computation # " + str(
                 self.alignment_image_counter - 1) + " failed, consistent shifts: " + str(
-                in_cluster) + ", outliers: " + str(outliers))
+                in_cluster) + ", outliers: " + str(outliers) + ".")
         # Translate the average shift values into radians.
         else:
             x_shift = (x_shift / in_cluster) * self.scale

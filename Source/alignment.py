@@ -25,12 +25,11 @@ import time
 from datetime import datetime
 from math import degrees, sqrt
 
-import numpy as np
-from PyQt5 import QtWidgets
-
 import configuration
 import moon_ephem
+import numpy as np
 import telescope
+from PyQt5 import QtWidgets
 from image_shift import ImageShift
 from landmark_selection import LandmarkSelection
 from miscellaneous import Miscellaneous
@@ -136,7 +135,7 @@ class Alignment:
             if self.configuration.protocol_level > 1:
                 Miscellaneous.protocol("Landmark offset from center RA ('): " + str(
                     round(degrees(self.ra_offset_landmark) * 60., 3)) + ", DE ('): " + str(
-                    round(degrees(self.de_offset_landmark) * 60., 3)))
+                    round(degrees(self.de_offset_landmark) * 60., 3)) + ".")
             self.landmark_offset_set = True
         else:
             self.landmark_offset_set = False
@@ -158,8 +157,8 @@ class Alignment:
         # Alignment is only possible after a landmark has been selected.
         if not self.landmark_offset_set:
             if self.configuration.protocol_level > 0:
-                Miscellaneous.protocol("Error in alignment: Landmark offset not set")
-            raise RuntimeError("Error: Landmark offset not set")
+                Miscellaneous.protocol("Error in alignment: Landmark offset not set.")
+            raise RuntimeError("Error: Landmark offset not set.")
 
         # Manual alignment: The telescope is aimed at the current location of the landmark. Look
         # up its position and proceed to alignment computation.
@@ -172,7 +171,7 @@ class Alignment:
         else:
             # Automatic alignment: check if auto-alignment has been initialized
             if not self.autoalign_initialized:
-                raise RuntimeError("Error: Attempt to do an auto-alignment before initialization")
+                raise RuntimeError("Error: Attempt to do an auto-alignment before initialization.")
             # Move telescope to expected coordinates of alignment point
             (ra_landmark, de_landmark) = (self.compute_telescope_coordinates_of_landmark())
             self.tel.slew_to(ra_landmark, de_landmark)
@@ -185,7 +184,7 @@ class Alignment:
                         round(x_shift / self.im_shift.pixel_angle, 1)) + ", y_shift: " + str(
                         round(y_shift / self.im_shift.pixel_angle,
                               1)) + " (pixels), # consistent shifts: " + str(
-                        in_cluster) + ", # outliers: " + str(outliers))
+                        in_cluster) + ", # outliers: " + str(outliers) + ".")
             except RuntimeError as e:
                 if self.configuration.protocol_level > 0:
                     Miscellaneous.protocol("Exception in auto-alignment: " + str(e))
@@ -203,7 +202,7 @@ class Alignment:
             if self.configuration.protocol_level > 2:
                 Miscellaneous.protocol("Alignment shift rotated to RA/DE: RA: " + str(
                     round(ra_shift / self.im_shift.pixel_angle, 1)) + ", DE: " + str(
-                    round(de_shift / self.im_shift.pixel_angle, 1)) + " (pixels)")
+                    round(de_shift / self.im_shift.pixel_angle, 1)) + " (pixels).")
             # The shift is computed as "current frame - reference". Add coordinate shifts to current
             # mount position to get mount setting where landmark is located as on reference frame.
             ra_landmark += ra_shift
@@ -227,14 +226,14 @@ class Alignment:
             Miscellaneous.protocol("Computing new alignment, current RA correction ('): " + str(
                 round(degrees(self.ra_correction) * 60.,
                       3)) + ", current DE correction ('): " + str(
-                round(degrees(self.de_correction) * 60., 3)))
+                round(degrees(self.de_correction) * 60., 3)) + ".")
 
         if self.configuration.protocol_level > 2:
             Miscellaneous.protocol("More alignment info: moon center RA: " + str(
                 round(degrees(self.me.ra), 5)) + ", moon center DE: " + str(
                 round(degrees(self.me.de), 5)) + ", landmark RA: " + str(
                 round(degrees(ra_landmark), 5)) + ", landmark DE: " + str(
-                round(degrees(de_landmark), 5)) + " (all in degrees)")
+                round(degrees(de_landmark), 5)) + " (all in degrees).")
 
         # Store a new alignment point
         alignment_point = {}
@@ -316,7 +315,7 @@ class Alignment:
                     round(x_shift / self.im_shift.pixel_angle, 1)) + ", y_shift: " + str(
                     round(y_shift / self.im_shift.pixel_angle,
                           1)) + " (pixels), # consistent shifts: " + str(
-                    in_cluster) + ", # outliers: " + str(outliers))
+                    in_cluster) + ", # outliers: " + str(outliers) + ".")
             xy_shifts.append([x_shift, y_shift])
         # Subtract second position from first and third position and reverse the vector. Reason for
         # the reversal: The shift has been applied to the mount pointing. The shift measured in the
@@ -351,19 +350,20 @@ class Alignment:
             shift_vector_2_measured[1]) / self.shift_angle * self.im_shift.focal_length
         if self.configuration.protocol_level > 1:
             Miscellaneous.protocol("Focal length measured in x direction:  " + str(
-                round(focal_length_x, 1)) + ", in y direction: " + str(round(focal_length_y, 1)))
+                round(focal_length_x, 1)) + ", in y direction: " + str(
+                round(focal_length_y, 1)) + " (mm).")
         if error > self.configuration.align_max_autoalign_error:
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol(
                     "Auto-alignment initialization failed, focal length error in x: " + str(
                         round(error_x * 100., 1)) + ", in y: " + str(
-                        round(error_y * 100., 1)) + " (percent)")
+                        round(error_y * 100., 1)) + " (percent).")
             raise RuntimeError
         else:
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol("Auto-alignment successful, focal length error in x: " + str(
                     round(error_x * 100., 1)) + ", in y: " + str(
-                    round(error_y * 100., 1)) + " (percent)")
+                    round(error_y * 100., 1)) + " (percent).")
         self.autoalign_initialized = True
         # Return the relative error as compared with tile overlap width.
         return error
@@ -394,7 +394,7 @@ class Alignment:
                 "Drift rate based on alignment points " + str(self.first_index) + " and " + str(
                     self.last_index) + ": Drift in Ra = " + str(
                     round(degrees(self.drift_ra) * 216000., 3)) + ", drift in De = " + str(
-                    round(degrees(self.drift_de) * 216000., 3)) + " (in arc min/hour)")
+                    round(degrees(self.drift_de) * 216000., 3)) + " (in arc min/hour).")
         # Set flag to true to indicate that a valid drift rate has been determined.
         self.is_drift_set = True
 
@@ -415,8 +415,8 @@ class Alignment:
         if not self.is_aligned:
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol(
-                    "Internal error: Attempt to set focus area without alignment")
-            raise RuntimeError("Cannot set focus area without alignment")
+                    "Internal error: Attempt to set focus area without alignment.")
+            raise RuntimeError("Cannot set focus area without alignment.")
         # Look up the current position of the telescope mount.
         (ra_focus, de_focus) = self.tel.lookup_tel_position()
         # Translate telescope position into true (RA,DE) coordinates
@@ -482,7 +482,7 @@ class Alignment:
                 round(degrees(correction[0]), 5)) + ", in DE: " + str(
                 round(degrees(correction[1]), 5)) + ", Telescope RA: " + str(
                 round(degrees(telescope_ra), 5)) + ", Telescope DE: " + str(
-                round(degrees(telescope_de), 5)) + " (all in degrees)")
+                round(degrees(telescope_de), 5)) + " (all in degrees).")
         return telescope_ra, telescope_de
 
     def telescope_to_ephemeris_coordinates(self, ra, de):
@@ -518,7 +518,7 @@ class Alignment:
                 round(degrees(delta_ra), 5)) + ", DE: " + str(
                 round(degrees(delta_de), 5)) + ", moon position (center): RA: " + str(
                 round(degrees(self.me.ra), 5)) + ", DE: " + str(
-                round(degrees(self.me.de), 5)) + " (all in degrees)")
+                round(degrees(self.me.de), 5)) + " (all in degrees).")
         # Add the offset to moon center coordinates.
         ra = self.me.ra + delta_ra
         de = self.me.de + delta_de
@@ -604,7 +604,7 @@ if __name__ == "__main__":
         try:
             mysocket = SocketClient(host, port)
         except:
-            print("Camera: Connection to FireCapture failed, expect exception")
+            print("Camera: Connection to FireCapture failed, expect exception.")
             exit()
 
     # date_time = '2015/05/18 15:20:30'

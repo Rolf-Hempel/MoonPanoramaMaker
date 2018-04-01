@@ -26,10 +26,9 @@ from datetime import datetime
 from math import degrees
 
 from PyQt5 import QtCore
-
-from exceptions import TelescopeException, CameraException
 from alignment import Alignment
 from camera import Camera
+from exceptions import TelescopeException, CameraException
 from miscellaneous import Miscellaneous
 from moon_ephem import MoonEphem
 from telescope import Telescope
@@ -228,16 +227,17 @@ class Workflow(QtCore.QThread):
                 # Write the initialization message to stdout / file:
                 if self.gui.configuration.protocol_level > 0:
                     print("")
-                    Miscellaneous.protocol("MoonPanoramaMaker (re)started\n           "
+                    Miscellaneous.protocol("MoonPanoramaMaker (re)started.\n           "
                         "----------------------------------------------------\n" + "           " +
                         str(datetime.now())[:10] + " " + self.gui.configuration.version + "\n" +
                         "           ----------------------------------------------------")
                     Miscellaneous.protocol(
                         "Moon center RA: " + str(round(degrees(self.me.ra), 5)) + ", DE: " + str(
                             round(degrees(self.me.de), 5)) + " (degrees), " + "diameter: " + str(
-                            round(degrees(m_diameter) * 60., 3)) + " ('), phase_angle: " + str(
+                            round(degrees(m_diameter) * 60.,
+                                  3)) + " ('),\n" + "           phase_angle: " + str(
                             round(degrees(phase_angle), 2)) + ", pos_angle: " + str(
-                            round(degrees(pos_angle), 2)) + " (degrees)")
+                            round(degrees(pos_angle), 2)) + " (degrees).")
 
                 self.tesselation_created = True
                 # print ("Signal the main GUI that the tesselation is initialized.")
@@ -314,7 +314,7 @@ class Workflow(QtCore.QThread):
                 if self.gui.configuration.protocol_level > 1:
                     Miscellaneous.protocol("Moon speed (arc min./hour), RA: " + str(
                         round(degrees(self.me.rate_ra) * 216000., 1)) + ", DE: " + str(
-                        round(degrees(self.me.rate_de) * 216000., 1)))
+                        round(degrees(self.me.rate_de) * 216000., 1)) + ".")
                 # Signal success to gui, start method "prompt_camera_rotated_acknowledged" in gui.
                 self.moon_limb_centered_signal.emit()
 
@@ -327,13 +327,13 @@ class Workflow(QtCore.QThread):
                     if self.gui.configuration.conf.getboolean("Workflow", "focus on star"):
                         Miscellaneous.protocol("Location of focus star saved, RA: " + str(
                             round(degrees(self.al.true_ra_focus), 5)) + ", DE: " + str(
-                            round(degrees(self.al.true_de_focus), 5)) + " (all in degrees)")
+                            round(degrees(self.al.true_de_focus), 5)) + " (all in degrees).")
                     else:
                         Miscellaneous.protocol(
                             "Location of focus area saved, offset from center RA ('): " + str(
                                 round(degrees(self.al.ra_offset_focus_area) * 60.,
                                       3)) + ", DE ('): " + str(
-                                round(degrees(self.al.de_offset_focus_area) * 60., 3)))
+                                round(degrees(self.al.de_offset_focus_area) * 60., 3)) + ".")
                 # Start method "set_focus_area_finished" in gui.
                 self.focus_area_set_signal.emit()
 
@@ -436,7 +436,7 @@ class Workflow(QtCore.QThread):
                                             "new time between alignments: " + str(
                                             self.gui.max_seconds_between_autoaligns) + " seconds.")
                             if self.gui.configuration.protocol_level > 0:
-                                Miscellaneous.protocol("Auto-alignment successful")
+                                Miscellaneous.protocol("Auto-alignment successful.")
                         # Auto-alignment was not successful, continue in moon_panorama_maker with
                         # method "wait_for_autoalignment_off" (reset auto-alignment, including gui
                         # button, enable manual alignment button, and prompt user to continue
@@ -458,12 +458,12 @@ class Workflow(QtCore.QThread):
                 if self.gui.configuration.protocol_level > 0:
                     print("")
                     Miscellaneous.protocol(
-                        "Moving telescope to tile " + str(self.active_tile_number))
+                        "Moving telescope to tile " + str(self.active_tile_number) + ".")
                 if self.gui.configuration.protocol_level > 2:
                     Miscellaneous.protocol("RA offset ('): " + str(
                         round(degrees(self.gui.next_tile['delta_ra_center']) * 60.,
                               3)) + ", DE offset ('): " + str(
-                        round(degrees(self.gui.next_tile['delta_de_center']) * 60., 3)))
+                        round(degrees(self.gui.next_tile['delta_de_center']) * 60., 3)) + ".")
                 (ra, de) = self.al.tile_to_telescope_coordinates(self.gui.next_tile)
                 self.telescope.slew_to(ra, de)
                 self.set_statusbar_signal.emit()

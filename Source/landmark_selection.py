@@ -38,7 +38,7 @@ class LandmarkSelection:
     This class keeps a list of landmark features on the moon and provides methods for selecting
     a specific landmark as well as coordinate transformations which eventually give the offsets in
     RA and DE relative to the moon center.
-    
+
     """
 
     def __init__(self, configuration):
@@ -105,7 +105,7 @@ class LandmarkSelection:
                 Miscellaneous.protocol(
                     "New Landmark selected: " + landmark + ", selenographic longitude: " + str(
                         round(degrees(longitude), 3)) + ", latitude: " + str(
-                        round(degrees(latitude), 3)))
+                        round(degrees(latitude), 3)) + ".")
             # Perform the coordinate transformation and return the offsets (in radians)
             return self.coord_translation(me, longitude, latitude)
         except:

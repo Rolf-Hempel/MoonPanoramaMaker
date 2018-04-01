@@ -368,9 +368,10 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
 
         self.set_text_browser("The telescope driver does not work properly. Check the interface "
                               "configuration and re-start the workflow.\n"
-                              "Detailed error message: " + message + ".")
-        # Mark the telescope as not initialized.
+                              "Detailed error message: " + message)
+        # Mark the telescope as not initialized and re-activate keys.
         self.telescope_initialization_flag = True
+        self.reset_key_status()
 
     def initialize_camera(self):
         """
@@ -511,7 +512,8 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
                     tile_layout_path = os.path.join(self.configuration.home, layout_file)
                     self.tv.save_tile_layout(tile_layout_path)
                     if self.configuration.protocol_level > 0:
-                        Miscellaneous.protocol("Tile layout written to file: " + tile_layout_path)
+                        Miscellaneous.protocol(
+                            "Tile layout written to file: " + tile_layout_path + ".")
                 except:
                     pass
             self.new_tesselation_flag = False
@@ -554,7 +556,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         :return: -
         """
 
-        self.set_text_browser("Select a landmark from the list. ")
+        self.set_text_browser("Select a landmark from the list.")
         # Invoke "set_landmark" method of the alignment object. It offers the user a GUI interface
         # for landmark selection. Based on the selection, the method computes the center offset.
         self.workflow.al.set_landmark()
@@ -754,7 +756,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         :return: -
         """
 
-        self.set_text_browser("Initializing auto-alignment, please wait")
+        self.set_text_browser("Initializing auto-alignment, please wait.")
         # self.save_key_status()
         self.workflow.perform_autoalignment_flag = True
 
@@ -896,7 +898,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
 
         self.camera_rotated = True
         if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("Camera rotation finished")
+            Miscellaneous.protocol("Camera rotation finished.")
         # Re-activate GUI buttons.
         self.reset_key_status()
         # Activate GUI buttons further down the workflow.
@@ -952,9 +954,9 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
 
         if self.configuration.protocol_level > 0:
             if self.configuration.conf.getboolean("Workflow", "focus on star"):
-                Miscellaneous.protocol("The user has selected a new focus star")
+                Miscellaneous.protocol("The user has selected a new focus star.")
             else:
-                Miscellaneous.protocol("The user has selected a new focus area")
+                Miscellaneous.protocol("The user has selected a new focus area.")
         self.workflow.set_focus_area_flag = True
 
     def set_focus_area_finished(self):
@@ -981,7 +983,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         """
 
         if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("Goto focus area")
+            Miscellaneous.protocol("Goto focus area.")
         # If the telescope was aimed at a tile, reset its "active" status, update the status bar,
         # display a message and trigger the workflow thread to move the telescope.
         self.reset_active_tile()
@@ -1281,7 +1283,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
 
         if self.configuration.protocol_level > 0:
             Miscellaneous.protocol(
-                "Goto selected tile number " + str(self.workflow.active_tile_number))
+                "Goto selected tile number " + str(self.workflow.active_tile_number) + ".")
         # Mark the tile active in the tile visualization window, refresh the status bar.
         self.tv.mark_active(self.workflow.active_tile_number)
         self.set_statusbar()
@@ -1467,7 +1469,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
                     self.wait_for_autoalignment_off()
                 elif self.key_status_saved:
                     # Tell the user to be patient (no immediate action)
-                    self.set_text_browser("Please wait")
+                    self.set_text_browser("Please wait.")
                     if self.configuration.protocol_level > 0:
                         Miscellaneous.protocol("The user has interrupted the workflow.")
                     self.gui_context = ""

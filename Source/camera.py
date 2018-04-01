@@ -23,9 +23,9 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 import time
 
 from PyQt5 import QtCore
+from exceptions import CameraException
 from miscellaneous import Miscellaneous
 from socket_client import SocketClient, SocketClientDebug
-from exceptions import CameraException
 
 
 class Camera(QtCore.QThread):
@@ -34,10 +34,10 @@ class Camera(QtCore.QThread):
     A separate thread waits for triggers from the workflow object to start the camera. It then
     sends a request to the MoonPanoramaMaker plugin in FireCapture via the socket_client, and waits
     for the acknowledgement message which confirms that the video has been captured.
-    
+
     Please note that the socket interface to FireCapture is also used in synchronous mode for still
     picture capturing used by the autoalignment mechanism.
-    
+
     """
 
     # During camera initialization (in class "workflow") the signal is connected with method
@@ -47,13 +47,13 @@ class Camera(QtCore.QThread):
     def __init__(self, configuration, mark_processed, debug=False):
         """
         Initialize the camera object.
-        
+
         :param configuration: object containing parameters set by the user
         :param mark_processed: a method in moon_panorama_maker which marks tiles as processed
         :param debug: if True, the socket_client (FireCapture connection) is replaced with a
         mockup object with the same interface. It does not capture videos, but returns the
         acknowledgement as the real object does.
-        
+
         """
 
         QtCore.QThread.__init__(self)
@@ -88,9 +88,9 @@ class Camera(QtCore.QThread):
             except:
                 raise CameraException(
                     "Unable to establish socket connection to FireCapture, host: " + self.host +
-                    ", port: " + str(self.port))
+                    ", port: " + str(self.port) + ".")
             if self.configuration.protocol_level > 0:
-                Miscellaneous.protocol("Camera: Connection to FireCapture program established")
+                Miscellaneous.protocol("Camera: Connection to FireCapture program established.")
 
     def run(self):
         while not self.terminate:
@@ -108,7 +108,8 @@ class Camera(QtCore.QThread):
                         time.sleep(self.configuration.camera_time_between_multiple_exposures)
                     if self.configuration.protocol_level > 0:
                         Miscellaneous.protocol("Camera: Send trigger to FireCapture, tile: " + str(
-                            self.active_tile_number) + ", repetition number: " + str(video_number))
+                            self.active_tile_number) + ", repetition number: " + str(
+                            video_number) + ".")
                     try:
                         # The tile number is encoded in the message. The FireCapture plugin appends
                         # this message to the video file names (to keep the files apart later).
@@ -116,9 +117,11 @@ class Camera(QtCore.QThread):
                         self.mysocket.mysend(msg)
                     except Exception as e:
                         if self.configuration.protocol_level > 0:
-                            Miscellaneous.protocol("Camera, Error message in trigger: " + str(e))
+                            Miscellaneous.protocol(
+                                "Camera, Error message in trigger: " + str(e))
                     if self.configuration.protocol_level > 2:
-                        Miscellaneous.protocol("Camera: Wait for FireCapture to finish exposure")
+                        Miscellaneous.protocol(
+                            "Camera: Wait for FireCapture to finish exposure" + ".")
                     try:
                         # Wait for FireCapture to finish the exposure.
                         ack_length = 1
@@ -128,7 +131,7 @@ class Camera(QtCore.QThread):
                             Miscellaneous.protocol("Camera, Error message in ack: " + str(e))
                     if self.configuration.protocol_level > 2:
                         Miscellaneous.protocol(
-                            "Camera: acknowledgement from FireCapture = " + str(ack))
+                            "Camera: acknowledgement from FireCapture = " + str(ack) + ".")
 
                 # All videos for this tile are acquired, mark tile as processed.
                 self.mark_processed()
@@ -136,11 +139,11 @@ class Camera(QtCore.QThread):
                 self.camera_signal.emit()
                 if self.configuration.protocol_level > 0:
                     Miscellaneous.protocol("Camera, all videos for tile " + str(
-                        self.active_tile_number) + " captured, signal (tile processed) emitted")
+                        self.active_tile_number) + " captured, signal (tile processed) emitted.")
                 self.active = False
             # Insert a wait time to keep the CPU usage low.
             time.sleep(self.configuration.polling_interval)
 
         self.mysocket.close()
         if self.configuration.protocol_level > 0:
-            Miscellaneous.protocol("Camera: Connection to FireCapture program closed")
+            Miscellaneous.protocol("Camera: Connection to FireCapture program closed.")

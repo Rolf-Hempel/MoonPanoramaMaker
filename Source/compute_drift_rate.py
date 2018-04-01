@@ -23,10 +23,9 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 from math import degrees
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 from drift_rate_dialog import Ui_DriftRateDialog
-from miscellaneous import Miscellaneous
 from matplotlibwidget import MatplotlibWidget
+from miscellaneous import Miscellaneous
 
 
 class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
@@ -34,14 +33,14 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
     This class implements the logic behind the drift_rate_dialog gui which controls how the mount
     drift rate is to be determined. In particular, the rules for selecting the first and last
     alignment points to be used for drift rate computation are set.
-    
+
     """
 
     def __init__(self, configuration, al, parent=None):
         """
         Initialize drift computation and produce a table and plots for showing the available
         alignment points for drift computation.
-        
+
         :param configuration: object containing parameters set by the user
         :param al: alignment object (instance of class Alignment)
         """
@@ -134,12 +133,13 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
     def toggle_default_first_radio_button(self):
         """
         For the first alignment point, toggle on/off the default choice (first available data point)
-        
+
         :return: -
         """
 
         if self.configuration.protocol_level > 2:
-            Miscellaneous.protocol("Drift computation: Toggle default button for first drift index")
+            Miscellaneous.protocol(
+                "Drift computation: Toggle default button for first drift index.")
         self.al.default_first_drift = not self.al.default_first_drift
         if self.ui.defaultFirstRadioButton.isChecked():
             self.ui.spinBoxFirstIndex.setValue(1)
@@ -149,12 +149,12 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
     def toggle_default_last_radio_button(self):
         """
         For the last alignment point, toggle on/off the default choice (last available data point)
-        
+
         :return: -
         """
 
         if self.configuration.protocol_level > 2:
-            Miscellaneous.protocol("Drift computation: Toggle default button for last drift index")
+            Miscellaneous.protocol("Drift computation: Toggle default button for last drift index.")
         self.al.default_last_drift = not self.al.default_last_drift
         if self.ui.defaultLastRadioButton.isChecked():
             self.al.last_index = len(self.al.alignment_points) - 1
@@ -164,29 +164,29 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
     def toggle_no_radio_button(self):
         """
         Toggle on/off if drift correction should be included in computing telescope coordinates
-        
+
         :return: -
         """
 
         if self.configuration.protocol_level > 2:
-            Miscellaneous.protocol("Drift computation: Toggle no button")
+            Miscellaneous.protocol("Drift computation: Toggle no button.")
         self.al.drift_disabled = not self.al.drift_disabled
 
         # Drift computation is enabled.
         if not self.al.drift_disabled:
             if self.configuration.protocol_level > 2:
-                Miscellaneous.protocol("Drift computation: Drift enabled")
+                Miscellaneous.protocol("Drift computation: Drift enabled.")
             # Check if for the first alignment point the default is selected.
             if self.al.default_first_drift:
                 if self.configuration.protocol_level > 2:
-                    Miscellaneous.protocol("Drift computation: Default first drift index")
+                    Miscellaneous.protocol("Drift computation: Default first drift index.")
                 # In this case disable the gui elements for alignment point number selection.
                 self.ui.labelFirstIndex.setDisabled(True)
                 self.ui.spinBoxFirstIndex.setDisabled(True)
             # Same as above for the end of the drift computation interval.
             if self.al.default_last_drift:
                 if self.configuration.protocol_level > 2:
-                    Miscellaneous.protocol("Drift computation: Default first drift index")
+                    Miscellaneous.protocol("Drift computation: Default first drift index.")
                 self.ui.spinBoxLastIndex.setDisabled(True)
                 self.ui.labelLastIndex.setDisabled(True)
 
@@ -195,7 +195,7 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
         In the Matplotlib plots of RA and DE drift, the first and last alignment points are
         connected with a red line. Repeat plotting these lines when the first point changes
         because the user chooses another point index.
-        
+
         :return: -
         """
 
@@ -211,7 +211,7 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
     def last_index_changed(self):
         """
         Same as above if the end point of the drift computation interval changes.
-        
+
         :return: -
         """
 
@@ -229,7 +229,7 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
         In case the user chooses an alignment point with index>0 for the beginning of drift
         computation, make sure that the spin box for selecting the end point starts with the
         next higher index.
-        
+
         :return: -
         """
 
@@ -240,7 +240,7 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
         The corresponding reduction of range for the selection of the first alignment point index
         in case the user has not chosen the last available index for the end of the drift
         computation interval.
-        
+
         :return: -
         """
 
@@ -249,7 +249,7 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
     def compute_drift(self):
         """
         Compute new values for telescope drift in RA and DE
-        
+
         :return: -
         """
 
@@ -279,7 +279,7 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
                 'time_seconds']) > self.configuration.minimum_drift_seconds:
             if self.configuration.protocol_level > 2:
                 Miscellaneous.protocol("Start drift computation, first/last index: " + str(
-                    self.al.first_index) + ", " + str(self.al.last_index))
+                    self.al.first_index) + ", " + str(self.al.last_index) + ".")
             # The actual logic for drift rate computation is in method compute_drift_rate in class
             # Alignment.
             self.al.compute_drift_rate()
