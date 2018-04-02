@@ -1673,8 +1673,8 @@ if __name__ == "__main__":
     #   from directory "dist\moon_panorama_maker\PyQt5\Qt\plugins\platforms" into it.
     #
     # Linux:
-    # - Create a new directory "dist\moon_panorama_maker\platforms" and copy file "libqxcb.so"
-    #   from directory "dist\moon_panorama_maker\PyQt5\Qt\plugins\platforms" into it.
+    # - Create a new directory "dist/moon_panorama_maker/platforms" and copy file "libqxcb.so"
+    #   from directory "dist/moon_panorama_maker/PyQt5/Qt/plugins/platforms" into it.
     #
     # - Add "export QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb" to file .bashrc.
     #
