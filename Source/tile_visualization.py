@@ -82,8 +82,9 @@ class TileVisualization:
         # Set the coordinate range in x and y. Coordinates are in radians from now on.
         fig_half_width = self.m_diameter / 2. + 0.0003 + self.tc.ol_outer
         plt.axis(([-fig_half_width, fig_half_width, -fig_half_width, fig_half_width]))
-        plt.tick_params(axis='both', which='both', bottom='off', top='off', labelbottom='off',
-                        left='off', labelleft='off')
+        plt.tick_params(axis='both', which='both', bottom=False, top=False, labelbottom=False,
+                        left=False, labelleft=False)
+
         # Compute and show the current outline of the moon phase.
         polygon_array = np.array(self.__MoonPhase__())
         moon_outline = (Polygon(polygon_array, closed=True, color='#FFD700', alpha=1.))
