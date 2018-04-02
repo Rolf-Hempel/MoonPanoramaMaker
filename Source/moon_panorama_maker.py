@@ -24,6 +24,7 @@ import sys
 from math import degrees
 
 import matplotlib
+
 matplotlib.use('qt5agg')
 import matplotlib.pyplot as plt
 from PyQt5 import QtCore, QtGui, QtWidgets
