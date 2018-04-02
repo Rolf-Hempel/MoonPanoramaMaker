@@ -23,6 +23,8 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 from math import degrees
 
+import matplotlib
+matplotlib.use('qt5agg')
 import matplotlib.pyplot as plt
 from PyQt5 import QtCore, QtGui, QtWidgets
 from compute_drift_rate import ComputeDriftRate
