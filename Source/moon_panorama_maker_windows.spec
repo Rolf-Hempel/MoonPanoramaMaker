@@ -6,7 +6,9 @@ block_cipher = None
 a = Analysis(['moon_panorama_maker.py'],
              pathex=['D:\\SW-Development\\Python\\MoonPanoramaMaker\\Source'],
              binaries=[],
-             datas=[( 'landmark_pictures', 'landmark_pictures' )],
+             datas=[( 'landmark_pictures', 'landmark_pictures' ),
+                    ( 'C:\\Users\\rolf\\Miniconda3\\envs\\P34\\Library\\plugins\\platforms', 'platforms' )
+                    ],
              hiddenimports=['sklearn.neighbors.typedefs',
                             'sklearn.tree',
                             'sklearn.tree._utils',

@@ -1669,15 +1669,7 @@ class TileNumberInput(QtWidgets.QDialog, Ui_TileNumberInputDialog):
 if __name__ == "__main__":
     # The following four lines are a workaround to make PyInstaller work. Remove them when the
     # PyInstaller issue is fixed. Additionally, the following steps are required to get the
-    # program running on Windows or Linux:
-    #
-    # Windows:
-    # - Create a new directory "dist\moon_panorama_maker\platforms" and copy file "qwindows.dll"
-    #   from directory "dist\moon_panorama_maker\PyQt5\Qt\plugins\platforms" into it.
-    #
-    # Linux:
-    # - Create a new directory "dist/moon_panorama_maker/platforms" and copy file "libqxcb.so"
-    #   from directory "dist/moon_panorama_maker/PyQt5/Qt/plugins/platforms" into it.
+    # program running on Linux:
     #
     # - Add "export QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb" to file .bashrc.
     #
@@ -1687,7 +1679,8 @@ if __name__ == "__main__":
     #   instead.
     #
     # To run the PyInstaller, open a Terminal in PyCharm and enter
-    # "pyinstaller moon_panorama_maker.spec"
+    # "pyinstaller moon_panorama_maker_windows.spec" on Windows, or
+    # "pyinstaller moon_panorama_maker_linux.spec" on Linux
     #
     import os
 
