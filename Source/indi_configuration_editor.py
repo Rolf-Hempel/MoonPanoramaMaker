@@ -83,6 +83,8 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
     def open_indi_manager(self):
         # This must be extended for the case that the indi-web server does not run on 'localhost'.
         try:
+            # aa = os.popen('pgrep indi-web').read()
+            # print ("pgrep result before: " + aa  + ", len(aa): " + str(len(aa)))
             os.system('pgrep indi-web > /dev/null || ( indi-web & )')
         except:
             if self.c.protocol_level > 0:
