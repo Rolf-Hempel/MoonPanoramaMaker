@@ -121,71 +121,6 @@
    </item>
    <item row="2" column="2">
     <layout class="QGridLayout" name="gridLayout_2">
-     <item row="2" column="2">
-      <widget class="QRadioButton" name="defaultLastRadioButton">
-       <property name="toolTip">
-        <string>If selected, the drift rate is always computed using the last alignment point.</string>
-       </property>
-       <property name="text">
-        <string>Use last alignment point as default
-end time for drift computation - L</string>
-       </property>
-       <property name="shortcut">
-        <string>L</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1" colspan="2">
-      <widget class="QRadioButton" name="noRadioButton">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>50</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>Disable application of drift correction</string>
-       </property>
-       <property name="text">
-        <string>No drift correction - N</string>
-       </property>
-       <property name="shortcut">
-        <string>N</string>
-       </property>
-       <property name="autoExclusive">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QRadioButton" name="defaultFirstRadioButton">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>50</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
-       <property name="toolTip">
-        <string>If selected, the drift rate is always computed using the first alignment point.
-Be sure that the orientation of the mounting has not changed since the first alignment.</string>
-       </property>
-       <property name="text">
-        <string>Use first alignment point as default
-start time for drift computation - F</string>
-       </property>
-       <property name="shortcut">
-        <string>F</string>
-       </property>
-       <property name="autoExclusive">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
      <item row="1" column="1" colspan="2">
       <widget class="Line" name="line">
        <property name="orientation">
@@ -212,7 +147,7 @@ start time for drift computation - F</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="2">
+     <item row="3" column="2">
       <widget class="QLabel" name="labelLastIndex">
        <property name="sizePolicy">
         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
@@ -281,7 +216,7 @@ for end of drift computation - B</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
+     <item row="3" column="1">
       <widget class="QLabel" name="labelFirstIndex">
        <property name="sizePolicy">
         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
@@ -339,76 +274,63 @@ for begin of drift computation - A</string>
        </property>
       </widget>
      </item>
+     <item row="2" column="2">
+      <widget class="QCheckBox" name="defaultLastCheckBox">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>50</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>If selected, the drift rate is always computed using the last alignment point.</string>
+       </property>
+       <property name="text">
+        <string>Use last alignment point as default
+end time for drift computation - L</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" colspan="2">
+      <widget class="QCheckBox" name="noCheckBox">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>50</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Disable application of drift correction</string>
+       </property>
+       <property name="text">
+        <string>No drift correction - N</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QCheckBox" name="defaultFirstCheckBox">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>50</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>If selected, the drift rate is always computed using the first alignment point.
+Be sure that the orientation of the mounting has not changed since the first alignment.</string>
+       </property>
+       <property name="text">
+        <string>Use first alignment point as default
+start time for drift computation - F</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>
  </widget>
  <resources/>
  <connections>
-  <connection>
-   <sender>defaultFirstRadioButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>labelFirstIndex</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>481</x>
-     <y>56</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>481</x>
-     <y>121</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>defaultLastRadioButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>labelLastIndex</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>491</x>
-     <y>283</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>481</x>
-     <y>205</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>defaultFirstRadioButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>spinBoxFirstIndex</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>481</x>
-     <y>56</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>390</x>
-     <y>163</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>defaultLastRadioButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>spinBoxLastIndex</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>491</x>
-     <y>283</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>390</x>
-     <y>247</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
@@ -454,102 +376,6 @@ for begin of drift computation - A</string>
     <hint type="destinationlabel">
      <x>305</x>
      <y>236</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>noRadioButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>defaultFirstRadioButton</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>492</x>
-     <y>78</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>492</x>
-     <y>135</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>noRadioButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>defaultLastRadioButton</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>492</x>
-     <y>78</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>491</x>
-     <y>283</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>noRadioButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>labelLastIndex</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>492</x>
-     <y>78</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>492</x>
-     <y>293</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>noRadioButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>spinBoxFirstIndex</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>492</x>
-     <y>78</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>393</x>
-     <y>248</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>noRadioButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>spinBoxLastIndex</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>492</x>
-     <y>78</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>393</x>
-     <y>339</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>noRadioButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>labelFirstIndex</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>491</x>
-     <y>75</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>491</x>
-     <y>196</y>
     </hint>
    </hints>
   </connection>

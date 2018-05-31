@@ -391,10 +391,10 @@ class Alignment:
                           self.alignment_points[self.first_index]['de_correction']) / time_diff)
         if self.configuration.protocol_level > 1:
             Miscellaneous.protocol(
-                "Drift rate based on alignment points " + str(self.first_index) + " and " + str(
-                    self.last_index) + ": Drift in Ra = " + str(
-                    round(degrees(self.drift_ra) * 216000., 3)) + ", drift in De = " + str(
-                    round(degrees(self.drift_de) * 216000., 3)) + " (in arc min/hour).")
+                "Drift rate based on alignment points " + str(self.first_index + 1) + " and " + str(
+                    self.last_index + 1) + ": Drift in Ra = " + str(
+                    round(degrees(self.drift_ra) * 216000., 3)) + ", drift in De = " + str(round(
+                    degrees(self.drift_de) * 216000., 3)) + " (in arc min/hour).")
         # Set flag to true to indicate that a valid drift rate has been determined.
         self.is_drift_set = True
 

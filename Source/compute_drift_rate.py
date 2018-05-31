@@ -99,16 +99,20 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
                                          self.de_corrections, self.al.first_index,
                                          self.al.last_index)
 
-        # Initialize radio buttons. Between calls to the drift rate dialog, info regarding whether
+        # Initialize check boxes. Between calls to the drift rate dialog, info regarding whether
         # or not drift computation is enabled, and if the user wants to use default values for
         # the first and last alignment point to be used for drift computations, is held in the
         # alignment object (al).
         if self.al.drift_disabled:
-            self.ui.noRadioButton.setChecked(True)
+            self.ui.noCheckBox.setChecked(True)
         if self.al.default_first_drift:
-            self.ui.defaultFirstRadioButton.setChecked(True)
+            self.ui.defaultFirstCheckBox.setChecked(True)
+            self.ui.labelFirstIndex.setDisabled(True)
+            self.ui.spinBoxFirstIndex.setDisabled(True)
         if self.al.default_last_drift:
-            self.ui.defaultLastRadioButton.setChecked(True)
+            self.ui.defaultLastCheckBox.setChecked(True)
+            self.ui.spinBoxLastIndex.setDisabled(True)
+            self.ui.labelLastIndex.setDisabled(True)
 
         # Create spin boxes for the selection of the first and last alignment point for drift
         # computation.
@@ -126,11 +130,11 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
         self.ui.spinBoxFirstIndex.valueChanged.connect(self.first_index_changed)
         self.ui.spinBoxLastIndex.editingFinished.connect(self.set_limit_spin_box_first_index)
         self.ui.spinBoxLastIndex.valueChanged.connect(self.last_index_changed)
-        self.ui.defaultFirstRadioButton.toggled.connect(self.toggle_default_first_radio_button)
-        self.ui.defaultLastRadioButton.toggled.connect(self.toggle_default_last_radio_button)
-        self.ui.noRadioButton.toggled.connect(self.toggle_no_radio_button)
+        self.ui.defaultFirstCheckBox.toggled.connect(self.toggle_default_first_check_box)
+        self.ui.defaultLastCheckBox.toggled.connect(self.toggle_default_last_check_box)
+        self.ui.noCheckBox.toggled.connect(self.toggle_no_check_box)
 
-    def toggle_default_first_radio_button(self):
+    def toggle_default_first_check_box(self):
         """
         For the first alignment point, toggle on/off the default choice (first available data point)
 
@@ -141,12 +145,18 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
             Miscellaneous.protocol(
                 "Drift computation: Toggle default button for first drift index.")
         self.al.default_first_drift = not self.al.default_first_drift
-        if self.ui.defaultFirstRadioButton.isChecked():
-            self.ui.spinBoxFirstIndex.setValue(1)
+        if self.ui.defaultFirstCheckBox.isChecked():
             self.al.first_index = 0
+            self.ui.spinBoxFirstIndex.setValue(1)
+            self.set_limit_spin_box_last_index()
+            self.ui.labelFirstIndex.setDisabled(True)
+            self.ui.spinBoxFirstIndex.setDisabled(True)
             self.first_index_changed()
+        else:
+            self.ui.labelFirstIndex.setDisabled(False)
+            self.ui.spinBoxFirstIndex.setDisabled(False)
 
-    def toggle_default_last_radio_button(self):
+    def toggle_default_last_check_box(self):
         """
         For the last alignment point, toggle on/off the default choice (last available data point)
 
@@ -156,12 +166,18 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
         if self.configuration.protocol_level > 2:
             Miscellaneous.protocol("Drift computation: Toggle default button for last drift index.")
         self.al.default_last_drift = not self.al.default_last_drift
-        if self.ui.defaultLastRadioButton.isChecked():
+        if self.ui.defaultLastCheckBox.isChecked():
             self.al.last_index = len(self.al.alignment_points) - 1
             self.ui.spinBoxLastIndex.setValue(self.al.last_index + 1)
+            self.set_limit_spin_box_first_index()
+            self.ui.spinBoxLastIndex.setDisabled(True)
+            self.ui.labelLastIndex.setDisabled(True)
             self.last_index_changed()
+        else:
+            self.ui.spinBoxLastIndex.setDisabled(False)
+            self.ui.labelLastIndex.setDisabled(False)
 
-    def toggle_no_radio_button(self):
+    def toggle_no_check_box(self):
         """
         Toggle on/off if drift correction should be included in computing telescope coordinates
 
@@ -279,7 +295,7 @@ class ComputeDriftRate(QtWidgets.QDialog, Ui_DriftRateDialog):
                 'time_seconds']) > self.configuration.minimum_drift_seconds:
             if self.configuration.protocol_level > 2:
                 Miscellaneous.protocol("Start drift computation, first/last index: " + str(
-                    self.al.first_index) + ", " + str(self.al.last_index) + ".")
+                    self.al.first_index + 1) + ", " + str(self.al.last_index + 1) + ".")
             # The actual logic for drift rate computation is in method compute_drift_rate in class
             # Alignment.
             self.al.compute_drift_rate()
