@@ -23,7 +23,7 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 from PyQt5 import QtWidgets
 from indi_dialog import Ui_INDIDialog
 from miscellaneous import Miscellaneous
-import os
+import os, time
 import webbrowser
 
 
@@ -81,27 +81,71 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
             self.telescope_lookup_precision_write)
 
     def open_indi_manager(self):
-        # This must be extended for the case that the indi-web server does not run on 'localhost'.
-        try:
-            # aa = os.popen('pgrep indi-web').read()
-            # print ("pgrep result before: " + aa  + ", len(aa): " + str(len(aa)))
-            os.system('pgrep indi-web > /dev/null || ( indi-web & )')
-        except:
-            if self.c.protocol_level > 0:
-                Miscellaneous.protocol("Unable to start the indi-web manager. Please check"
-                                       " the INDI installation.")
+        """
+        Open the INDI manager in a web browser to configure the hardware drivers. First,
+        the 'indi-web' process must be started on the system where the INDI server is running.
+        If this is on localhost, MoonPanoramaMaker can test if the process is running, and,
+        if not, start it. If the INDI server runs on a remote system, it is the
+        user's responsibility to start the process there.
+
+        :return: -
+        """
 
         # Check if the given URL of the INDI server is valid.
-        if Miscellaneous.testipaddress(str(self.input_indi_server_url.text())):
+        server_url = str(self.input_indi_server_url.text())
+        if Miscellaneous.testipaddress(server_url):
+            if server_url == "localhost" or server_url == "127.0.0.1":
+                # The server is running locally: Check if 'indi-web' is running. If not, start it.
+                indi_web_is_running = len(os.popen('pgrep indi-web').read()) > 0
+                if not indi_web_is_running:
+                    os.system('indi-web &')
+                    # Check if 'indi-web' appears in the list of active processes.
+                    success = False
+                    for trial in range(5):
+                        time.sleep(self.c.polling_interval)
+                        if len(os.popen('pgrep indi-web').read()) > 0:
+                            success = True
+                            break
+                    if not success:
+                        # The 'indi-web' process could not be started. Issue an error message.
+                        if self.c.protocol_level > 0:
+                            Miscellaneous.protocol(
+                                "Unable to start the 'indi-web' process locally. Please "
+                                "check the INDI installation.")
+                        return
+
+            else:
+                # If the server is on a remote system, MoonPanoramaMaker cannot start 'indi-web'
+                # there. Ask the user for confirmation that 'indi-web' is started.
+                msg = "Make sure that 'indi-web' is started on the system where the INDI server " \
+                      "is running. To start the 'indi-web' process, open a terminal on the remote" \
+                      " system and enter 'indi-web &'. Please confirm that 'indi-web' is running."
+
+                reply = QtWidgets.QMessageBox.question(self, 'Message', msg,
+                                                       QtWidgets.QMessageBox.Yes |
+                                                       QtWidgets.QMessageBox.No,
+                                                       QtWidgets.QMessageBox.No)
+                # Negative reply: Issue an error message and exit.
+                if reply != QtWidgets.QMessageBox.Yes:
+                    Miscellaneous.show_detailed_error_message("The INDI manager cannot be opened.",
+                        "MoonPanoramaMaker can only handle the INDI server configuration if the "
+                        "'indi-web' process is started on the server system. Alternatively, "
+                        "you may configure the INDI server outside MoonPanoramaMaker using some "
+                        "other program.")
+                    return
+
+            # 'indi-web' is running. Open the URL in the standard web browser.
             try:
-                webbrowser.open("http://" + str(self.input_indi_server_url.text()) + ":8624")
+                webbrowser.open("http://" + server_url + ":8624")
+                self.configuration_changed = True
+                self.telescope_changed = True
             except:
                 if self.c.protocol_level > 0:
                     Miscellaneous.protocol("Unable to access the indi-web manager. Please check"
                                            " the INDI installation.")
-            self.configuration_changed = True
-            self.telescope_changed = True
+
         else:
+            # The given URL is invalid. Issue an error message and exit.
             Miscellaneous.show_detailed_error_message("Invalid URL entered.",
                                                       "The URL of the INDI server is not correct. "
                                                       "It must be eigher 'localhost' or the IP "
