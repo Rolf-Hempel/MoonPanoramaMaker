@@ -42,8 +42,7 @@ class Miscellaneous:
         :return: -
         """
 
-        now = str(datetime.now())
-        return now[0:10] + "_" + now[11:13] + "-" + now[14:16]
+        return datetime.now().strftime("%Y-%m-%d_%H-%M")
 
     @staticmethod
     def protocol(string):
@@ -54,7 +53,7 @@ class Miscellaneous:
         :return: -
         """
 
-        print(str(datetime.now())[11:21], string)
+        print('{0} {1}'.format(datetime.now().strftime("%H-%M-%S.%f")[:-5], string))
         sys.stdout.flush()
 
     @staticmethod
