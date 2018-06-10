@@ -59,11 +59,6 @@
     </item>
     <item row="6" column="0">
      <widget class="QPushButton" name="set_focus_area">
-      <property name="font">
-       <font>
-        <pointsize>8</pointsize>
-       </font>
-      </property>
       <property name="toolTip">
        <string>Mark current location for setting the telescope focus</string>
       </property>
@@ -249,11 +244,6 @@
     </item>
     <item row="4" column="1">
      <widget class="QPushButton" name="show_landmark">
-      <property name="font">
-       <font>
-        <pointsize>8</pointsize>
-       </font>
-      </property>
       <property name="toolTip">
        <string>Show a picture of the landmark currently selected </string>
       </property>
@@ -267,11 +257,6 @@
     </item>
     <item row="2" column="0">
      <widget class="QPushButton" name="rotate_camera">
-      <property name="font">
-       <font>
-        <pointsize>8</pointsize>
-       </font>
-      </property>
       <property name="toolTip">
        <string>Rotate camera until the moon limb stands vertically at FOV center</string>
       </property>
@@ -342,11 +327,6 @@
     </item>
     <item row="2" column="1">
      <widget class="QPushButton" name="exit">
-      <property name="font">
-       <font>
-        <pointsize>8</pointsize>
-       </font>
-      </property>
       <property name="toolTip">
        <string>Save all parameters, close the windows and exit the program</string>
       </property>
