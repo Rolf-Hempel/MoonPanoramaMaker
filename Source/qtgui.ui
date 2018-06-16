@@ -176,9 +176,6 @@
     </item>
     <item row="0" column="3">
      <widget class="QPushButton" name="alignment">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
       <property name="toolTip">
        <string>Align (or re-align) telescope with landmark</string>
       </property>

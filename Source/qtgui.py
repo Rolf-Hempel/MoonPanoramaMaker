@@ -58,7 +58,6 @@ class Ui_MainWindow(object):
         self.configure_drift_correction.setObjectName("configure_drift_correction")
         self.gridLayout.addWidget(self.configure_drift_correction, 4, 3, 1, 1)
         self.alignment = QtWidgets.QPushButton(self.centralwidget)
-        self.alignment.setEnabled(True)
         self.alignment.setObjectName("alignment")
         self.gridLayout.addWidget(self.alignment, 0, 3, 1, 1)
         self.autoalignment = QtWidgets.QPushButton(self.centralwidget)
