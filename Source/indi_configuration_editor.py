@@ -136,7 +136,8 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
 
             # 'indi-web' is running. Open the URL in the standard web browser.
             try:
-                webbrowser.open("http://" + server_url + ":8624")
+                import subprocess
+                subprocess.Popen(["/usr/bin/firefox", "http://" + server_url + ":8624"])
                 self.configuration_changed = True
                 self.telescope_changed = True
             except:
