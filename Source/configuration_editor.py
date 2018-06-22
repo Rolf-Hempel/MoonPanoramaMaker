@@ -140,6 +140,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
         self.new_ascom_telescope_lookup_precision = self.c.conf.get('ASCOM',
                                                                     'telescope lookup precision')
 
+        self.new_web_browser_path = self.c.conf.get('INDI', 'web browser path')
         self.new_indi_server_url = self.c.conf.get('INDI', 'server url')
         self.new_indi_pulse_guide_speed_index = self.c.conf.get('INDI', 'pulse guide speed index')
         self.new_indi_guiding_interval = self.c.conf.get('INDI', 'guiding interval')
@@ -419,7 +420,8 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
         from indi_configuration_editor import IndiConfigurationEditor
 
-        self.indieditor = IndiConfigurationEditor(self.c, self.new_indi_server_url,
+        self.indieditor = IndiConfigurationEditor(self.c, self.new_web_browser_path,
+                                                  self.new_indi_server_url,
                                                   self.new_indi_pulse_guide_speed_index,
                                                   self.new_indi_guiding_interval,
                                                   self.new_indi_wait_interval,
@@ -434,6 +436,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
             # Mark the configuration object as changed.
             self.configuration_changed = True
             # Copy back the current gui values.
+            self.new_web_browser_path = str(self.indieditor.input_web_browser_path.text())
             self.new_indi_server_url = str(self.indieditor.input_indi_server_url.text())
             self.new_indi_pulse_guide_speed_index = str(
                 self.indieditor.pulse_guide_speed_chooser.currentIndex())
@@ -716,6 +719,7 @@ class ConfigurationEditor(QtWidgets.QDialog, Ui_ConfigurationDialog):
 
             if self.indieditor_called:
                 # If the IndiEditor was called, copy back the current new values.
+                self.c.conf.set("INDI", "web browser path", self.new_web_browser_path)
                 self.c.conf.set("INDI", "server url", self.new_indi_server_url)
                 self.c.conf.set("INDI", "pulse guide speed index",
                                 self.new_indi_pulse_guide_speed_index)

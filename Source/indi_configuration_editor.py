@@ -34,7 +34,7 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
 
     """
 
-    def __init__(self, configuration, new_indi_server_url, new_indi_pulse_guide_speed_index,
+    def __init__(self, configuration, new_web_browser_path, new_indi_server_url, new_indi_pulse_guide_speed_index,
                  new_indi_guiding_interval, new_indi_wait_interval,
                  new_indi_telescope_lookup_precision, parent=None):
         """
@@ -42,6 +42,7 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
         fields of the editor gui.
 
         :param configuration: object containing parameters set by the user
+        :param new_web_browser_path: Absolute Path to the web browser executable
         :param new_indi_server_url: URL of the INDI server process
         :param new_indi_pulse_guide_speed_index: index of the pulse guide speed chooser combobox
         :param new_indi_guiding_interval: duration of guiding pulses (sec.)
@@ -56,6 +57,7 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
         self.c = configuration
 
         # Fill the gui text fields with the current parameters
+        self.input_web_browser_path.setText(new_web_browser_path)
         self.input_indi_server_url.setText(new_indi_server_url)
         guide_speeds = ["SLEW_GUIDE", "SLEW_CENTERING", "SLEW_FIND", "SLEW_MAX"]
         self.pulse_guide_speed_chooser.addItems(guide_speeds)
@@ -73,6 +75,7 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
 
         # Connect changes to the gui text fields with the methods below.
         self.configure_server.clicked.connect(self.open_indi_manager)
+        self.input_web_browser_path.textChanged.connect(self.web_browser_path_write)
         self.input_indi_server_url.textChanged.connect(self.indi_server_url_write)
         self.pulse_guide_speed_chooser.currentIndexChanged.connect(self.pulse_guide_speed_write)
         self.input_guiding_interval.textChanged.connect(self.guiding_interval_write)
@@ -134,16 +137,23 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
                         "other program.")
                     return
 
-            # 'indi-web' is running. Open the URL in the standard web browser.
+            # 'indi-web' is running. Check if the web browser path exists,
+            #  and open the URL in the standard web browser.
+            if not os.path.exists(str(self.input_web_browser_path.text())):
+                Miscellaneous.show_detailed_error_message(
+                    "The standard web browser cannot be launched.",
+                    "The parameter 'Standard web browser' is wrong. Please make sure that it "
+                    "points to a web browser executable, e.g. '/usr/bin/firefox'.")
+                return
             try:
                 import subprocess
-                subprocess.Popen(["/usr/bin/firefox", "http://" + server_url + ":8624"])
+                subprocess.Popen([str(self.input_web_browser_path.text()), "http://" + server_url + ":8624"])
                 self.configuration_changed = True
                 self.telescope_changed = True
             except:
                 if self.c.protocol_level > 0:
-                    Miscellaneous.protocol("Unable to access the indi-web manager. Please check"
-                                           " the INDI installation.")
+                    Miscellaneous.show_detailed_error_message("Unable to access the indi-web manager.",
+                                    "Please check the standard web browser path and the INDI installation.")
 
         else:
             # The given URL is invalid. Issue an error message and exit.
@@ -156,6 +166,16 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
 
     # The following methods are invoked if a text field is changed by the user.
     def indi_server_url_write(self):
+        """
+        If the parameter has been changed, set the appropriate configuration change flags to True.
+
+        :return: -
+        """
+
+        self.telescope_changed = True
+        self.configuration_changed = True
+
+    def web_browser_path_write(self):
         """
         If the parameter has been changed, set the appropriate configuration change flags to True.
 
@@ -211,9 +231,15 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
         :return: -
         """
         if self.configuration_changed:
+            # Check if the web browser path entered is valid. If it is not, give an example
+            # of a valid path.
+            if not os.path.exists(str(self.input_web_browser_path.text())):
+                Miscellaneous.show_input_error("Standard web browser", "/usr/bin/firefox")
+                return
+
             # Check if the URL entered is valid. If it is not, give an example of a valid URL.
             if not Miscellaneous.testipaddress(str(self.input_indi_server_url.text())):
-                Miscellaneous.show_input_error("URL of the INDI server", "'localhost'")
+                Miscellaneous.show_input_error("URL of the INDI server", "localhost")
                 return
 
             # Check if the float entered is within the given bounds [0., 3.]. If the return value

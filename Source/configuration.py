@@ -222,6 +222,7 @@ class Configuration:
             self.conf.set('ASCOM', 'telescope lookup precision', '0.5')
 
             self.conf.add_section('INDI')
+            self.conf.set('INDI', 'web browser path', '/usr/bin/firefox')
             self.conf.set('INDI', 'server url', 'localhost')
             self.conf.set('INDI', 'guiding interval', '1.5')
             self.conf.set('INDI', 'wait interval', '2.')
@@ -404,6 +405,7 @@ class Configuration:
                 self.conf.remove_option('ASCOM', 'hub')
 
                 self.conf.add_section('INDI')
+                self.conf.set('INDI', 'web browser path', '/usr/bin/firefox')
                 self.conf.set('INDI', 'server url', 'localhost')
                 self.conf.set('INDI', 'guiding interval', '1.5')
                 self.conf.set('INDI', 'wait interval', '2.')
