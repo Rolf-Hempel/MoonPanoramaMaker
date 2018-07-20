@@ -23,11 +23,14 @@ along with MPM.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 from math import degrees
 
-import matplotlib
+# The following PyQt5 imports must precede any matplotlib imports. This is a workaround
+# for a Matplotlib 2.2.2 bug.
+from PyQt5 import QtCore, QtGui, QtWidgets
 
+import matplotlib
 matplotlib.use('qt5agg')
 import matplotlib.pyplot as plt
-from PyQt5 import QtCore, QtGui, QtWidgets
+
 from compute_drift_rate import ComputeDriftRate
 from configuration import Configuration
 from configuration_editor import ConfigurationEditor
