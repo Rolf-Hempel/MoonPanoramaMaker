@@ -43,7 +43,7 @@ class Configuration:
         """
 
         # The version number is displayed on the MPM main GUI title line.
-        self.version = "MoonPanoramaMaker 1.0.0"
+        self.version = "MoonPanoramaMaker 1.0.1"
 
         ############################################################################################
         # Switch on/off debug modes:
@@ -351,7 +351,7 @@ class Configuration:
         """
 
         # Old versions for which configuration file import is supported.
-        self.old_versions = ["MoonPanoramaMaker 0.9.3", "MoonPanoramaMaker 0.9.5"]
+        self.old_versions = ["MoonPanoramaMaker 0.9.3", "MoonPanoramaMaker 0.9.5", "MoonPanoramaMaker 1.0.0"]
 
         version_read = self.conf.get('Hidden Parameters', 'version')
         if version_read == self.version:
@@ -390,7 +390,7 @@ class Configuration:
                 for cam in self.get_camera_list():
                     self.conf.set('Camera ' + cam, 'repetition count', '1')
 
-            if self.old_versions.index(version_read) < 2:
+            if self.old_versions.index(version_read) <= 1:
                 # Changes for file version 0.9.5 or earlier:
                 #
                 # The ASCOM telescope driver was selected via a chooser GUI. Now the name of the
@@ -403,7 +403,7 @@ class Configuration:
                 self.conf.set('ASCOM', 'pulse guide speed DE', '0.003')
                 self.conf.remove_option('ASCOM', 'chooser')
                 self.conf.remove_option('ASCOM', 'hub')
-
+                # A new section "INDI" was added for telescope control under Linux.
                 self.conf.add_section('INDI')
                 self.conf.set('INDI', 'web browser path', '/usr/bin/firefox')
                 self.conf.set('INDI', 'server url', 'localhost')
@@ -411,7 +411,7 @@ class Configuration:
                 self.conf.set('INDI', 'wait interval', '2.')
                 self.conf.set('INDI', 'pulse guide speed index', '0')
                 self.conf.set('INDI', 'telescope lookup precision', '0.7')
-
+                # FireCapture may run on a differenct computer now. Specify its IP address.
                 self.conf.set('Camera', 'ip address', 'localhost')
 
                 scale = 7. / 8.5
@@ -425,6 +425,12 @@ class Configuration:
                 new_label_fontsize = int(
                     self.conf.getfloat('Tile Visualization', 'label fontsize') * scale)
                 self.conf.set('Tile Visualization', 'label fontsize', str(new_label_fontsize))
+
+            if self.old_versions.index(version_read) <= 2:
+                # Changes for file version 1.0.0 or earlier:
+                #
+                # Configuration files are identical for versions 1.0.0 and 1.0.1.
+                pass
 
             # The configuration file could be imported, but the contents may not be up to date.
             file_identical = False
