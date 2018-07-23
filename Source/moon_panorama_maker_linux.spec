@@ -7,6 +7,8 @@ a = Analysis(['moon_panorama_maker.py'],
              pathex=['/home/rolf/Pycharm-Projects/MoonPanoramaMaker/Source'],
              binaries=[],
              datas=[( 'landmark_pictures', 'landmark_pictures' ),
+                    ( '../InstallForge/plugins', 'plugins' ),
+                    ( '../Documentation/MoonPanoramaMaker_User-Guide.pdf', 'MoonPanoramaMaker_User-Guide.pdf' )
                     ],
              hiddenimports=['sklearn.neighbors.typedefs',
                             'sklearn.tree',
