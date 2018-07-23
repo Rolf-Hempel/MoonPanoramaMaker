@@ -8,7 +8,8 @@ a = Analysis(['moon_panorama_maker.py'],
              binaries=[],
              datas=[( 'landmark_pictures', 'landmark_pictures' ),
                     ( '../InstallForge/plugins', 'plugins' ),
-                    ( '../Documentation/MoonPanoramaMaker_User-Guide.pdf', 'MoonPanoramaMaker_User-Guide.pdf' )
+                    ( '../Documentation/MoonPanoramaMaker_User-Guide.pdf', 'Documentation/MoonPanoramaMaker_User-Guide.pdf' ),
+                    ( '../Documentation/Illustrations/MoonPanoramaMaker.jpg', '.' )
                     ],
              hiddenimports=['sklearn.neighbors.typedefs',
                             'sklearn.tree',
