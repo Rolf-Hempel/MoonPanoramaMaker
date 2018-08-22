@@ -138,7 +138,7 @@ class CameraConfigurationInput(QtWidgets.QDialog, Ui_CameraDialog):
             # Create a new section in the configuration object for this camera model and store
             # the parameters there.
             section_name = 'Camera ' + new_name
-            self.c.conf.add_section(self.section_name)
+            self.c.conf.add_section(section_name)
             self.c.conf.set(section_name, 'name', new_name)
             self.c.conf.set(section_name, 'pixel size', new_pixel_size)
             self.c.conf.set(section_name, 'pixel horizontal', new_pixel_horizontal)
