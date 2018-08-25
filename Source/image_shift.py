@@ -106,7 +106,7 @@ class ImageShift:
                 success = False
                 for retry in range(self.configuration.polling_time_out_count):
                     try:
-                        os.mkdir(self.image_dir)
+                        os.makedirs(self.image_dir)
                         success = True
                         break
                     except:
