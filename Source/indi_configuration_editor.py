@@ -99,14 +99,14 @@ class IndiConfigurationEditor(QtWidgets.QDialog, Ui_INDIDialog):
         if Miscellaneous.testipaddress(server_url):
             if server_url == "localhost" or server_url == "127.0.0.1":
                 # The server is running locally: Check if 'indi-web' is running. If not, start it.
-                indi_web_is_running = len(os.popen('pgrep indi-web').read()) > 0
+                indi_web_is_running = bool(len(os.popen('pgrep indi-web').read()))
                 if not indi_web_is_running:
                     os.system('indi-web &')
                     # Check if 'indi-web' appears in the list of active processes.
                     success = False
                     for trial in range(5):
                         time.sleep(self.c.polling_interval)
-                        if len(os.popen('pgrep indi-web').read()) > 0:
+                        if os.popen('pgrep indi-web').read():
                             success = True
                             break
                     if not success:

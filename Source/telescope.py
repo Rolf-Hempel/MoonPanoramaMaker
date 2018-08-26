@@ -284,7 +284,7 @@ class OperateTelescopeASCOM(threading.Thread):
 
         # Serve the instruction queue, until the "terminate" instruction is encountered.
         while True:
-            if len(self.instructions) > 0:
+            if self.instructions:
                 # Get the next instruction from the queue, look up its type (name), and execute it.
                 instruction = self.instructions.pop()
 
@@ -645,9 +645,9 @@ class OperateTelescopeINDI(threading.Thread):
         # Get the list of available devices.
         for iteration in range(self.configuration.polling_time_out_count):
             time.sleep(self.configuration.polling_interval)
-            if len(self.device_list) > 0:
+            if self.device_list:
                 break
-        if len(self.device_list) == 0:
+        if not self.device_list:
             raise INDIConnectException("INDI: Unable to get the device list.")
 
         # Look for a device which implements the TELESCOPE_INTERFACE. Exit the
@@ -779,7 +779,7 @@ class OperateTelescopeINDI(threading.Thread):
         while not prate or type(prate) != PyIndi.ISwitchVectorProperty:
             prate = self.device_telescope.getSwitch("TELESCOPE_SLEW_RATE")
             time.sleep(0.2)
-        if len(prate) < 1:  # no slew rate
+        if not prate:  # no slew rate
             if self.configuration.protocol_level > 0:
                 Miscellaneous.protocol(
                     "OperateTelescopeINDI: The telescope driver provides zero slew rates.")
@@ -835,7 +835,7 @@ class OperateTelescopeINDI(threading.Thread):
 
         # Serve the instruction queue, until the "terminate" instruction is encountered.
         while True:
-            if len(self.instructions) > 0:
+            if self.instructions:
                 # Get the next instruction from the queue, look up its type (name), and execute it.
                 instruction = self.instructions.pop()
 

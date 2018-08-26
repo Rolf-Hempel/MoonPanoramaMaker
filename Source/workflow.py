@@ -394,7 +394,7 @@ class Workflow(QtCore.QThread):
                                             str(self.gui.max_seconds_between_autoaligns) +
                                             " seconds.")
                                     # Videos since last auto-alignment have to be repeated.
-                                    if len(self.tile_indices_since_last_autoalign) > 0:
+                                    if self.tile_indices_since_last_autoalign:
                                         self.gui.tv.mark_unprocessed(
                                             self.tile_indices_since_last_autoalign)
                                         # Just in case the currently active tile has just be marked
