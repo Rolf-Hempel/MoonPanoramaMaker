@@ -1148,7 +1148,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         # Initialize the list with (potentially) selected tiles in visualization window.
         self.selected_tile_numbers = self.tv.get_selected_tile_numbers()
         # If empty, check if there is a non-trivial active_tile_number.
-        if self.selected_tile_numbers and self.workflow.active_tile_number != -1:
+        if not self.selected_tile_numbers and self.workflow.active_tile_number != -1:
             self.selected_tile_numbers.append(self.workflow.active_tile_number)
         # If one of the mechanisms produced a non-empty list, set the GUI context and ask the
         # user to confirm the operation.
