@@ -88,7 +88,7 @@ class SocketClient:
             if not data:
                 raise RuntimeError("Recv: socket connection broken.")
             total_rx += len(data)
-            rcvd = rcvd + data
+            rcvd += data
 
         # The expected number of bytes have been received.
         return rcvd
