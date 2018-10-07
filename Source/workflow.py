@@ -413,8 +413,7 @@ class Workflow(QtCore.QThread):
                                         self.repeat_from_here = -1
                                 else:
                                     # Auto-alignment is accurate enough. Reset list of tiles
-                                    # since last
-                                    # successful alignment.
+                                    # since last successful alignment.
                                     self.tile_indices_since_last_autoalign = []
                                     if self.gui.configuration.protocol_level > 0:
                                         Miscellaneous.protocol(

@@ -1243,6 +1243,7 @@ class MoonPanoramaMaker(QtWidgets.QMainWindow):
         # Perform the task in class TileVisualization.
         self.tv.mark_all_unprocessed()
         self.workflow.all_tiles_recorded = False
+        self.workflow.repeat_from_here = -1
         # Reset the active tile number. Processing will start from the beginning.
         self.reset_active_tile()
         self.set_text_browser("")
