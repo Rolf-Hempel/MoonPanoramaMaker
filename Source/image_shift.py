@@ -204,9 +204,7 @@ class ImageShift:
         :return: filename
         """
 
-        dt = str(datetime.datetime.now())
-        timestring = dt[11:13] + "-" + dt[14:16] + "-" + dt[17:19] + "_"
-        return os.path.join(self.image_dir, timestring)
+        return os.path.join(self.image_dir, "{0}_".format(datetime.datetime.now().strftime("%H-%M-%S")))
 
     def shift_vs_reference(self):
         """
