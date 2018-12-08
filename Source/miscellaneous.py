@@ -69,12 +69,10 @@ class Miscellaneous:
 
         try:
             fl = float(string)
-            if lower_bound <= fl <= upper_bound:
-                return True
-            else:
-                return False
         except:
             return False
+        else:
+            return lower_bound <= fl <= upper_bound
 
     @staticmethod
     def testint(string, lower_bound, upper_bound):
@@ -87,13 +85,10 @@ class Miscellaneous:
         :return: True, if the input parameter is within bounds. Otherwise return False.
         """
 
-        try:
-            i = int(string)
-            if lower_bound <= i <= upper_bound:
-                return True
-            else:
-                return False
-        except:
+        if string.strip().isdecimal() and \
+           lower_bound <= int(string) <= upper_bound:
+            return True
+        else:
             return False
 
     @staticmethod
@@ -123,12 +118,13 @@ class Miscellaneous:
 
         if address == 'localhost':
             return True
-        parts = address.split(".")
-        if len(parts) != 4:
+
+        if address.count(".") != 4:
             return False
-        for item in parts:
-            if not 0 <= int(item) <= 255:
-                return False
+        else:
+            for item in address.split("."):
+                if not 0 <= int(item) <= 255:
+                    return False
         return True
 
     @staticmethod
