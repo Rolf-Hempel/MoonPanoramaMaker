@@ -243,6 +243,15 @@ class Configuration:
             self.conf.set('Camera ZWO ASI120MM-S', 'external margin pixel', '300')
             self.conf.set('Camera ZWO ASI120MM-S', 'tile overlap pixel', '200')
 
+            self.conf.add_section('Camera ZWO ASI290MM')
+            self.conf.set('Camera ZWO ASI290MM', 'name', 'ZWO ASI290MM')
+            self.conf.set('Camera ZWO ASI290MM', 'pixel size', '0.0029')
+            self.conf.set('Camera ZWO ASI290MM', 'pixel horizontal', '1936')
+            self.conf.set('Camera ZWO ASI290MM', 'pixel vertical', '1096')
+            self.conf.set('Camera ZWO ASI290MM', 'repetition count', '1')
+            self.conf.set('Camera ZWO ASI290MM', 'external margin pixel', '300')
+            self.conf.set('Camera ZWO ASI290MM', 'tile overlap pixel', '150')
+
             self.conf.add_section('Camera ZWO ASI174MC')
             self.conf.set('Camera ZWO ASI174MC', 'name', 'ZWO ASI174MC')
             self.conf.set('Camera ZWO ASI174MC', 'pixel size', '0.00586')

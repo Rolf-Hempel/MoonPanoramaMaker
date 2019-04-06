@@ -99,7 +99,7 @@ class TileVisualization:
             rectangle = Rectangle((t['x_left'], t['y_bottom']), self.tc.im_w, self.tc.im_h,
                                   color='red', alpha=0.5)
             self.tiles.append(rectangle)
-            x_text_pos_col = (t['x_right'] - float(t['column_index'] + 1) / float(
+            x_text_pos_col = (t['x_right'] - (t['column_index'] + 1) / (
                 t['column_total'] + 1) * self.tc.im_w)
             x_text_pos = (label_shift * x_text_pos_col + (1. - label_shift) * t['x_center'])
             plt.text(x_text_pos, t['y_center'], str(count), horizontalalignment='center',
@@ -223,11 +223,11 @@ class TileVisualization:
         resolution = 500  # the number of vertices for moon phase
         # Draw the outer (sunlit) moon limb, starting from the top.
         for i in range(resolution):
-            phi = np.pi * (float(i) / float(resolution))
+            phi = np.pi * i / resolution
             vertices.append([moon_radius * np.sin(phi), moon_radius * np.cos(phi)])
         # Now add the terminator, starting from the bottom.
         for i in range(resolution):
-            phi = np.pi * (float(resolution - i) / float(resolution))
+            phi = np.pi * (resolution - i) / resolution
             vertices.append(
                 [moon_radius * np.sin(phi) * np.cos(self.phase_angle), moon_radius * np.cos(phi)])
         return vertices

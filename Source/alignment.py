@@ -237,7 +237,7 @@ class Alignment:
 
         # Store a new alignment point
         alignment_point = {}
-        alignment_point['time_string'] = str(current_time)[11:19]
+        alignment_point['time_string'] = current_time.strftime("%H:%M:%S")
         alignment_point['time_seconds'] = self.alignment_time
         alignment_point['ra_correction'] = self.ra_correction
         alignment_point['de_correction'] = self.de_correction
@@ -445,13 +445,8 @@ class Alignment:
             # In case drift has been determined, add time-dependent correction
             # term
             if self.is_drift_set:
-                now = datetime.now()
-                try:
-                    fract = float(str(now)[19:24])
-                except:
-                    fract = 0.
                 # Compute time in seconds since last alignment.
-                time_diff = (time.mktime(now.timetuple()) + fract - self.alignment_time)
+                time_diff = self.seconds_since_last_alignment()
                 ra_offset += time_diff * self.drift_ra
                 de_offset += time_diff * self.drift_de
         # Before the first alignment, set offsets to zero and print a warning to stdout.
@@ -570,11 +565,7 @@ class Alignment:
         :return: time measured in consecutive seconds
         """
 
-        try:
-            fract = float(str(current_time)[19:24])
-        except:
-            fract = 0.
-        return time.mktime(current_time.timetuple()) + fract
+        return time.mktime(current_time.timetuple()) + current_time.microsecond / 1e6
 
     def seconds_since_last_alignment(self):
         """
@@ -583,8 +574,7 @@ class Alignment:
         :return: time measured in consecutive seconds
         """
 
-        current_time = datetime.now()
-        return self.current_time_seconds(current_time) - self.alignment_time
+        return self.current_time_seconds(datetime.now()) - self.alignment_time
 
 
 if __name__ == "__main__":
